@@ -1,0 +1,738 @@
+{
+  "_meta": {
+    "models": {
+      "payrollPeriods": "A payroll cycle defining the period dates, cutoff date, and pay date. Tracks processing status from draft through to paid/closed.",
+      "payrollRecords": "An employee's computed pay for a specific payroll period. Contains gross pay breakdown (basic, overtime, night diff, holiday pay) and net pay after deductions.",
+      "payrollDeductions": "Individual deduction line items on a payroll record. Covers government contributions (SSS, PhilHealth, Pag-IBIG), withholding tax, loan amortizations, and other deductions.",
+      "compensations": "Employee salary and payment details including basic salary, pay frequency, pay type, and bank account information.",
+      "sssContributionTable": "SSS contribution rate schedule for 2025 with monthly salary credit brackets and employee/employer shares.",
+      "philhealthContributionTable": "PhilHealth contribution rates for 2025 based on basic monthly salary.",
+      "pagibigContributionTable": "Pag-IBIG contribution rates based on basic monthly salary.",
+      "taxTable": "BIR withholding tax brackets based on TRAIN Law for monthly compensation.",
+      "loans": "Employee loan records for SSS, Pag-IBIG, or company loans with amortization tracking.",
+      "governmentReports": "Generated compliance reports for submission to BIR, SSS, PhilHealth, and Pag-IBIG.",
+      "dashboardStats": "Summary statistics for the payroll dashboard including totals, pending items, and upcoming deadlines."
+    },
+    "relationships": [
+      "Each PayrollPeriod has many PayrollRecords (one per employee processed)",
+      "Each PayrollRecord has many PayrollDeductions (breakdown of all deductions)",
+      "PayrollRecords reference an Employee via employeeSummary",
+      "GovernmentReports are generated from PayrollPeriod data",
+      "Loans are deducted through PayrollDeductions each pay period",
+      "ContributionTables and TaxTable are used during payroll computation"
+    ]
+  },
+  "dashboardStats": {
+    "currentPeriod": "2025-01-A",
+    "totalEmployees": 231,
+    "processedEmployees": 0,
+    "totalGrossPay": 0,
+    "totalNetPay": 0,
+    "totalDeductions": 0,
+    "pendingPeriods": 1,
+    "periodsThisMonth": 2,
+    "upcomingDeadlines": [
+      {
+        "title": "SSS Contribution Remittance",
+        "dueDate": "2025-01-10",
+        "agency": "sss",
+        "status": "pending"
+      },
+      {
+        "title": "PhilHealth Remittance",
+        "dueDate": "2025-01-10",
+        "agency": "philhealth",
+        "status": "pending"
+      },
+      {
+        "title": "Pag-IBIG Remittance",
+        "dueDate": "2025-01-10",
+        "agency": "pagibig",
+        "status": "pending"
+      },
+      {
+        "title": "BIR Form 1601-C Filing",
+        "dueDate": "2025-01-10",
+        "agency": "bir",
+        "status": "pending"
+      }
+    ],
+    "lastPayrollRun": {
+      "periodCode": "2024-12-B",
+      "payDate": "2024-12-30",
+      "totalGrossPay": 8945230.50,
+      "totalNetPay": 7156184.40,
+      "employeesProcessed": 231
+    },
+    "monthlyTrend": [
+      { "month": "Aug 2024", "grossPay": 8234500, "netPay": 6587600 },
+      { "month": "Sep 2024", "grossPay": 8456780, "netPay": 6765424 },
+      { "month": "Oct 2024", "grossPay": 8678900, "netPay": 6943120 },
+      { "month": "Nov 2024", "grossPay": 8789450, "netPay": 7031560 },
+      { "month": "Dec 2024", "grossPay": 17890461, "netPay": 14312369 }
+    ]
+  },
+  "payrollPeriods": [
+    {
+      "id": "pp-001",
+      "periodCode": "2025-01-A",
+      "periodType": "regular",
+      "startDate": "2025-01-01",
+      "endDate": "2025-01-15",
+      "cutoffDate": "2025-01-13",
+      "payDate": "2025-01-15",
+      "status": "draft",
+      "employeeCount": 231,
+      "processedCount": 0,
+      "totalGrossPay": null,
+      "totalDeductions": null,
+      "totalNetPay": null,
+      "processedBy": null,
+      "processedAt": null,
+      "approvedBy": null,
+      "approvedAt": null
+    },
+    {
+      "id": "pp-002",
+      "periodCode": "2024-12-B",
+      "periodType": "regular",
+      "startDate": "2024-12-16",
+      "endDate": "2024-12-31",
+      "cutoffDate": "2024-12-28",
+      "payDate": "2024-12-30",
+      "status": "paid",
+      "employeeCount": 231,
+      "processedCount": 231,
+      "totalGrossPay": 8945230.50,
+      "totalDeductions": 1789046.10,
+      "totalNetPay": 7156184.40,
+      "processedBy": {
+        "id": "emp-002",
+        "name": "Maria Clara S. Reyes"
+      },
+      "processedAt": "2024-12-28T14:30:00+08:00",
+      "approvedBy": {
+        "id": "emp-003",
+        "name": "Jose Antonio L. Santos"
+      },
+      "approvedAt": "2024-12-29T09:15:00+08:00"
+    },
+    {
+      "id": "pp-003",
+      "periodCode": "2024-13th",
+      "periodType": "13th_month",
+      "startDate": "2024-01-01",
+      "endDate": "2024-12-31",
+      "cutoffDate": "2024-12-15",
+      "payDate": "2024-12-20",
+      "status": "closed",
+      "employeeCount": 228,
+      "processedCount": 228,
+      "totalGrossPay": 8945230.50,
+      "totalDeductions": 0,
+      "totalNetPay": 8945230.50,
+      "processedBy": {
+        "id": "emp-002",
+        "name": "Maria Clara S. Reyes"
+      },
+      "processedAt": "2024-12-16T10:00:00+08:00",
+      "approvedBy": {
+        "id": "emp-003",
+        "name": "Jose Antonio L. Santos"
+      },
+      "approvedAt": "2024-12-17T08:30:00+08:00"
+    },
+    {
+      "id": "pp-004",
+      "periodCode": "2024-12-A",
+      "periodType": "regular",
+      "startDate": "2024-12-01",
+      "endDate": "2024-12-15",
+      "cutoffDate": "2024-12-13",
+      "payDate": "2024-12-15",
+      "status": "closed",
+      "employeeCount": 231,
+      "processedCount": 231,
+      "totalGrossPay": 8756890.25,
+      "totalDeductions": 1751378.05,
+      "totalNetPay": 7005512.20,
+      "processedBy": {
+        "id": "emp-002",
+        "name": "Maria Clara S. Reyes"
+      },
+      "processedAt": "2024-12-13T16:45:00+08:00",
+      "approvedBy": {
+        "id": "emp-003",
+        "name": "Jose Antonio L. Santos"
+      },
+      "approvedAt": "2024-12-14T09:00:00+08:00"
+    }
+  ],
+  "payrollRecords": [
+    {
+      "id": "pr-001",
+      "payrollPeriodId": "pp-002",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "basicPay": 45000.00,
+      "daysWorked": 11,
+      "hoursWorked": 88,
+      "overtimeHours": 8.5,
+      "overtimePay": 4252.50,
+      "nightDiffHours": 0,
+      "nightDiffPay": 0,
+      "holidayPay": 6000.00,
+      "restDayPay": 0,
+      "allowances": 5000.00,
+      "grossPay": 60252.50,
+      "sssDeduction": 1125.00,
+      "philhealthDeduction": 1125.00,
+      "pagibigDeduction": 200.00,
+      "withholdingTax": 8547.81,
+      "loanDeductions": 2500.00,
+      "otherDeductions": 0,
+      "totalDeductions": 13497.81,
+      "netPay": 46754.69
+    },
+    {
+      "id": "pr-002",
+      "payrollPeriodId": "pp-002",
+      "employee": {
+        "id": "emp-002",
+        "employeeNumber": "2018-0012",
+        "fullName": "Maria Clara S. Reyes",
+        "department": "Finance",
+        "position": "Finance Manager"
+      },
+      "basicPay": 50000.00,
+      "daysWorked": 11,
+      "hoursWorked": 88,
+      "overtimeHours": 4,
+      "overtimePay": 2272.73,
+      "nightDiffHours": 0,
+      "nightDiffPay": 0,
+      "holidayPay": 6666.67,
+      "restDayPay": 0,
+      "allowances": 5000.00,
+      "grossPay": 63939.40,
+      "sssDeduction": 1125.00,
+      "philhealthDeduction": 1250.00,
+      "pagibigDeduction": 200.00,
+      "withholdingTax": 9856.41,
+      "loanDeductions": 0,
+      "otherDeductions": 500.00,
+      "totalDeductions": 12931.41,
+      "netPay": 51007.99
+    },
+    {
+      "id": "pr-003",
+      "payrollPeriodId": "pp-002",
+      "employee": {
+        "id": "emp-003",
+        "employeeNumber": "2020-0005",
+        "fullName": "Jose Antonio L. Santos",
+        "department": "Human Resources",
+        "position": "HR Manager"
+      },
+      "basicPay": 42000.00,
+      "daysWorked": 10,
+      "hoursWorked": 80,
+      "overtimeHours": 0,
+      "overtimePay": 0,
+      "nightDiffHours": 0,
+      "nightDiffPay": 0,
+      "holidayPay": 5600.00,
+      "restDayPay": 0,
+      "allowances": 4000.00,
+      "grossPay": 51600.00,
+      "sssDeduction": 1125.00,
+      "philhealthDeduction": 1050.00,
+      "pagibigDeduction": 200.00,
+      "withholdingTax": 6520.00,
+      "loanDeductions": 3000.00,
+      "otherDeductions": 0,
+      "totalDeductions": 11895.00,
+      "netPay": 39705.00
+    },
+    {
+      "id": "pr-004",
+      "payrollPeriodId": "pp-002",
+      "employee": {
+        "id": "emp-004",
+        "employeeNumber": "2017-0008",
+        "fullName": "Angela Patricia B. Lim",
+        "department": "Information Technology",
+        "position": "IT Manager"
+      },
+      "basicPay": 55000.00,
+      "daysWorked": 11,
+      "hoursWorked": 88,
+      "overtimeHours": 12,
+      "overtimePay": 7500.00,
+      "nightDiffHours": 6,
+      "nightDiffPay": 412.50,
+      "holidayPay": 7333.33,
+      "restDayPay": 0,
+      "allowances": 6000.00,
+      "grossPay": 76245.83,
+      "sssDeduction": 1125.00,
+      "philhealthDeduction": 1375.00,
+      "pagibigDeduction": 200.00,
+      "withholdingTax": 14174.17,
+      "loanDeductions": 0,
+      "otherDeductions": 0,
+      "totalDeductions": 16874.17,
+      "netPay": 59371.66
+    },
+    {
+      "id": "pr-005",
+      "payrollPeriodId": "pp-002",
+      "employee": {
+        "id": "emp-007",
+        "employeeNumber": "2022-0028",
+        "fullName": "Carlos F. Tan Jr.",
+        "department": "Information Technology",
+        "position": "Senior Software Developer"
+      },
+      "basicPay": 38000.00,
+      "daysWorked": 11,
+      "hoursWorked": 88,
+      "overtimeHours": 16,
+      "overtimePay": 6909.09,
+      "nightDiffHours": 8,
+      "nightDiffPay": 303.03,
+      "holidayPay": 5066.67,
+      "restDayPay": 0,
+      "allowances": 3500.00,
+      "grossPay": 53778.79,
+      "sssDeduction": 1080.00,
+      "philhealthDeduction": 950.00,
+      "pagibigDeduction": 200.00,
+      "withholdingTax": 6945.76,
+      "loanDeductions": 1850.00,
+      "otherDeductions": 0,
+      "totalDeductions": 11025.76,
+      "netPay": 42753.03
+    },
+    {
+      "id": "pr-006",
+      "payrollPeriodId": "pp-002",
+      "employee": {
+        "id": "emp-006",
+        "employeeNumber": "2023-0042",
+        "fullName": "Jennifer C. Villanueva",
+        "department": "Human Resources",
+        "position": "HR Specialist"
+      },
+      "basicPay": 22000.00,
+      "daysWorked": 11,
+      "hoursWorked": 88,
+      "overtimeHours": 2,
+      "overtimePay": 500.00,
+      "nightDiffHours": 0,
+      "nightDiffPay": 0,
+      "holidayPay": 2933.33,
+      "restDayPay": 0,
+      "allowances": 2000.00,
+      "grossPay": 27433.33,
+      "sssDeduction": 675.00,
+      "philhealthDeduction": 550.00,
+      "pagibigDeduction": 200.00,
+      "withholdingTax": 1629.17,
+      "loanDeductions": 0,
+      "otherDeductions": 0,
+      "totalDeductions": 3054.17,
+      "netPay": 24379.16
+    },
+    {
+      "id": "pr-007",
+      "payrollPeriodId": "pp-002",
+      "employee": {
+        "id": "emp-008",
+        "employeeNumber": "2019-0023",
+        "fullName": "Rosario A. Mendoza",
+        "department": "Finance",
+        "position": "Accountant"
+      },
+      "basicPay": 28000.00,
+      "daysWorked": 11,
+      "hoursWorked": 88,
+      "overtimeHours": 0,
+      "overtimePay": 0,
+      "nightDiffHours": 0,
+      "nightDiffPay": 0,
+      "holidayPay": 3733.33,
+      "restDayPay": 0,
+      "allowances": 2500.00,
+      "grossPay": 34233.33,
+      "sssDeduction": 810.00,
+      "philhealthDeduction": 700.00,
+      "pagibigDeduction": 200.00,
+      "withholdingTax": 2756.67,
+      "loanDeductions": 1500.00,
+      "otherDeductions": 0,
+      "totalDeductions": 5966.67,
+      "netPay": 28266.66
+    },
+    {
+      "id": "pr-008",
+      "payrollPeriodId": "pp-002",
+      "employee": {
+        "id": "emp-009",
+        "employeeNumber": "2020-0031",
+        "fullName": "Eduardo L. Ramos",
+        "department": "Operations",
+        "position": "Warehouse Supervisor"
+      },
+      "basicPay": 25000.00,
+      "daysWorked": 12,
+      "hoursWorked": 96,
+      "overtimeHours": 8,
+      "overtimePay": 2272.73,
+      "nightDiffHours": 0,
+      "nightDiffPay": 0,
+      "holidayPay": 3333.33,
+      "restDayPay": 1625.00,
+      "allowances": 2000.00,
+      "grossPay": 34231.06,
+      "sssDeduction": 765.00,
+      "philhealthDeduction": 625.00,
+      "pagibigDeduction": 200.00,
+      "withholdingTax": 2754.22,
+      "loanDeductions": 0,
+      "otherDeductions": 200.00,
+      "totalDeductions": 4544.22,
+      "netPay": 29686.84
+    }
+  ],
+  "compensations": [
+    {
+      "id": "comp-001",
+      "employeeId": "emp-001",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "basicSalary": 90000.00,
+      "payFrequency": "semi_monthly",
+      "payType": "fixed",
+      "hourlyRate": 431.82,
+      "dailyRate": 3461.54,
+      "bankName": "BDO Unibank",
+      "bankAccountNumber": "****5678",
+      "effectiveDate": "2024-07-01",
+      "isCurrent": true,
+      "salaryHistory": [
+        { "basicSalary": 85000.00, "effectiveDate": "2023-07-01", "reason": "Annual increase" },
+        { "basicSalary": 80000.00, "effectiveDate": "2022-01-01", "reason": "Promotion to Manager" },
+        { "basicSalary": 65000.00, "effectiveDate": "2019-03-15", "reason": "Initial hiring" }
+      ]
+    },
+    {
+      "id": "comp-002",
+      "employeeId": "emp-002",
+      "employee": {
+        "id": "emp-002",
+        "employeeNumber": "2018-0012",
+        "fullName": "Maria Clara S. Reyes",
+        "department": "Finance",
+        "position": "Finance Manager"
+      },
+      "basicSalary": 100000.00,
+      "payFrequency": "semi_monthly",
+      "payType": "fixed",
+      "hourlyRate": 480.77,
+      "dailyRate": 3846.15,
+      "bankName": "BPI",
+      "bankAccountNumber": "****1234",
+      "effectiveDate": "2024-01-01",
+      "isCurrent": true,
+      "salaryHistory": [
+        { "basicSalary": 90000.00, "effectiveDate": "2022-07-01", "reason": "Promotion to Manager" },
+        { "basicSalary": 75000.00, "effectiveDate": "2018-06-01", "reason": "Initial hiring" }
+      ]
+    },
+    {
+      "id": "comp-003",
+      "employeeId": "emp-007",
+      "employee": {
+        "id": "emp-007",
+        "employeeNumber": "2022-0028",
+        "fullName": "Carlos F. Tan Jr.",
+        "department": "Information Technology",
+        "position": "Senior Software Developer"
+      },
+      "basicSalary": 76000.00,
+      "payFrequency": "semi_monthly",
+      "payType": "fixed",
+      "hourlyRate": 365.38,
+      "dailyRate": 2923.08,
+      "bankName": "Metrobank",
+      "bankAccountNumber": "****9012",
+      "effectiveDate": "2024-07-01",
+      "isCurrent": true,
+      "salaryHistory": [
+        { "basicSalary": 65000.00, "effectiveDate": "2023-07-01", "reason": "Promotion to Senior" },
+        { "basicSalary": 55000.00, "effectiveDate": "2022-04-01", "reason": "Initial hiring" }
+      ]
+    }
+  ],
+  "loans": [
+    {
+      "id": "loan-001",
+      "employeeId": "emp-001",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz"
+      },
+      "loanType": "sss_salary",
+      "loanNumber": "SSS-SL-2024-001234",
+      "principalAmount": 50000.00,
+      "monthlyAmortization": 2500.00,
+      "totalPaid": 22500.00,
+      "remainingBalance": 27500.00,
+      "startDate": "2024-04-01",
+      "endDate": "2025-11-30",
+      "status": "active"
+    },
+    {
+      "id": "loan-002",
+      "employeeId": "emp-003",
+      "employee": {
+        "id": "emp-003",
+        "employeeNumber": "2020-0005",
+        "fullName": "Jose Antonio L. Santos"
+      },
+      "loanType": "pagibig_mpl",
+      "loanNumber": "HDMF-MPL-2024-005678",
+      "principalAmount": 80000.00,
+      "monthlyAmortization": 3000.00,
+      "totalPaid": 18000.00,
+      "remainingBalance": 62000.00,
+      "startDate": "2024-07-01",
+      "endDate": "2027-02-28",
+      "status": "active"
+    },
+    {
+      "id": "loan-003",
+      "employeeId": "emp-007",
+      "employee": {
+        "id": "emp-007",
+        "employeeNumber": "2022-0028",
+        "fullName": "Carlos F. Tan Jr."
+      },
+      "loanType": "company",
+      "loanNumber": "KHR-CL-2024-0015",
+      "principalAmount": 30000.00,
+      "monthlyAmortization": 1850.00,
+      "totalPaid": 14800.00,
+      "remainingBalance": 15200.00,
+      "startDate": "2024-05-01",
+      "endDate": "2025-09-30",
+      "status": "active"
+    },
+    {
+      "id": "loan-004",
+      "employeeId": "emp-008",
+      "employee": {
+        "id": "emp-008",
+        "employeeNumber": "2019-0023",
+        "fullName": "Rosario A. Mendoza"
+      },
+      "loanType": "sss_calamity",
+      "loanNumber": "SSS-CL-2024-009876",
+      "principalAmount": 20000.00,
+      "monthlyAmortization": 1500.00,
+      "totalPaid": 10500.00,
+      "remainingBalance": 9500.00,
+      "startDate": "2024-06-01",
+      "endDate": "2025-06-30",
+      "status": "active"
+    }
+  ],
+  "sssContributionTable": {
+    "effectiveDate": "2025-01-01",
+    "brackets": [
+      { "minSalary": 0, "maxSalary": 4249.99, "msc": 4000, "employeeShare": 180.00, "employerShare": 380.00, "ecContribution": 10.00 },
+      { "minSalary": 4250, "maxSalary": 4749.99, "msc": 4500, "employeeShare": 202.50, "employerShare": 427.50, "ecContribution": 10.00 },
+      { "minSalary": 4750, "maxSalary": 5249.99, "msc": 5000, "employeeShare": 225.00, "employerShare": 475.00, "ecContribution": 10.00 },
+      { "minSalary": 5250, "maxSalary": 5749.99, "msc": 5500, "employeeShare": 247.50, "employerShare": 522.50, "ecContribution": 10.00 },
+      { "minSalary": 5750, "maxSalary": 6249.99, "msc": 6000, "employeeShare": 270.00, "employerShare": 570.00, "ecContribution": 10.00 },
+      { "minSalary": 6250, "maxSalary": 6749.99, "msc": 6500, "employeeShare": 292.50, "employerShare": 617.50, "ecContribution": 10.00 },
+      { "minSalary": 6750, "maxSalary": 7249.99, "msc": 7000, "employeeShare": 315.00, "employerShare": 665.00, "ecContribution": 10.00 },
+      { "minSalary": 7250, "maxSalary": 7749.99, "msc": 7500, "employeeShare": 337.50, "employerShare": 712.50, "ecContribution": 10.00 },
+      { "minSalary": 7750, "maxSalary": 8249.99, "msc": 8000, "employeeShare": 360.00, "employerShare": 760.00, "ecContribution": 10.00 },
+      { "minSalary": 8250, "maxSalary": 8749.99, "msc": 8500, "employeeShare": 382.50, "employerShare": 807.50, "ecContribution": 10.00 },
+      { "minSalary": 8750, "maxSalary": 9249.99, "msc": 9000, "employeeShare": 405.00, "employerShare": 855.00, "ecContribution": 10.00 },
+      { "minSalary": 9250, "maxSalary": 9749.99, "msc": 9500, "employeeShare": 427.50, "employerShare": 902.50, "ecContribution": 10.00 },
+      { "minSalary": 9750, "maxSalary": 10249.99, "msc": 10000, "employeeShare": 450.00, "employerShare": 950.00, "ecContribution": 10.00 },
+      { "minSalary": 10250, "maxSalary": 10749.99, "msc": 10500, "employeeShare": 472.50, "employerShare": 997.50, "ecContribution": 10.00 },
+      { "minSalary": 10750, "maxSalary": 11249.99, "msc": 11000, "employeeShare": 495.00, "employerShare": 1045.00, "ecContribution": 10.00 },
+      { "minSalary": 11250, "maxSalary": 11749.99, "msc": 11500, "employeeShare": 517.50, "employerShare": 1092.50, "ecContribution": 10.00 },
+      { "minSalary": 11750, "maxSalary": 12249.99, "msc": 12000, "employeeShare": 540.00, "employerShare": 1140.00, "ecContribution": 10.00 },
+      { "minSalary": 12250, "maxSalary": 12749.99, "msc": 12500, "employeeShare": 562.50, "employerShare": 1187.50, "ecContribution": 10.00 },
+      { "minSalary": 12750, "maxSalary": 13249.99, "msc": 13000, "employeeShare": 585.00, "employerShare": 1235.00, "ecContribution": 10.00 },
+      { "minSalary": 13250, "maxSalary": 13749.99, "msc": 13500, "employeeShare": 607.50, "employerShare": 1282.50, "ecContribution": 10.00 },
+      { "minSalary": 13750, "maxSalary": 14249.99, "msc": 14000, "employeeShare": 630.00, "employerShare": 1330.00, "ecContribution": 10.00 },
+      { "minSalary": 14250, "maxSalary": 14749.99, "msc": 14500, "employeeShare": 652.50, "employerShare": 1377.50, "ecContribution": 30.00 },
+      { "minSalary": 14750, "maxSalary": 15249.99, "msc": 15000, "employeeShare": 675.00, "employerShare": 1425.00, "ecContribution": 30.00 },
+      { "minSalary": 15250, "maxSalary": 15749.99, "msc": 15500, "employeeShare": 697.50, "employerShare": 1472.50, "ecContribution": 30.00 },
+      { "minSalary": 15750, "maxSalary": 16249.99, "msc": 16000, "employeeShare": 720.00, "employerShare": 1520.00, "ecContribution": 30.00 },
+      { "minSalary": 16250, "maxSalary": 16749.99, "msc": 16500, "employeeShare": 742.50, "employerShare": 1567.50, "ecContribution": 30.00 },
+      { "minSalary": 16750, "maxSalary": 17249.99, "msc": 17000, "employeeShare": 765.00, "employerShare": 1615.00, "ecContribution": 30.00 },
+      { "minSalary": 17250, "maxSalary": 17749.99, "msc": 17500, "employeeShare": 787.50, "employerShare": 1662.50, "ecContribution": 30.00 },
+      { "minSalary": 17750, "maxSalary": 18249.99, "msc": 18000, "employeeShare": 810.00, "employerShare": 1710.00, "ecContribution": 30.00 },
+      { "minSalary": 18250, "maxSalary": 18749.99, "msc": 18500, "employeeShare": 832.50, "employerShare": 1757.50, "ecContribution": 30.00 },
+      { "minSalary": 18750, "maxSalary": 19249.99, "msc": 19000, "employeeShare": 855.00, "employerShare": 1805.00, "ecContribution": 30.00 },
+      { "minSalary": 19250, "maxSalary": 19749.99, "msc": 19500, "employeeShare": 877.50, "employerShare": 1852.50, "ecContribution": 30.00 },
+      { "minSalary": 19750, "maxSalary": 20249.99, "msc": 20000, "employeeShare": 900.00, "employerShare": 1900.00, "ecContribution": 30.00 },
+      { "minSalary": 20250, "maxSalary": 20749.99, "msc": 20500, "employeeShare": 922.50, "employerShare": 1947.50, "ecContribution": 30.00 },
+      { "minSalary": 20750, "maxSalary": 21249.99, "msc": 21000, "employeeShare": 945.00, "employerShare": 1995.00, "ecContribution": 30.00 },
+      { "minSalary": 21250, "maxSalary": 21749.99, "msc": 21500, "employeeShare": 967.50, "employerShare": 2042.50, "ecContribution": 30.00 },
+      { "minSalary": 21750, "maxSalary": 22249.99, "msc": 22000, "employeeShare": 990.00, "employerShare": 2090.00, "ecContribution": 30.00 },
+      { "minSalary": 22250, "maxSalary": 22749.99, "msc": 22500, "employeeShare": 1012.50, "employerShare": 2137.50, "ecContribution": 30.00 },
+      { "minSalary": 22750, "maxSalary": 23249.99, "msc": 23000, "employeeShare": 1035.00, "employerShare": 2185.00, "ecContribution": 30.00 },
+      { "minSalary": 23250, "maxSalary": 23749.99, "msc": 23500, "employeeShare": 1057.50, "employerShare": 2232.50, "ecContribution": 30.00 },
+      { "minSalary": 23750, "maxSalary": 24249.99, "msc": 24000, "employeeShare": 1080.00, "employerShare": 2280.00, "ecContribution": 30.00 },
+      { "minSalary": 24250, "maxSalary": 24749.99, "msc": 24500, "employeeShare": 1102.50, "employerShare": 2327.50, "ecContribution": 30.00 },
+      { "minSalary": 24750, "maxSalary": 25249.99, "msc": 25000, "employeeShare": 1125.00, "employerShare": 2375.00, "ecContribution": 30.00 },
+      { "minSalary": 25250, "maxSalary": null, "msc": 25000, "employeeShare": 1125.00, "employerShare": 2375.00, "ecContribution": 30.00 }
+    ]
+  },
+  "philhealthContributionTable": {
+    "effectiveDate": "2025-01-01",
+    "premiumRate": 0.05,
+    "incomeFloor": 10000,
+    "incomeCeiling": 100000,
+    "notes": "Premium is 5% of basic monthly salary, equally shared by employee and employer. Minimum base is ₱10,000 and maximum is ₱100,000."
+  },
+  "pagibigContributionTable": {
+    "effectiveDate": "2025-01-01",
+    "brackets": [
+      { "minSalary": 0, "maxSalary": 1500, "employeeRate": 0.01, "employerRate": 0.02 },
+      { "minSalary": 1500.01, "maxSalary": null, "employeeRate": 0.02, "employerRate": 0.02 }
+    ],
+    "maxMonthlyCompensation": 10000,
+    "notes": "Employee contributes 1% if salary is ≤₱1,500, otherwise 2%. Employer always contributes 2%. Maximum monthly compensation for computation is ₱10,000."
+  },
+  "taxTable": {
+    "effectiveDate": "2023-01-01",
+    "description": "TRAIN Law Revised Withholding Tax Table (Monthly)",
+    "brackets": [
+      { "minIncome": 0, "maxIncome": 20833, "baseTax": 0, "excessRate": 0, "description": "Exempt" },
+      { "minIncome": 20833, "maxIncome": 33332, "baseTax": 0, "excessRate": 0.15, "description": "15% of excess over ₱20,833" },
+      { "minIncome": 33333, "maxIncome": 66666, "baseTax": 1875, "excessRate": 0.20, "description": "₱1,875 + 20% of excess over ₱33,333" },
+      { "minIncome": 66667, "maxIncome": 166666, "baseTax": 8541.67, "excessRate": 0.25, "description": "₱8,541.67 + 25% of excess over ₱66,667" },
+      { "minIncome": 166667, "maxIncome": 666666, "baseTax": 33541.67, "excessRate": 0.30, "description": "₱33,541.67 + 30% of excess over ₱166,667" },
+      { "minIncome": 666667, "maxIncome": null, "baseTax": 183541.67, "excessRate": 0.35, "description": "₱183,541.67 + 35% of excess over ₱666,667" }
+    ]
+  },
+  "governmentReports": [
+    {
+      "id": "rpt-001",
+      "reportType": "bir_1601c",
+      "reportName": "BIR Form 1601-C",
+      "description": "Monthly Remittance Return of Income Taxes Withheld on Compensation",
+      "periodCovered": "December 2024",
+      "payrollPeriodId": "pp-002",
+      "status": "generated",
+      "generatedAt": "2025-01-02T10:30:00+08:00",
+      "generatedBy": {
+        "id": "emp-002",
+        "name": "Maria Clara S. Reyes"
+      },
+      "fileUrl": "/reports/bir/1601c-2024-12.pdf",
+      "totalAmount": 412567.89,
+      "dueDate": "2025-01-10"
+    },
+    {
+      "id": "rpt-002",
+      "reportType": "sss_r3",
+      "reportName": "SSS R3 Report",
+      "description": "Monthly Contribution Collection List",
+      "periodCovered": "December 2024",
+      "payrollPeriodId": "pp-002",
+      "status": "generated",
+      "generatedAt": "2025-01-02T10:35:00+08:00",
+      "generatedBy": {
+        "id": "emp-002",
+        "name": "Maria Clara S. Reyes"
+      },
+      "fileUrl": "/reports/sss/r3-2024-12.dat",
+      "totalAmount": 287654.00,
+      "dueDate": "2025-01-10"
+    },
+    {
+      "id": "rpt-003",
+      "reportType": "philhealth_er2",
+      "reportName": "PhilHealth ER2 Report",
+      "description": "Employer Remittance Report",
+      "periodCovered": "December 2024",
+      "payrollPeriodId": "pp-002",
+      "status": "generated",
+      "generatedAt": "2025-01-02T10:40:00+08:00",
+      "generatedBy": {
+        "id": "emp-002",
+        "name": "Maria Clara S. Reyes"
+      },
+      "fileUrl": "/reports/philhealth/er2-2024-12.csv",
+      "totalAmount": 198765.50,
+      "dueDate": "2025-01-10"
+    },
+    {
+      "id": "rpt-004",
+      "reportType": "pagibig_mcrf",
+      "reportName": "Pag-IBIG MCRF",
+      "description": "Monthly Contribution Remittance Form",
+      "periodCovered": "December 2024",
+      "payrollPeriodId": "pp-002",
+      "status": "submitted",
+      "generatedAt": "2025-01-02T10:45:00+08:00",
+      "generatedBy": {
+        "id": "emp-002",
+        "name": "Maria Clara S. Reyes"
+      },
+      "submittedAt": "2025-01-03T09:00:00+08:00",
+      "fileUrl": "/reports/pagibig/mcrf-2024-12.xlsx",
+      "totalAmount": 92400.00,
+      "dueDate": "2025-01-10"
+    },
+    {
+      "id": "rpt-005",
+      "reportType": "bir_2316",
+      "reportName": "BIR Form 2316",
+      "description": "Certificate of Compensation Payment/Tax Withheld",
+      "periodCovered": "Year 2024",
+      "payrollPeriodId": null,
+      "status": "pending",
+      "generatedAt": null,
+      "generatedBy": null,
+      "fileUrl": null,
+      "totalAmount": null,
+      "dueDate": "2025-01-31"
+    },
+    {
+      "id": "rpt-006",
+      "reportType": "bir_1604cf",
+      "reportName": "BIR Form 1604-CF",
+      "description": "Annual Information Return of Income Taxes Withheld on Compensation",
+      "periodCovered": "Year 2024",
+      "payrollPeriodId": null,
+      "status": "pending",
+      "generatedAt": null,
+      "generatedBy": null,
+      "fileUrl": null,
+      "totalAmount": null,
+      "dueDate": "2025-01-31"
+    }
+  ]
+}

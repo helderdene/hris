@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Enums\PagibigReportType;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\GeneratePagibigReportRequest;
+use App\Services\Reports\PagibigReportService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+
+/**
+ * API controller for Pag-IBIG compliance report generation.
+ *
+ * Handles preview, summary, and file generation endpoints.
+ */
+class PagibigReportController extends Controller
+{
+    public function __construct(protected PagibigReportService $reportService) {}
+
+    /**
+     * Get available periods for report generation.
+     */
+    public function periods(): JsonResponse
+    {
+        Gate::authorize('can-manage-organization');
+
+        $periods = $this->reportService->getAvailablePeriods();
+
+        return response()->json($periods);
+    }
+
+    /**
+     * Preview report data (limited rows for UI display).
+     */
+    public function preview(Request $request): JsonResponse
+    {
+        Gate::authorize('can-manage-organization');
+
+        $validated = $request->validate([
+            'report_type' => ['required', 'string'],
+            'year' => ['required', 'integer'],
+            'month' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'department_ids' => ['nullable', 'array'],
+            'department_ids.*' => ['integer'],
+        ]);
+
+        $reportType = PagibigReportType::tryFrom($validated['report_type']);
+
+        if (! $reportType) {
+            return response()->json(['message' => 'Invalid report type'], 422);
+        }
+
+        $data = $this->reportService->preview(
+            reportType: $reportType,
+            year: $validated['year'],
+            month: $validated['month'] ?? null,
+            quarter: null,
+            departmentIds: $validated['department_ids'] ?? null,
+            limit: 50
+        );
+
+        return response()->json([
+            'data' => $data['data']->values(),
+            'totals' => $data['totals'],
+            'preview_limit' => 50,
+        ]);
+    }
+
+    /**
+     * Get summary totals for a report.
+     */
+    public function summary(Request $request): JsonResponse
+    {
+        Gate::authorize('can-manage-organization');
+
+        $validated = $request->validate([
+            'report_type' => ['required', 'string'],
+            'year' => ['required', 'integer'],
+            'month' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'department_ids' => ['nullable', 'array'],
+            'department_ids.*' => ['integer'],
+        ]);
+
+        $reportType = PagibigReportType::tryFrom($validated['report_type']);
+
+        if (! $reportType) {
+            return response()->json(['message' => 'Invalid report type'], 422);
+        }
+
+        $summary = $this->reportService->summary(
+            reportType: $reportType,
+            year: $validated['year'],
+            month: $validated['month'] ?? null,
+            quarter: null,
+            departmentIds: $validated['department_ids'] ?? null
+        );
+
+        return response()->json($summary);
+    }
+
+    /**
+     * Generate and download a report file.
+     */
+    public function generate(GeneratePagibigReportRequest $request): StreamedResponse
+    {
+        $validated = $request->validated();
+
+        $result = $this->reportService->generate(
+            reportType: $request->getReportType(),
+            format: $validated['format'],
+            year: $validated['year'],
+            month: $validated['month'] ?? null,
+            quarter: null,
+            departmentIds: $validated['department_ids'] ?? null
+        );
+
+        return response()->streamDownload(
+            function () use ($result) {
+                echo $result['content'];
+            },
+            $result['filename'],
+            [
+                'Content-Type' => $result['contentType'],
+                'Content-Disposition' => 'attachment; filename="'.$result['filename'].'"',
+                'X-Filename' => $result['filename'],
+                'Access-Control-Expose-Headers' => 'Content-Disposition, X-Filename',
+            ]
+        );
+    }
+}

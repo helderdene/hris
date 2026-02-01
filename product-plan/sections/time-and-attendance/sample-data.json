@@ -1,0 +1,1096 @@
+{
+  "_meta": {
+    "models": {
+      "workSchedules": "A work schedule defines the expected working hours, shift patterns, and rest days for employees. Includes configurations for fixed, flexible, shifting, and compressed workweek arrangements.",
+      "scheduleDetails": "Day-by-day time configuration within a work schedule, specifying time in, time out, break times, and whether a day is a rest day.",
+      "attendanceLogs": "Raw biometric clock events captured from facial recognition devices. Each log records the exact timestamp, verification method, confidence score, and optionally a captured photo.",
+      "dailyTimeRecords": "Processed daily attendance summaries computed from raw logs. Shows time in/out, late minutes, undertime, overtime, night differential, and day type classification.",
+      "biometricDevices": "Registered MQTT-enabled facial recognition devices used for attendance capture. Tracks device status, location, and sync information.",
+      "dtrCorrections": "Correction requests submitted when attendance logs are missing or incorrect. Goes through an approval workflow.",
+      "overtimeRequests": "Pre-approval requests for planned overtime work. Requires supervisor approval before the overtime is rendered.",
+      "attendanceStats": "Real-time dashboard statistics showing attendance KPIs like present count, late arrivals, absences, and device status."
+    },
+    "relationships": [
+      "Each WorkSchedule has multiple ScheduleDetails (one per day of the week)",
+      "Employees are assigned to a WorkSchedule",
+      "AttendanceLogs are captured by a BiometricDevice and belong to an Employee",
+      "DailyTimeRecords are computed from AttendanceLogs for each Employee",
+      "DtrCorrections reference a specific DailyTimeRecord and Employee",
+      "OvertimeRequests belong to an Employee and reference a work date",
+      "BiometricDevices are assigned to a WorkLocation"
+    ]
+  },
+  "attendanceStats": {
+    "date": "2025-01-06",
+    "totalEmployees": 231,
+    "presentToday": 198,
+    "lateToday": 12,
+    "absentToday": 8,
+    "onLeaveToday": 13,
+    "pendingCorrections": 5,
+    "pendingOvertimeRequests": 3,
+    "devicesOnline": 5,
+    "devicesOffline": 1,
+    "recentActivity": [
+      {
+        "employeeId": "emp-007",
+        "employeeName": "Carlos F. Tan Jr.",
+        "action": "time_in",
+        "time": "2025-01-06T08:02:00+08:00",
+        "device": "MNL-LOBBY-01"
+      },
+      {
+        "employeeId": "emp-006",
+        "employeeName": "Jennifer C. Villanueva",
+        "action": "time_in",
+        "time": "2025-01-06T07:58:00+08:00",
+        "device": "MNL-LOBBY-01"
+      },
+      {
+        "employeeId": "emp-003",
+        "employeeName": "Jose Antonio L. Santos",
+        "action": "time_in",
+        "time": "2025-01-06T07:45:00+08:00",
+        "device": "MNL-LOBBY-01"
+      },
+      {
+        "employeeId": "emp-001",
+        "employeeName": "Ricardo M. Dela Cruz",
+        "action": "time_in",
+        "time": "2025-01-06T07:32:00+08:00",
+        "device": "MNL-LOBBY-01"
+      },
+      {
+        "employeeId": "emp-008",
+        "employeeName": "Rosario A. Mendoza",
+        "action": "time_in",
+        "time": "2025-01-06T07:55:00+08:00",
+        "device": "CEB-MAIN-01"
+      }
+    ],
+    "departmentAttendance": [
+      { "department": "Operations", "present": 89, "total": 98 },
+      { "department": "Finance", "present": 22, "total": 24 },
+      { "department": "Human Resources", "present": 16, "total": 18 },
+      { "department": "Information Technology", "present": 30, "total": 32 },
+      { "department": "Sales & Marketing", "present": 41, "total": 45 }
+    ]
+  },
+  "workSchedules": [
+    {
+      "id": "sched-001",
+      "code": "REG-8AM",
+      "name": "Regular Office Hours",
+      "scheduleType": "fixed",
+      "workHoursPerDay": 8,
+      "workDaysPerWeek": 5,
+      "gracePeriodMinutes": 15,
+      "description": "Standard 8AM-5PM office schedule with 1-hour lunch break",
+      "employeeCount": 156,
+      "isActive": true,
+      "details": [
+        { "dayOfWeek": 0, "dayName": "Sunday", "isRestDay": true, "timeIn": null, "timeOut": null, "breakStart": null, "breakEnd": null, "breakMinutes": 0 },
+        { "dayOfWeek": 1, "dayName": "Monday", "isRestDay": false, "timeIn": "08:00", "timeOut": "17:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 2, "dayName": "Tuesday", "isRestDay": false, "timeIn": "08:00", "timeOut": "17:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 3, "dayName": "Wednesday", "isRestDay": false, "timeIn": "08:00", "timeOut": "17:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 4, "dayName": "Thursday", "isRestDay": false, "timeIn": "08:00", "timeOut": "17:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 5, "dayName": "Friday", "isRestDay": false, "timeIn": "08:00", "timeOut": "17:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 6, "dayName": "Saturday", "isRestDay": true, "timeIn": null, "timeOut": null, "breakStart": null, "breakEnd": null, "breakMinutes": 0 }
+      ]
+    },
+    {
+      "id": "sched-002",
+      "code": "FLEX-CORE",
+      "name": "Flexible with Core Hours",
+      "scheduleType": "flexible",
+      "workHoursPerDay": 8,
+      "workDaysPerWeek": 5,
+      "gracePeriodMinutes": 0,
+      "description": "Flexible start between 7AM-10AM, must complete 8 hours. Core hours 10AM-3PM required.",
+      "employeeCount": 42,
+      "isActive": true,
+      "details": [
+        { "dayOfWeek": 0, "dayName": "Sunday", "isRestDay": true, "timeIn": null, "timeOut": null, "breakStart": null, "breakEnd": null, "breakMinutes": 0 },
+        { "dayOfWeek": 1, "dayName": "Monday", "isRestDay": false, "timeIn": "07:00", "timeOut": "19:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 2, "dayName": "Tuesday", "isRestDay": false, "timeIn": "07:00", "timeOut": "19:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 3, "dayName": "Wednesday", "isRestDay": false, "timeIn": "07:00", "timeOut": "19:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 4, "dayName": "Thursday", "isRestDay": false, "timeIn": "07:00", "timeOut": "19:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 5, "dayName": "Friday", "isRestDay": false, "timeIn": "07:00", "timeOut": "19:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 6, "dayName": "Saturday", "isRestDay": true, "timeIn": null, "timeOut": null, "breakStart": null, "breakEnd": null, "breakMinutes": 0 }
+      ]
+    },
+    {
+      "id": "sched-003",
+      "code": "SHIFT-A",
+      "name": "Morning Shift (6AM-2PM)",
+      "scheduleType": "shifting",
+      "workHoursPerDay": 8,
+      "workDaysPerWeek": 6,
+      "gracePeriodMinutes": 10,
+      "description": "Early morning production shift for manufacturing operations",
+      "employeeCount": 45,
+      "isActive": true,
+      "details": [
+        { "dayOfWeek": 0, "dayName": "Sunday", "isRestDay": true, "timeIn": null, "timeOut": null, "breakStart": null, "breakEnd": null, "breakMinutes": 0 },
+        { "dayOfWeek": 1, "dayName": "Monday", "isRestDay": false, "timeIn": "06:00", "timeOut": "14:00", "breakStart": "10:00", "breakEnd": "10:30", "breakMinutes": 30 },
+        { "dayOfWeek": 2, "dayName": "Tuesday", "isRestDay": false, "timeIn": "06:00", "timeOut": "14:00", "breakStart": "10:00", "breakEnd": "10:30", "breakMinutes": 30 },
+        { "dayOfWeek": 3, "dayName": "Wednesday", "isRestDay": false, "timeIn": "06:00", "timeOut": "14:00", "breakStart": "10:00", "breakEnd": "10:30", "breakMinutes": 30 },
+        { "dayOfWeek": 4, "dayName": "Thursday", "isRestDay": false, "timeIn": "06:00", "timeOut": "14:00", "breakStart": "10:00", "breakEnd": "10:30", "breakMinutes": 30 },
+        { "dayOfWeek": 5, "dayName": "Friday", "isRestDay": false, "timeIn": "06:00", "timeOut": "14:00", "breakStart": "10:00", "breakEnd": "10:30", "breakMinutes": 30 },
+        { "dayOfWeek": 6, "dayName": "Saturday", "isRestDay": false, "timeIn": "06:00", "timeOut": "14:00", "breakStart": "10:00", "breakEnd": "10:30", "breakMinutes": 30 }
+      ]
+    },
+    {
+      "id": "sched-004",
+      "code": "CWW-4DAY",
+      "name": "Compressed 4-Day Workweek",
+      "scheduleType": "compressed",
+      "workHoursPerDay": 10,
+      "workDaysPerWeek": 4,
+      "gracePeriodMinutes": 15,
+      "description": "10-hour days Monday to Thursday, Friday off",
+      "employeeCount": 18,
+      "isActive": true,
+      "details": [
+        { "dayOfWeek": 0, "dayName": "Sunday", "isRestDay": true, "timeIn": null, "timeOut": null, "breakStart": null, "breakEnd": null, "breakMinutes": 0 },
+        { "dayOfWeek": 1, "dayName": "Monday", "isRestDay": false, "timeIn": "07:00", "timeOut": "18:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 2, "dayName": "Tuesday", "isRestDay": false, "timeIn": "07:00", "timeOut": "18:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 3, "dayName": "Wednesday", "isRestDay": false, "timeIn": "07:00", "timeOut": "18:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 4, "dayName": "Thursday", "isRestDay": false, "timeIn": "07:00", "timeOut": "18:00", "breakStart": "12:00", "breakEnd": "13:00", "breakMinutes": 60 },
+        { "dayOfWeek": 5, "dayName": "Friday", "isRestDay": true, "timeIn": null, "timeOut": null, "breakStart": null, "breakEnd": null, "breakMinutes": 0 },
+        { "dayOfWeek": 6, "dayName": "Saturday", "isRestDay": true, "timeIn": null, "timeOut": null, "breakStart": null, "breakEnd": null, "breakMinutes": 0 }
+      ]
+    }
+  ],
+  "biometricDevices": [
+    {
+      "id": "dev-001",
+      "deviceCode": "MNL-LOBBY-01",
+      "name": "Manila HQ Main Lobby",
+      "model": "ZKTeco SpeedFace V5L",
+      "serialNumber": "ZKSF5L-2024-001234",
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "ipAddress": "192.168.1.101",
+      "mqttTopic": "hrms/tenant-001/devices/dev-001/attendance",
+      "status": "online",
+      "lastSyncAt": "2025-01-06T08:05:32+08:00",
+      "employeeCount": 156,
+      "firmwareVersion": "3.2.1",
+      "installedAt": "2024-03-15",
+      "isActive": true
+    },
+    {
+      "id": "dev-002",
+      "deviceCode": "MNL-PARKING-01",
+      "name": "Manila HQ Parking Entrance",
+      "model": "ZKTeco SpeedFace V5L",
+      "serialNumber": "ZKSF5L-2024-001235",
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "ipAddress": "192.168.1.102",
+      "mqttTopic": "hrms/tenant-001/devices/dev-002/attendance",
+      "status": "online",
+      "lastSyncAt": "2025-01-06T08:03:18+08:00",
+      "employeeCount": 156,
+      "firmwareVersion": "3.2.1",
+      "installedAt": "2024-03-15",
+      "isActive": true
+    },
+    {
+      "id": "dev-003",
+      "deviceCode": "CEB-MAIN-01",
+      "name": "Cebu Branch Main Entrance",
+      "model": "Hikvision DS-K1T671M",
+      "serialNumber": "HIK671M-2024-005678",
+      "workLocation": {
+        "id": "loc-002",
+        "name": "Cebu Branch"
+      },
+      "ipAddress": "192.168.2.101",
+      "mqttTopic": "hrms/tenant-001/devices/dev-003/attendance",
+      "status": "online",
+      "lastSyncAt": "2025-01-06T08:01:45+08:00",
+      "employeeCount": 42,
+      "firmwareVersion": "2.1.5",
+      "installedAt": "2024-05-20",
+      "isActive": true
+    },
+    {
+      "id": "dev-004",
+      "deviceCode": "DVO-MAIN-01",
+      "name": "Davao Branch Main Entrance",
+      "model": "Hikvision DS-K1T671M",
+      "serialNumber": "HIK671M-2024-005679",
+      "workLocation": {
+        "id": "loc-003",
+        "name": "Davao Branch"
+      },
+      "ipAddress": "192.168.3.101",
+      "mqttTopic": "hrms/tenant-001/devices/dev-004/attendance",
+      "status": "online",
+      "lastSyncAt": "2025-01-06T07:58:22+08:00",
+      "employeeCount": 33,
+      "firmwareVersion": "2.1.5",
+      "installedAt": "2024-06-10",
+      "isActive": true
+    },
+    {
+      "id": "dev-005",
+      "deviceCode": "MNL-FLOOR2-01",
+      "name": "Manila HQ 2nd Floor",
+      "model": "ZKTeco ProFace X",
+      "serialNumber": "ZKPFX-2024-002345",
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "ipAddress": "192.168.1.103",
+      "mqttTopic": "hrms/tenant-001/devices/dev-005/attendance",
+      "status": "online",
+      "lastSyncAt": "2025-01-06T08:04:11+08:00",
+      "employeeCount": 78,
+      "firmwareVersion": "4.0.2",
+      "installedAt": "2024-08-01",
+      "isActive": true
+    },
+    {
+      "id": "dev-006",
+      "deviceCode": "MNL-WAREHOUSE-01",
+      "name": "Manila Warehouse",
+      "model": "ZKTeco MB460",
+      "serialNumber": "ZKMB460-2024-003456",
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "ipAddress": "192.168.1.150",
+      "mqttTopic": "hrms/tenant-001/devices/dev-006/attendance",
+      "status": "offline",
+      "lastSyncAt": "2025-01-05T18:32:00+08:00",
+      "employeeCount": 45,
+      "firmwareVersion": "2.8.3",
+      "installedAt": "2024-04-22",
+      "isActive": true
+    }
+  ],
+  "attendanceLogs": [
+    {
+      "id": "log-001",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-06T07:32:15+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 98.5,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-001-in.jpg",
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-002",
+      "employee": {
+        "id": "emp-002",
+        "employeeNumber": "2018-0012",
+        "fullName": "Maria Clara S. Reyes",
+        "department": "Finance",
+        "position": "Finance Manager"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-06T07:48:22+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 99.1,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-002-in.jpg",
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-003",
+      "employee": {
+        "id": "emp-003",
+        "employeeNumber": "2020-0005",
+        "fullName": "Jose Antonio L. Santos",
+        "department": "Human Resources",
+        "position": "HR Manager"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-06T07:45:08+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 97.8,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-003-in.jpg",
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-004",
+      "employee": {
+        "id": "emp-004",
+        "employeeNumber": "2017-0008",
+        "fullName": "Angela Patricia B. Lim",
+        "department": "Information Technology",
+        "position": "IT Manager"
+      },
+      "device": {
+        "id": "dev-002",
+        "code": "MNL-PARKING-01",
+        "name": "Manila HQ Parking Entrance"
+      },
+      "logDatetime": "2025-01-06T07:55:33+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 98.9,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-004-in.jpg",
+      "latitude": 14.5545,
+      "longitude": 121.0242
+    },
+    {
+      "id": "log-005",
+      "employee": {
+        "id": "emp-006",
+        "employeeNumber": "2023-0042",
+        "fullName": "Jennifer C. Villanueva",
+        "department": "Human Resources",
+        "position": "HR Specialist"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-06T07:58:47+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 96.2,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-006-in.jpg",
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-006",
+      "employee": {
+        "id": "emp-007",
+        "employeeNumber": "2022-0028",
+        "fullName": "Carlos F. Tan Jr.",
+        "department": "Information Technology",
+        "position": "Senior Software Developer"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-06T08:02:18+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 99.3,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-007-in.jpg",
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-007",
+      "employee": {
+        "id": "emp-008",
+        "employeeNumber": "2019-0023",
+        "fullName": "Rosario A. Mendoza",
+        "department": "Finance",
+        "position": "Accountant"
+      },
+      "device": {
+        "id": "dev-003",
+        "code": "CEB-MAIN-01",
+        "name": "Cebu Branch Main Entrance"
+      },
+      "logDatetime": "2025-01-06T07:55:12+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 97.4,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-008-in.jpg",
+      "latitude": 10.3157,
+      "longitude": 123.8854
+    },
+    {
+      "id": "log-008",
+      "employee": {
+        "id": "emp-009",
+        "employeeNumber": "2020-0031",
+        "fullName": "Eduardo L. Ramos",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "device": {
+        "id": "dev-004",
+        "code": "DVO-MAIN-01",
+        "name": "Davao Branch Main Entrance"
+      },
+      "logDatetime": "2025-01-06T07:28:44+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 98.1,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-009-in.jpg",
+      "latitude": 7.0731,
+      "longitude": 125.6128
+    },
+    {
+      "id": "log-009",
+      "employee": {
+        "id": "emp-005",
+        "employeeNumber": "2021-0015",
+        "fullName": "Miguel Angelo R. Garcia",
+        "department": "Sales & Marketing",
+        "position": "Sales Manager"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-06T08:22:55+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 95.8,
+      "photoUrl": "/photos/attendance/2025-01-06/emp-005-in.jpg",
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-010",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-03T07:28:11+08:00",
+      "logType": "time_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 98.7,
+      "photoUrl": null,
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-011",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-03T18:15:42+08:00",
+      "logType": "time_out",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 97.9,
+      "photoUrl": null,
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-012",
+      "employee": {
+        "id": "emp-007",
+        "employeeNumber": "2022-0028",
+        "fullName": "Carlos F. Tan Jr.",
+        "department": "Information Technology",
+        "position": "Senior Software Developer"
+      },
+      "device": null,
+      "logDatetime": "2025-01-02T08:05:00+08:00",
+      "logType": "time_in",
+      "source": "manual",
+      "verificationMethod": null,
+      "confidenceScore": null,
+      "photoUrl": null,
+      "latitude": null,
+      "longitude": null
+    },
+    {
+      "id": "log-013",
+      "employee": {
+        "id": "emp-006",
+        "employeeNumber": "2023-0042",
+        "fullName": "Jennifer C. Villanueva",
+        "department": "Human Resources",
+        "position": "HR Specialist"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-03T12:02:15+08:00",
+      "logType": "break_out",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 96.8,
+      "photoUrl": null,
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    },
+    {
+      "id": "log-014",
+      "employee": {
+        "id": "emp-006",
+        "employeeNumber": "2023-0042",
+        "fullName": "Jennifer C. Villanueva",
+        "department": "Human Resources",
+        "position": "HR Specialist"
+      },
+      "device": {
+        "id": "dev-001",
+        "code": "MNL-LOBBY-01",
+        "name": "Manila HQ Main Lobby"
+      },
+      "logDatetime": "2025-01-03T13:05:33+08:00",
+      "logType": "break_in",
+      "source": "device",
+      "verificationMethod": "face",
+      "confidenceScore": 97.1,
+      "photoUrl": null,
+      "latitude": 14.5547,
+      "longitude": 121.0244
+    }
+  ],
+  "dailyTimeRecords": [
+    {
+      "id": "dtr-001",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "workDate": "2025-01-06",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": "2025-01-06T07:32:15+08:00",
+      "actualTimeOut": null,
+      "lateMinutes": 0,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": null,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": null
+    },
+    {
+      "id": "dtr-002",
+      "employee": {
+        "id": "emp-002",
+        "employeeNumber": "2018-0012",
+        "fullName": "Maria Clara S. Reyes",
+        "department": "Finance",
+        "position": "Finance Manager"
+      },
+      "workDate": "2025-01-06",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": "2025-01-06T07:48:22+08:00",
+      "actualTimeOut": null,
+      "lateMinutes": 0,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": null,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": null
+    },
+    {
+      "id": "dtr-003",
+      "employee": {
+        "id": "emp-005",
+        "employeeNumber": "2021-0015",
+        "fullName": "Miguel Angelo R. Garcia",
+        "department": "Sales & Marketing",
+        "position": "Sales Manager"
+      },
+      "workDate": "2025-01-06",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": "2025-01-06T08:22:55+08:00",
+      "actualTimeOut": null,
+      "lateMinutes": 8,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": null,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": "Late arrival - 8 minutes past grace period"
+    },
+    {
+      "id": "dtr-004",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "workDate": "2025-01-03",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": "2025-01-03T07:28:11+08:00",
+      "actualTimeOut": "2025-01-03T18:15:42+08:00",
+      "lateMinutes": 0,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 75,
+      "nightDiffMinutes": 0,
+      "hoursWorked": 9.79,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": "Overtime rendered - 1hr 15min"
+    },
+    {
+      "id": "dtr-005",
+      "employee": {
+        "id": "emp-002",
+        "employeeNumber": "2018-0012",
+        "fullName": "Maria Clara S. Reyes",
+        "department": "Finance",
+        "position": "Finance Manager"
+      },
+      "workDate": "2025-01-03",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": "2025-01-03T07:52:18+08:00",
+      "actualTimeOut": "2025-01-03T17:05:33+08:00",
+      "lateMinutes": 0,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": 8.22,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": null
+    },
+    {
+      "id": "dtr-006",
+      "employee": {
+        "id": "emp-007",
+        "employeeNumber": "2022-0028",
+        "fullName": "Carlos F. Tan Jr.",
+        "department": "Information Technology",
+        "position": "Senior Software Developer"
+      },
+      "workDate": "2025-01-03",
+      "schedule": {
+        "id": "sched-002",
+        "name": "Flexible with Core Hours"
+      },
+      "expectedTimeIn": "07:00",
+      "expectedTimeOut": "19:00",
+      "actualTimeIn": "2025-01-03T09:15:22+08:00",
+      "actualTimeOut": "2025-01-03T20:32:45+08:00",
+      "lateMinutes": 0,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 77,
+      "nightDiffMinutes": 32,
+      "hoursWorked": 10.29,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": "Night differential: 32 minutes (after 10PM)"
+    },
+    {
+      "id": "dtr-007",
+      "employee": {
+        "id": "emp-006",
+        "employeeNumber": "2023-0042",
+        "fullName": "Jennifer C. Villanueva",
+        "department": "Human Resources",
+        "position": "HR Specialist"
+      },
+      "workDate": "2025-01-03",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": "2025-01-03T08:05:44+08:00",
+      "actualTimeOut": "2025-01-03T16:45:12+08:00",
+      "lateMinutes": 0,
+      "undertimeMinutes": 15,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": 7.66,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": "Undertime: 15 minutes"
+    },
+    {
+      "id": "dtr-008",
+      "employee": {
+        "id": "emp-008",
+        "employeeNumber": "2019-0023",
+        "fullName": "Rosario A. Mendoza",
+        "department": "Finance",
+        "position": "Accountant"
+      },
+      "workDate": "2025-01-03",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": null,
+      "actualTimeOut": null,
+      "lateMinutes": 0,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": 0,
+      "dayType": "regular",
+      "status": "leave",
+      "remarks": "On approved vacation leave"
+    },
+    {
+      "id": "dtr-009",
+      "employee": {
+        "id": "emp-009",
+        "employeeNumber": "2020-0031",
+        "fullName": "Eduardo L. Ramos",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "workDate": "2025-01-03",
+      "schedule": {
+        "id": "sched-003",
+        "name": "Morning Shift (6AM-2PM)"
+      },
+      "expectedTimeIn": "06:00",
+      "expectedTimeOut": "14:00",
+      "actualTimeIn": "2025-01-03T05:52:11+08:00",
+      "actualTimeOut": "2025-01-03T14:08:33+08:00",
+      "lateMinutes": 0,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": 7.77,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": null
+    },
+    {
+      "id": "dtr-010",
+      "employee": {
+        "id": "emp-003",
+        "employeeNumber": "2020-0005",
+        "fullName": "Jose Antonio L. Santos",
+        "department": "Human Resources",
+        "position": "HR Manager"
+      },
+      "workDate": "2025-01-02",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": "2025-01-02T08:35:22+08:00",
+      "actualTimeOut": "2025-01-02T17:12:45+08:00",
+      "lateMinutes": 20,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": 7.62,
+      "dayType": "regular",
+      "status": "present",
+      "remarks": "Late arrival - traffic incident on EDSA"
+    },
+    {
+      "id": "dtr-011",
+      "employee": {
+        "id": "emp-004",
+        "employeeNumber": "2017-0008",
+        "fullName": "Angela Patricia B. Lim",
+        "department": "Information Technology",
+        "position": "IT Manager"
+      },
+      "workDate": "2025-01-01",
+      "schedule": {
+        "id": "sched-001",
+        "name": "Regular Office Hours"
+      },
+      "expectedTimeIn": "08:00",
+      "expectedTimeOut": "17:00",
+      "actualTimeIn": null,
+      "actualTimeOut": null,
+      "lateMinutes": 0,
+      "undertimeMinutes": 0,
+      "overtimeMinutes": 0,
+      "nightDiffMinutes": 0,
+      "hoursWorked": 0,
+      "dayType": "regular_holiday",
+      "status": "holiday",
+      "remarks": "New Year's Day - Regular Holiday"
+    }
+  ],
+  "dtrCorrections": [
+    {
+      "id": "corr-001",
+      "employee": {
+        "id": "emp-007",
+        "employeeNumber": "2022-0028",
+        "fullName": "Carlos F. Tan Jr.",
+        "department": "Information Technology",
+        "position": "Senior Software Developer"
+      },
+      "workDate": "2025-01-02",
+      "correctionType": "missing_time_in",
+      "requestedTimeIn": "08:05",
+      "requestedTimeOut": null,
+      "reason": "Forgot to clock in at the biometric device. I entered through the parking entrance which doesn't have a device. Attached is my laptop login timestamp showing 8:07 AM.",
+      "attachmentUrl": "/documents/corrections/corr-001-laptop-log.png",
+      "status": "pending",
+      "requestedAt": "2025-01-03T09:15:00+08:00",
+      "requestedBy": {
+        "id": "emp-007",
+        "name": "Carlos F. Tan Jr."
+      },
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "reviewRemarks": null
+    },
+    {
+      "id": "corr-002",
+      "employee": {
+        "id": "emp-006",
+        "employeeNumber": "2023-0042",
+        "fullName": "Jennifer C. Villanueva",
+        "department": "Human Resources",
+        "position": "HR Specialist"
+      },
+      "workDate": "2025-01-03",
+      "correctionType": "undertime_justification",
+      "requestedTimeIn": null,
+      "requestedTimeOut": "17:00",
+      "reason": "Left early at 4:45 PM due to doctor's appointment. Medical certificate attached. Requesting to adjust undertime to approved.",
+      "attachmentUrl": "/documents/corrections/corr-002-med-cert.pdf",
+      "status": "approved",
+      "requestedAt": "2025-01-03T17:30:00+08:00",
+      "requestedBy": {
+        "id": "emp-006",
+        "name": "Jennifer C. Villanueva"
+      },
+      "reviewedAt": "2025-01-04T10:22:00+08:00",
+      "reviewedBy": {
+        "id": "emp-003",
+        "name": "Jose Antonio L. Santos"
+      },
+      "reviewRemarks": "Approved. Medical certificate verified."
+    },
+    {
+      "id": "corr-003",
+      "employee": {
+        "id": "emp-003",
+        "employeeNumber": "2020-0005",
+        "fullName": "Jose Antonio L. Santos",
+        "department": "Human Resources",
+        "position": "HR Manager"
+      },
+      "workDate": "2025-01-02",
+      "correctionType": "late_justification",
+      "requestedTimeIn": "08:00",
+      "requestedTimeOut": null,
+      "reason": "Arrived late due to major traffic incident on EDSA. Multiple news reports confirm the accident near Ortigas. Requesting late arrival to be excused.",
+      "attachmentUrl": null,
+      "status": "pending",
+      "requestedAt": "2025-01-02T17:45:00+08:00",
+      "requestedBy": {
+        "id": "emp-003",
+        "name": "Jose Antonio L. Santos"
+      },
+      "reviewedAt": null,
+      "reviewedBy": null,
+      "reviewRemarks": null
+    },
+    {
+      "id": "corr-004",
+      "employee": {
+        "id": "emp-005",
+        "employeeNumber": "2021-0015",
+        "fullName": "Miguel Angelo R. Garcia",
+        "department": "Sales & Marketing",
+        "position": "Sales Manager"
+      },
+      "workDate": "2024-12-30",
+      "correctionType": "missing_time_out",
+      "requestedTimeIn": null,
+      "requestedTimeOut": "18:30",
+      "reason": "Device was offline when I tried to clock out. Stayed late for year-end sales report preparation.",
+      "attachmentUrl": null,
+      "status": "rejected",
+      "requestedAt": "2024-12-31T09:00:00+08:00",
+      "requestedBy": {
+        "id": "emp-005",
+        "name": "Miguel Angelo R. Garcia"
+      },
+      "reviewedAt": "2024-12-31T14:15:00+08:00",
+      "reviewedBy": {
+        "id": "emp-003",
+        "name": "Jose Antonio L. Santos"
+      },
+      "reviewRemarks": "Rejected. Device logs show it was online until 7PM. Please check if you used the correct device."
+    }
+  ],
+  "overtimeRequests": [
+    {
+      "id": "ot-001",
+      "employee": {
+        "id": "emp-007",
+        "employeeNumber": "2022-0028",
+        "fullName": "Carlos F. Tan Jr.",
+        "department": "Information Technology",
+        "position": "Senior Software Developer"
+      },
+      "workDate": "2025-01-07",
+      "plannedStartTime": "17:00",
+      "plannedEndTime": "21:00",
+      "plannedHours": 4,
+      "reason": "Critical bug fix for production deployment scheduled tomorrow. Need to complete testing and deployment preparation.",
+      "status": "approved",
+      "requestedAt": "2025-01-06T10:30:00+08:00",
+      "approvedAt": "2025-01-06T11:15:00+08:00",
+      "approvedBy": {
+        "id": "emp-004",
+        "name": "Angela Patricia B. Lim"
+      },
+      "approverRemarks": "Approved. Please coordinate with DevOps for deployment window."
+    },
+    {
+      "id": "ot-002",
+      "employee": {
+        "id": "emp-002",
+        "employeeNumber": "2018-0012",
+        "fullName": "Maria Clara S. Reyes",
+        "department": "Finance",
+        "position": "Finance Manager"
+      },
+      "workDate": "2025-01-08",
+      "plannedStartTime": "17:00",
+      "plannedEndTime": "20:00",
+      "plannedHours": 3,
+      "reason": "Month-end closing activities and financial report preparation for board meeting.",
+      "status": "pending",
+      "requestedAt": "2025-01-06T09:00:00+08:00",
+      "approvedAt": null,
+      "approvedBy": null,
+      "approverRemarks": null
+    },
+    {
+      "id": "ot-003",
+      "employee": {
+        "id": "emp-001",
+        "employeeNumber": "2019-0001",
+        "fullName": "Ricardo M. Dela Cruz",
+        "department": "Operations",
+        "position": "Operations Manager"
+      },
+      "workDate": "2025-01-03",
+      "plannedStartTime": "17:00",
+      "plannedEndTime": "19:00",
+      "plannedHours": 2,
+      "reason": "Inventory reconciliation for quarter-end reporting.",
+      "status": "approved",
+      "requestedAt": "2025-01-02T16:00:00+08:00",
+      "approvedAt": "2025-01-02T16:45:00+08:00",
+      "approvedBy": {
+        "id": "emp-003",
+        "name": "Jose Antonio L. Santos"
+      },
+      "approverRemarks": "Approved."
+    },
+    {
+      "id": "ot-004",
+      "employee": {
+        "id": "emp-006",
+        "employeeNumber": "2023-0042",
+        "fullName": "Jennifer C. Villanueva",
+        "department": "Human Resources",
+        "position": "HR Specialist"
+      },
+      "workDate": "2025-01-10",
+      "plannedStartTime": "17:00",
+      "plannedEndTime": "19:00",
+      "plannedHours": 2,
+      "reason": "New hire onboarding preparation for 5 employees starting next week.",
+      "status": "pending",
+      "requestedAt": "2025-01-06T14:00:00+08:00",
+      "approvedAt": null,
+      "approvedBy": null,
+      "approverRemarks": null
+    }
+  ]
+}

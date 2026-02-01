@@ -1,0 +1,40 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('evaluation_competency_ratings', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('evaluation_response_id')
+                ->constrained()
+                ->cascadeOnDelete();
+            $table->foreignId('position_competency_id')
+                ->constrained();
+            $table->tinyInteger('rating')->unsigned()->nullable(); // 1-5
+            $table->text('comments')->nullable();
+            $table->timestamps();
+
+            $table->unique(
+                ['evaluation_response_id', 'position_competency_id'],
+                'unique_competency_rating'
+            );
+            $table->index('position_competency_id');
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('evaluation_competency_ratings');
+    }
+};

@@ -1,0 +1,783 @@
+{
+  "_meta": {
+    "models": {
+      "employees": "Each employee represents a worker in the organization with their personal information, government IDs, and employment details. This is the digital 201 file.",
+      "departments": "Departments are organizational units that can have a hierarchical structure. Each department can have a parent department and a designated head.",
+      "positions": "Positions are job titles or roles within a department, including salary grade and salary range for compensation benchmarking.",
+      "workLocations": "Work locations are physical sites, branches, or offices where employees can be assigned.",
+      "documents": "Documents are 201 file attachments including contracts, certifications, memos, and other employment-related files.",
+      "dashboardStats": "Summary statistics for the employee dashboard including headcount, turnover, and hiring metrics."
+    },
+    "relationships": [
+      "Each Employee belongs to a Department and holds a Position",
+      "Each Employee can have multiple Documents in their 201 file",
+      "Departments can have a parent Department (for hierarchy) and a head Employee",
+      "Positions belong to a Department and define salary ranges",
+      "Employees are assigned to a WorkLocation"
+    ]
+  },
+  "dashboardStats": {
+    "totalHeadcount": 248,
+    "activeEmployees": 231,
+    "newHiresThisMonth": 12,
+    "separationsThisMonth": 3,
+    "turnoverRate": 4.2,
+    "averageTenure": 3.5,
+    "tenureDistribution": {
+      "lessThan1Year": 45,
+      "oneToThreeYears": 89,
+      "threeToFiveYears": 62,
+      "fiveToTenYears": 38,
+      "moreThan10Years": 14
+    },
+    "employmentStatusBreakdown": {
+      "regular": 186,
+      "probationary": 32,
+      "contractual": 18,
+      "projectBased": 12
+    },
+    "departmentHeadcount": [
+      { "department": "Operations", "count": 98 },
+      { "department": "Finance", "count": 24 },
+      { "department": "Human Resources", "count": 18 },
+      { "department": "Information Technology", "count": 32 },
+      { "department": "Sales & Marketing", "count": 45 }
+    ]
+  },
+  "workLocations": [
+    {
+      "id": "loc-001",
+      "code": "MNL-HQ",
+      "name": "Manila Head Office",
+      "address": "123 Ayala Avenue, Makati City",
+      "isActive": true
+    },
+    {
+      "id": "loc-002",
+      "code": "CEB-BR",
+      "name": "Cebu Branch",
+      "address": "456 Osmeña Boulevard, Cebu City",
+      "isActive": true
+    },
+    {
+      "id": "loc-003",
+      "code": "DVO-BR",
+      "name": "Davao Branch",
+      "address": "789 J.P. Laurel Avenue, Davao City",
+      "isActive": true
+    }
+  ],
+  "departments": [
+    {
+      "id": "dept-001",
+      "code": "OPS",
+      "name": "Operations",
+      "parentId": null,
+      "headEmployeeId": "emp-001",
+      "headEmployeeName": "Ricardo M. Dela Cruz",
+      "costCenter": "CC-100",
+      "employeeCount": 98,
+      "isActive": true
+    },
+    {
+      "id": "dept-002",
+      "code": "FIN",
+      "name": "Finance",
+      "parentId": null,
+      "headEmployeeId": "emp-002",
+      "headEmployeeName": "Maria Clara S. Reyes",
+      "costCenter": "CC-200",
+      "employeeCount": 24,
+      "isActive": true
+    },
+    {
+      "id": "dept-003",
+      "code": "HR",
+      "name": "Human Resources",
+      "parentId": null,
+      "headEmployeeId": "emp-003",
+      "headEmployeeName": "Jose Antonio L. Santos",
+      "costCenter": "CC-300",
+      "employeeCount": 18,
+      "isActive": true
+    },
+    {
+      "id": "dept-004",
+      "code": "IT",
+      "name": "Information Technology",
+      "parentId": null,
+      "headEmployeeId": "emp-004",
+      "headEmployeeName": "Angela Patricia B. Lim",
+      "costCenter": "CC-400",
+      "employeeCount": 32,
+      "isActive": true
+    },
+    {
+      "id": "dept-005",
+      "code": "SM",
+      "name": "Sales & Marketing",
+      "parentId": null,
+      "headEmployeeId": "emp-005",
+      "headEmployeeName": "Miguel Angelo R. Garcia",
+      "costCenter": "CC-500",
+      "employeeCount": 45,
+      "isActive": true
+    }
+  ],
+  "positions": [
+    {
+      "id": "pos-001",
+      "code": "OPS-MGR",
+      "title": "Operations Manager",
+      "departmentId": "dept-001",
+      "departmentName": "Operations",
+      "level": 2,
+      "salaryGrade": "SG-8",
+      "minSalary": 80000,
+      "maxSalary": 120000,
+      "isActive": true
+    },
+    {
+      "id": "pos-002",
+      "code": "FIN-MGR",
+      "title": "Finance Manager",
+      "departmentId": "dept-002",
+      "departmentName": "Finance",
+      "level": 2,
+      "salaryGrade": "SG-8",
+      "minSalary": 80000,
+      "maxSalary": 120000,
+      "isActive": true
+    },
+    {
+      "id": "pos-003",
+      "code": "HR-MGR",
+      "title": "HR Manager",
+      "departmentId": "dept-003",
+      "departmentName": "Human Resources",
+      "level": 2,
+      "salaryGrade": "SG-8",
+      "minSalary": 75000,
+      "maxSalary": 110000,
+      "isActive": true
+    },
+    {
+      "id": "pos-004",
+      "code": "IT-MGR",
+      "title": "IT Manager",
+      "departmentId": "dept-004",
+      "departmentName": "Information Technology",
+      "level": 2,
+      "salaryGrade": "SG-8",
+      "minSalary": 85000,
+      "maxSalary": 130000,
+      "isActive": true
+    },
+    {
+      "id": "pos-005",
+      "code": "SM-MGR",
+      "title": "Sales Manager",
+      "departmentId": "dept-005",
+      "departmentName": "Sales & Marketing",
+      "level": 2,
+      "salaryGrade": "SG-8",
+      "minSalary": 75000,
+      "maxSalary": 115000,
+      "isActive": true
+    },
+    {
+      "id": "pos-006",
+      "code": "SR-DEV",
+      "title": "Senior Software Developer",
+      "departmentId": "dept-004",
+      "departmentName": "Information Technology",
+      "level": 4,
+      "salaryGrade": "SG-6",
+      "minSalary": 50000,
+      "maxSalary": 80000,
+      "isActive": true
+    },
+    {
+      "id": "pos-007",
+      "code": "ACCT",
+      "title": "Accountant",
+      "departmentId": "dept-002",
+      "departmentName": "Finance",
+      "level": 5,
+      "salaryGrade": "SG-5",
+      "minSalary": 35000,
+      "maxSalary": 50000,
+      "isActive": true
+    },
+    {
+      "id": "pos-008",
+      "code": "HR-SPEC",
+      "title": "HR Specialist",
+      "departmentId": "dept-003",
+      "departmentName": "Human Resources",
+      "level": 5,
+      "salaryGrade": "SG-5",
+      "minSalary": 30000,
+      "maxSalary": 45000,
+      "isActive": true
+    }
+  ],
+  "employees": [
+    {
+      "id": "emp-001",
+      "employeeNumber": "2019-0001",
+      "firstName": "Ricardo",
+      "middleName": "Mendoza",
+      "lastName": "Dela Cruz",
+      "suffix": null,
+      "fullName": "Ricardo M. Dela Cruz",
+      "photoUrl": null,
+      "birthDate": "1978-05-15",
+      "age": 46,
+      "gender": "male",
+      "civilStatus": "married",
+      "nationality": "Filipino",
+      "tin": "123-456-789-000",
+      "sssNumber": "34-1234567-8",
+      "philhealthNumber": "12-345678901-2",
+      "pagibigNumber": "1234-5678-9012",
+      "employmentStatus": "regular",
+      "dateHired": "2019-03-01",
+      "regularizationDate": "2019-09-01",
+      "yearsOfService": 5.8,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-001",
+        "name": "Operations"
+      },
+      "position": {
+        "id": "pos-001",
+        "title": "Operations Manager"
+      },
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "supervisor": null,
+      "contactInfo": {
+        "mobileNumber": "+63 917 123 4567",
+        "email": "ricardo.delacruz@email.com",
+        "presentAddress": "Unit 1205, The Residences, Makati City",
+        "permanentAddress": "123 Mabini St., San Juan City"
+      },
+      "basicSalary": 95000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-002",
+      "employeeNumber": "2018-0012",
+      "firstName": "Maria Clara",
+      "middleName": "Santos",
+      "lastName": "Reyes",
+      "suffix": null,
+      "fullName": "Maria Clara S. Reyes",
+      "photoUrl": null,
+      "birthDate": "1982-11-22",
+      "age": 42,
+      "gender": "female",
+      "civilStatus": "married",
+      "nationality": "Filipino",
+      "tin": "234-567-890-000",
+      "sssNumber": "34-2345678-9",
+      "philhealthNumber": "12-456789012-3",
+      "pagibigNumber": "2345-6789-0123",
+      "employmentStatus": "regular",
+      "dateHired": "2018-06-15",
+      "regularizationDate": "2018-12-15",
+      "yearsOfService": 6.5,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-002",
+        "name": "Finance"
+      },
+      "position": {
+        "id": "pos-002",
+        "title": "Finance Manager"
+      },
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "supervisor": null,
+      "contactInfo": {
+        "mobileNumber": "+63 918 234 5678",
+        "email": "mariaclara.reyes@email.com",
+        "presentAddress": "45 Sampaguita St., Quezon City",
+        "permanentAddress": "45 Sampaguita St., Quezon City"
+      },
+      "basicSalary": 92000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-003",
+      "employeeNumber": "2020-0005",
+      "firstName": "Jose Antonio",
+      "middleName": "Lozano",
+      "lastName": "Santos",
+      "suffix": null,
+      "fullName": "Jose Antonio L. Santos",
+      "photoUrl": null,
+      "birthDate": "1985-08-10",
+      "age": 39,
+      "gender": "male",
+      "civilStatus": "single",
+      "nationality": "Filipino",
+      "tin": "345-678-901-000",
+      "sssNumber": "34-3456789-0",
+      "philhealthNumber": "12-567890123-4",
+      "pagibigNumber": "3456-7890-1234",
+      "employmentStatus": "regular",
+      "dateHired": "2020-02-01",
+      "regularizationDate": "2020-08-01",
+      "yearsOfService": 4.9,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-003",
+        "name": "Human Resources"
+      },
+      "position": {
+        "id": "pos-003",
+        "title": "HR Manager"
+      },
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "supervisor": null,
+      "contactInfo": {
+        "mobileNumber": "+63 919 345 6789",
+        "email": "joseantonio.santos@email.com",
+        "presentAddress": "78 Rizal Ave., Pasig City",
+        "permanentAddress": "78 Rizal Ave., Pasig City"
+      },
+      "basicSalary": 85000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-004",
+      "employeeNumber": "2017-0008",
+      "firstName": "Angela Patricia",
+      "middleName": "Bautista",
+      "lastName": "Lim",
+      "suffix": null,
+      "fullName": "Angela Patricia B. Lim",
+      "photoUrl": null,
+      "birthDate": "1988-03-25",
+      "age": 36,
+      "gender": "female",
+      "civilStatus": "married",
+      "nationality": "Filipino",
+      "tin": "456-789-012-000",
+      "sssNumber": "34-4567890-1",
+      "philhealthNumber": "12-678901234-5",
+      "pagibigNumber": "4567-8901-2345",
+      "employmentStatus": "regular",
+      "dateHired": "2017-09-01",
+      "regularizationDate": "2018-03-01",
+      "yearsOfService": 7.3,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-004",
+        "name": "Information Technology"
+      },
+      "position": {
+        "id": "pos-004",
+        "title": "IT Manager"
+      },
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "supervisor": null,
+      "contactInfo": {
+        "mobileNumber": "+63 920 456 7890",
+        "email": "angelapatricia.lim@email.com",
+        "presentAddress": "12 BGC Corporate Center, Taguig City",
+        "permanentAddress": "56 Mayon St., Manila"
+      },
+      "basicSalary": 105000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-005",
+      "employeeNumber": "2021-0015",
+      "firstName": "Miguel Angelo",
+      "middleName": "Rodriguez",
+      "lastName": "Garcia",
+      "suffix": null,
+      "fullName": "Miguel Angelo R. Garcia",
+      "photoUrl": null,
+      "birthDate": "1990-12-08",
+      "age": 34,
+      "gender": "male",
+      "civilStatus": "single",
+      "nationality": "Filipino",
+      "tin": "567-890-123-000",
+      "sssNumber": "34-5678901-2",
+      "philhealthNumber": "12-789012345-6",
+      "pagibigNumber": "5678-9012-3456",
+      "employmentStatus": "regular",
+      "dateHired": "2021-04-15",
+      "regularizationDate": "2021-10-15",
+      "yearsOfService": 3.7,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-005",
+        "name": "Sales & Marketing"
+      },
+      "position": {
+        "id": "pos-005",
+        "title": "Sales Manager"
+      },
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "supervisor": null,
+      "contactInfo": {
+        "mobileNumber": "+63 921 567 8901",
+        "email": "miguelangelo.garcia@email.com",
+        "presentAddress": "34 Ortigas Center, Pasig City",
+        "permanentAddress": "89 Luna St., Mandaluyong City"
+      },
+      "basicSalary": 78000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-006",
+      "employeeNumber": "2023-0042",
+      "firstName": "Jennifer",
+      "middleName": "Cruz",
+      "lastName": "Villanueva",
+      "suffix": null,
+      "fullName": "Jennifer C. Villanueva",
+      "photoUrl": null,
+      "birthDate": "1995-07-18",
+      "age": 29,
+      "gender": "female",
+      "civilStatus": "single",
+      "nationality": "Filipino",
+      "tin": "678-901-234-000",
+      "sssNumber": "34-6789012-3",
+      "philhealthNumber": "12-890123456-7",
+      "pagibigNumber": "6789-0123-4567",
+      "employmentStatus": "probationary",
+      "dateHired": "2024-10-01",
+      "regularizationDate": null,
+      "yearsOfService": 0.3,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-003",
+        "name": "Human Resources"
+      },
+      "position": {
+        "id": "pos-008",
+        "title": "HR Specialist"
+      },
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "supervisor": {
+        "id": "emp-003",
+        "name": "Jose Antonio L. Santos"
+      },
+      "contactInfo": {
+        "mobileNumber": "+63 922 678 9012",
+        "email": "jennifer.villanueva@email.com",
+        "presentAddress": "Unit 501, Palm Tower, Mandaluyong City",
+        "permanentAddress": "23 Bonifacio St., Marikina City"
+      },
+      "basicSalary": 32000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-007",
+      "employeeNumber": "2022-0028",
+      "firstName": "Carlos",
+      "middleName": "Fernandez",
+      "lastName": "Tan",
+      "suffix": "Jr.",
+      "fullName": "Carlos F. Tan Jr.",
+      "photoUrl": null,
+      "birthDate": "1992-04-30",
+      "age": 32,
+      "gender": "male",
+      "civilStatus": "married",
+      "nationality": "Filipino",
+      "tin": "789-012-345-000",
+      "sssNumber": "34-7890123-4",
+      "philhealthNumber": "12-901234567-8",
+      "pagibigNumber": "7890-1234-5678",
+      "employmentStatus": "regular",
+      "dateHired": "2022-01-10",
+      "regularizationDate": "2022-07-10",
+      "yearsOfService": 3.0,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-004",
+        "name": "Information Technology"
+      },
+      "position": {
+        "id": "pos-006",
+        "title": "Senior Software Developer"
+      },
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "supervisor": {
+        "id": "emp-004",
+        "name": "Angela Patricia B. Lim"
+      },
+      "contactInfo": {
+        "mobileNumber": "+63 923 789 0123",
+        "email": "carlos.tan@email.com",
+        "presentAddress": "67 Scout Rallos, Quezon City",
+        "permanentAddress": "67 Scout Rallos, Quezon City"
+      },
+      "basicSalary": 65000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-008",
+      "employeeNumber": "2019-0023",
+      "firstName": "Rosario",
+      "middleName": "Aquino",
+      "lastName": "Mendoza",
+      "suffix": null,
+      "fullName": "Rosario A. Mendoza",
+      "photoUrl": null,
+      "birthDate": "1987-09-12",
+      "age": 37,
+      "gender": "female",
+      "civilStatus": "widowed",
+      "nationality": "Filipino",
+      "tin": "890-123-456-000",
+      "sssNumber": "34-8901234-5",
+      "philhealthNumber": "12-012345678-9",
+      "pagibigNumber": "8901-2345-6789",
+      "employmentStatus": "regular",
+      "dateHired": "2019-08-16",
+      "regularizationDate": "2020-02-16",
+      "yearsOfService": 5.4,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-002",
+        "name": "Finance"
+      },
+      "position": {
+        "id": "pos-007",
+        "title": "Accountant"
+      },
+      "workLocation": {
+        "id": "loc-002",
+        "name": "Cebu Branch"
+      },
+      "supervisor": {
+        "id": "emp-002",
+        "name": "Maria Clara S. Reyes"
+      },
+      "contactInfo": {
+        "mobileNumber": "+63 924 890 1234",
+        "email": "rosario.mendoza@email.com",
+        "presentAddress": "45 Gorordo Ave., Cebu City",
+        "permanentAddress": "12 Sanciangko St., Cebu City"
+      },
+      "basicSalary": 42000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-009",
+      "employeeNumber": "2020-0031",
+      "firstName": "Eduardo",
+      "middleName": "Lopez",
+      "lastName": "Ramos",
+      "suffix": null,
+      "fullName": "Eduardo L. Ramos",
+      "photoUrl": null,
+      "birthDate": "1983-01-28",
+      "age": 41,
+      "gender": "male",
+      "civilStatus": "married",
+      "nationality": "Filipino",
+      "tin": "901-234-567-000",
+      "sssNumber": "34-9012345-6",
+      "philhealthNumber": "12-123456789-0",
+      "pagibigNumber": "9012-3456-7890",
+      "employmentStatus": "contractual",
+      "dateHired": "2024-06-01",
+      "regularizationDate": null,
+      "yearsOfService": 0.6,
+      "separationDate": null,
+      "separationReason": null,
+      "isActive": true,
+      "department": {
+        "id": "dept-001",
+        "name": "Operations"
+      },
+      "position": {
+        "id": "pos-001",
+        "title": "Operations Manager"
+      },
+      "workLocation": {
+        "id": "loc-003",
+        "name": "Davao Branch"
+      },
+      "supervisor": {
+        "id": "emp-001",
+        "name": "Ricardo M. Dela Cruz"
+      },
+      "contactInfo": {
+        "mobileNumber": "+63 925 901 2345",
+        "email": "eduardo.ramos@email.com",
+        "presentAddress": "78 Quirino Ave., Davao City",
+        "permanentAddress": "34 Bolton St., Davao City"
+      },
+      "basicSalary": 55000,
+      "payFrequency": "semi_monthly"
+    },
+    {
+      "id": "emp-010",
+      "employeeNumber": "2016-0004",
+      "firstName": "Patricia",
+      "middleName": "Gonzales",
+      "lastName": "Navarro",
+      "suffix": null,
+      "fullName": "Patricia G. Navarro",
+      "photoUrl": null,
+      "birthDate": "1980-06-05",
+      "age": 44,
+      "gender": "female",
+      "civilStatus": "separated",
+      "nationality": "Filipino",
+      "tin": "012-345-678-000",
+      "sssNumber": "34-0123456-7",
+      "philhealthNumber": "12-234567890-1",
+      "pagibigNumber": "0123-4567-8901",
+      "employmentStatus": "regular",
+      "dateHired": "2016-02-15",
+      "regularizationDate": "2016-08-15",
+      "yearsOfService": 8.9,
+      "separationDate": "2024-12-31",
+      "separationReason": "resignation",
+      "isActive": false,
+      "department": {
+        "id": "dept-005",
+        "name": "Sales & Marketing"
+      },
+      "position": {
+        "id": "pos-005",
+        "title": "Sales Manager"
+      },
+      "workLocation": {
+        "id": "loc-001",
+        "name": "Manila Head Office"
+      },
+      "supervisor": null,
+      "contactInfo": {
+        "mobileNumber": "+63 926 012 3456",
+        "email": "patricia.navarro@email.com",
+        "presentAddress": "90 Katipunan Ave., Quezon City",
+        "permanentAddress": "90 Katipunan Ave., Quezon City"
+      },
+      "basicSalary": 88000,
+      "payFrequency": "semi_monthly"
+    }
+  ],
+  "documents": [
+    {
+      "id": "doc-001",
+      "employeeId": "emp-001",
+      "employeeName": "Ricardo M. Dela Cruz",
+      "fileName": "Employment_Contract_2019.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 245678,
+      "category": "contract",
+      "description": "Original employment contract dated March 2019",
+      "uploadedAt": "2019-03-01T08:00:00Z",
+      "uploadedBy": "HR Admin"
+    },
+    {
+      "id": "doc-002",
+      "employeeId": "emp-001",
+      "employeeName": "Ricardo M. Dela Cruz",
+      "fileName": "Regularization_Notice.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 125432,
+      "category": "memo",
+      "description": "Notice of regularization effective September 2019",
+      "uploadedAt": "2019-09-01T10:30:00Z",
+      "uploadedBy": "HR Admin"
+    },
+    {
+      "id": "doc-003",
+      "employeeId": "emp-002",
+      "employeeName": "Maria Clara S. Reyes",
+      "fileName": "CPA_License.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 189234,
+      "category": "certification",
+      "description": "Certified Public Accountant license - valid until 2026",
+      "uploadedAt": "2023-05-15T14:20:00Z",
+      "uploadedBy": "Maria Clara S. Reyes"
+    },
+    {
+      "id": "doc-004",
+      "employeeId": "emp-004",
+      "employeeName": "Angela Patricia B. Lim",
+      "fileName": "AWS_Solutions_Architect_Cert.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 312456,
+      "category": "certification",
+      "description": "AWS Solutions Architect Professional certification",
+      "uploadedAt": "2024-02-28T09:15:00Z",
+      "uploadedBy": "Angela Patricia B. Lim"
+    },
+    {
+      "id": "doc-005",
+      "employeeId": "emp-006",
+      "employeeName": "Jennifer C. Villanueva",
+      "fileName": "Pre_Employment_Medical.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 567890,
+      "category": "medical",
+      "description": "Pre-employment medical examination results",
+      "uploadedAt": "2024-09-25T11:45:00Z",
+      "uploadedBy": "HR Admin"
+    },
+    {
+      "id": "doc-006",
+      "employeeId": "emp-010",
+      "employeeName": "Patricia G. Navarro",
+      "fileName": "Resignation_Letter.pdf",
+      "fileType": "application/pdf",
+      "fileSize": 98765,
+      "category": "separation",
+      "description": "Resignation letter effective December 31, 2024",
+      "uploadedAt": "2024-11-30T16:00:00Z",
+      "uploadedBy": "Patricia G. Navarro"
+    }
+  ]
+}
