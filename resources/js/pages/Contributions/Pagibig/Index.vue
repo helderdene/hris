@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PagibigContributionFormModal from '@/Components/PagibigContributionFormModal.vue';
+import PagibigContributionFormModal from '@/components/PagibigContributionFormModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

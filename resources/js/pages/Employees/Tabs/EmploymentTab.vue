@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LabelValueList from '@/Components/LabelValueList.vue';
+import LabelValueList from '@/components/LabelValueList.vue';
 import { Button } from '@/components/ui/button';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';

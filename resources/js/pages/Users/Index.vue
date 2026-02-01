@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import InviteUserModal from '@/Components/InviteUserModal.vue';
-import PasswordConfirmationModal from '@/Components/PasswordConfirmationModal.vue';
+import InviteUserModal from '@/components/InviteUserModal.vue';
+import PasswordConfirmationModal from '@/components/PasswordConfirmationModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -10,7 +10,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import UserRoleSelect from '@/Components/UserRoleSelect.vue';
+import UserRoleSelect from '@/components/UserRoleSelect.vue';
 import { usePasswordConfirmation } from '@/composables/usePasswordConfirmation';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';

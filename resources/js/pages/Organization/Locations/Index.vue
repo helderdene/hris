@@ -8,7 +8,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import WorkLocationFormModal from '@/Components/WorkLocationFormModal.vue';
+import WorkLocationFormModal from '@/components/WorkLocationFormModal.vue';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';

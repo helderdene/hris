@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import DeleteConfirmationModal from '@/Components/DeleteConfirmationModal.vue';
-import DepartmentFormModal from '@/Components/DepartmentFormModal.vue';
-import DepartmentTreeNode from '@/Components/DepartmentTreeNode.vue';
+import DeleteConfirmationModal from '@/components/DeleteConfirmationModal.vue';
+import DepartmentFormModal from '@/components/DepartmentFormModal.vue';
+import DepartmentTreeNode from '@/components/DepartmentTreeNode.vue';
 import { Button } from '@/components/ui/button';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';

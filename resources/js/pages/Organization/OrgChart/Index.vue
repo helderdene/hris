@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import OrgChartTree from '@/Components/OrgChartTree.vue';
+import OrgChartTree from '@/components/OrgChartTree.vue';
 import { Button } from '@/components/ui/button';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';

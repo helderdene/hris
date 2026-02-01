@@ -8,7 +8,7 @@ import {
     TenureDistributionChart,
     TotalHeadcountCard,
     TurnoverRateCard,
-} from '@/Components/dashboard';
+} from '@/components/dashboard';
 import { Button } from '@/components/ui/button';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';

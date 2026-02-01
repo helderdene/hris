@@ -11,9 +11,9 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import OfferPreview from '@/Components/Recruitment/OfferPreview.vue';
-import RichTextEditor from '@/Components/Recruitment/RichTextEditor.vue';
-import PlaceholderInsertMenu from '@/Components/Recruitment/PlaceholderInsertMenu.vue';
+import OfferPreview from '@/components/Recruitment/OfferPreview.vue';
+import RichTextEditor from '@/components/Recruitment/RichTextEditor.vue';
+import PlaceholderInsertMenu from '@/components/Recruitment/PlaceholderInsertMenu.vue';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';

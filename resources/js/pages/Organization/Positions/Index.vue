@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import EnumSelect from '@/Components/EnumSelect.vue';
-import PositionFormModal from '@/Components/PositionFormModal.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
+import PositionFormModal from '@/components/PositionFormModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

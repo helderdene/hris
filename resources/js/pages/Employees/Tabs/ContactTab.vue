@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LabelValueList from '@/Components/LabelValueList.vue';
+import LabelValueList from '@/components/LabelValueList.vue';
 import { computed } from 'vue';
 
 interface Address {

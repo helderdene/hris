@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import CompensationEditModal from '@/Components/CompensationEditModal.vue';
-import CompensationHistoryTimeline from '@/Components/CompensationHistoryTimeline.vue';
-import LabelValueList from '@/Components/LabelValueList.vue';
+import CompensationEditModal from '@/components/CompensationEditModal.vue';
+import CompensationHistoryTimeline from '@/components/CompensationHistoryTimeline.vue';
+import LabelValueList from '@/components/LabelValueList.vue';
 import { Button } from '@/components/ui/button';
 import {
     type CompensationApiResponse,

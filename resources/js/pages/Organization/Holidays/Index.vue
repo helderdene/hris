@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import HolidayFormModal from '@/Components/HolidayFormModal.vue';
-import TenantHolidaySettings from '@/Components/TenantHolidaySettings.vue';
+import HolidayFormModal from '@/components/HolidayFormModal.vue';
+import TenantHolidaySettings from '@/components/TenantHolidaySettings.vue';
 import { Button } from '@/components/ui/button';
 import {
     Collapsible,

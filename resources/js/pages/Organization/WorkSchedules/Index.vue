@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import EmployeeAssignmentModal from '@/Components/EmployeeAssignmentModal.vue';
-import EnumSelect from '@/Components/EnumSelect.vue';
+import EmployeeAssignmentModal from '@/components/EmployeeAssignmentModal.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
 import { Button } from '@/components/ui/button';
-import WorkScheduleFormModal from '@/Components/WorkScheduleFormModal.vue';
+import WorkScheduleFormModal from '@/components/WorkScheduleFormModal.vue';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';

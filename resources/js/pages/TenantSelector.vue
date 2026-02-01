@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import TenantCard, { type TenantProps } from '@/Components/TenantCard.vue';
+import TenantCard, { type TenantProps } from '@/components/TenantCard.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { submit as selectTenantRoute } from '@/routes/tenant/select';
 import { Head, router } from '@inertiajs/vue3';

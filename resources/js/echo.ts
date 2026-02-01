@@ -5,14 +5,14 @@ import Pusher from 'pusher-js';
 declare global {
     interface Window {
         Pusher: typeof Pusher;
-        Echo: Echo<'reverb'>;
+        Echo: Echo<'pusher'>;
     }
 }
 
 window.Pusher = Pusher;
 
 /**
- * Initialize Laravel Echo with Reverb WebSocket configuration.
+ * Initialize Laravel Echo with Pusher WebSocket configuration.
  *
  * This enables real-time broadcasting for features like:
  * - Live attendance log updates
@@ -20,17 +20,14 @@ window.Pusher = Pusher;
  * - Dashboard real-time stats
  */
 window.Echo = new Echo({
-    broadcaster: 'reverb',
-    key: import.meta.env.VITE_REVERB_APP_KEY,
-    wsHost: import.meta.env.VITE_REVERB_HOST,
-    wsPort: import.meta.env.VITE_REVERB_PORT ?? 80,
-    wssPort: import.meta.env.VITE_REVERB_PORT ?? 443,
-    forceTLS: (import.meta.env.VITE_REVERB_SCHEME ?? 'https') === 'https',
-    enabledTransports: ['ws', 'wss'],
+    broadcaster: 'pusher',
+    key: import.meta.env.VITE_PUSHER_APP_KEY,
+    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER,
+    forceTLS: true,
     // Required for private channel authentication
     authEndpoint: '/broadcasting/auth',
     authorizer: (channel: { name: string }) => ({
-        authorize: (socketId: string, callback: (error: Error | null, data?: { auth: string }) => void) => {
+        authorize: (socketId: string, callback: (error: Error | null, data: { auth: string; channel_data?: string } | null) => void) => {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
 
             fetch('/broadcasting/auth', {
@@ -57,7 +54,7 @@ window.Echo = new Echo({
                 })
                 .catch((error) => {
                     console.error('[Echo Auth] Error:', error);
-                    callback(error);
+                    callback(error instanceof Error ? error : new Error(String(error)), null);
                 });
         },
     }),

@@ -5,7 +5,7 @@ import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import ScheduleInterviewDialog from '@/Components/Recruitment/ScheduleInterviewDialog.vue';
+import ScheduleInterviewDialog from '@/components/Recruitment/ScheduleInterviewDialog.vue';
 
 interface Panelist {
     id: number;

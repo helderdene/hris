@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import LeaveTypeFormModal from '@/Components/LeaveTypeFormModal.vue';
+import LeaveTypeFormModal from '@/components/LeaveTypeFormModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,

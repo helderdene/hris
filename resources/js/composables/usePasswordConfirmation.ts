@@ -27,7 +27,7 @@ const pendingReject = ref<((reason?: unknown) => void) | null>(null);
  * ```vue
  * <script setup lang="ts">
  * import { usePasswordConfirmation } from '@/composables/usePasswordConfirmation';
- * import PasswordConfirmationModal from '@/Components/PasswordConfirmationModal.vue';
+ * import PasswordConfirmationModal from '@/components/PasswordConfirmationModal.vue';
  *
  * const { isOpen, confirmPassword, onConfirmed, onCancelled } = usePasswordConfirmation();
  *

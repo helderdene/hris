@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import AssignmentChangeModal from '@/Components/AssignmentChangeModal.vue';
-import AssignmentHistorySection from '@/Components/AssignmentHistorySection.vue';
-import EmployeeAvatar from '@/Components/EmployeeAvatar.vue';
-import EmployeeStatusBadge from '@/Components/EmployeeStatusBadge.vue';
-import EmployeeSyncButton from '@/Components/EmployeeSyncButton.vue';
-import SyncStatusBadge from '@/Components/SyncStatusBadge.vue';
+import AssignmentChangeModal from '@/components/AssignmentChangeModal.vue';
+import AssignmentHistorySection from '@/components/AssignmentHistorySection.vue';
+import EmployeeAvatar from '@/components/EmployeeAvatar.vue';
+import EmployeeStatusBadge from '@/components/EmployeeStatusBadge.vue';
+import EmployeeSyncButton from '@/components/EmployeeSyncButton.vue';
+import SyncStatusBadge from '@/components/SyncStatusBadge.vue';
 import { Button } from '@/components/ui/button';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';

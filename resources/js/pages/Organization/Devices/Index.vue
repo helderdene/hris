@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import BiometricDeviceFormModal from '@/Components/BiometricDeviceFormModal.vue';
-import EnumSelect from '@/Components/EnumSelect.vue';
-import SyncStatusBadge from '@/Components/SyncStatusBadge.vue';
+import BiometricDeviceFormModal from '@/components/BiometricDeviceFormModal.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
+import SyncStatusBadge from '@/components/SyncStatusBadge.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import WithholdingTaxFormModal from '@/Components/WithholdingTaxFormModal.vue';
+import WithholdingTaxFormModal from '@/components/WithholdingTaxFormModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

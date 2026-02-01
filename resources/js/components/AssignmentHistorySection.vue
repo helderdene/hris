@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import AssignmentHistoryTimeline from '@/Components/AssignmentHistoryTimeline.vue';
+import AssignmentHistoryTimeline from '@/components/AssignmentHistoryTimeline.vue';
 import { type EmployeeAssignmentHistory } from '@/types/assignment';
 import { computed } from 'vue';
 

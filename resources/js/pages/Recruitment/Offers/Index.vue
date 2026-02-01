@@ -8,7 +8,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import OfferStatusBadge from '@/Components/Recruitment/OfferStatusBadge.vue';
+import OfferStatusBadge from '@/components/Recruitment/OfferStatusBadge.vue';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';

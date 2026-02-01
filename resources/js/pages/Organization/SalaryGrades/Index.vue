@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SalaryGradeFormModal from '@/Components/SalaryGradeFormModal.vue';
+import SalaryGradeFormModal from '@/components/SalaryGradeFormModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import CompetencyFormModal from '@/Components/CompetencyFormModal.vue';
-import ProficiencyLevelBadge from '@/Components/ProficiencyLevelBadge.vue';
-import EnumSelect from '@/Components/EnumSelect.vue';
+import CompetencyFormModal from '@/components/CompetencyFormModal.vue';
+import ProficiencyLevelBadge from '@/components/ProficiencyLevelBadge.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

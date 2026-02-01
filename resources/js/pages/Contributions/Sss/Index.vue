@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import SssContributionFormModal from '@/Components/SssContributionFormModal.vue';
+import SssContributionFormModal from '@/components/SssContributionFormModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

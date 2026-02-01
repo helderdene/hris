@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import CategoryManagementModal from '@/Components/CategoryManagementModal.vue';
-import DocumentPreviewModal from '@/Components/DocumentPreviewModal.vue';
-import DocumentTableRow from '@/Components/DocumentTableRow.vue';
-import DocumentUploadModal from '@/Components/DocumentUploadModal.vue';
-import DocumentVersionTimeline from '@/Components/DocumentVersionTimeline.vue';
-import EnumSelect from '@/Components/EnumSelect.vue';
-import NewVersionModal from '@/Components/NewVersionModal.vue';
+import CategoryManagementModal from '@/components/CategoryManagementModal.vue';
+import DocumentPreviewModal from '@/components/DocumentPreviewModal.vue';
+import DocumentTableRow from '@/components/DocumentTableRow.vue';
+import DocumentUploadModal from '@/components/DocumentUploadModal.vue';
+import DocumentVersionTimeline from '@/components/DocumentVersionTimeline.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
+import NewVersionModal from '@/components/NewVersionModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,

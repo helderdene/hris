@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import InputError from '@/components/InputError.vue';
-import ParentDepartmentSelect from '@/Components/ParentDepartmentSelect.vue';
+import ParentDepartmentSelect from '@/components/ParentDepartmentSelect.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,

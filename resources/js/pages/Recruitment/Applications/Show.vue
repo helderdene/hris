@@ -13,10 +13,10 @@ import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
-import AssessmentSection from '@/Components/Recruitment/AssessmentSection.vue';
-import BackgroundCheckSection from '@/Components/Recruitment/BackgroundCheckSection.vue';
-import InterviewCard from '@/Components/Recruitment/InterviewCard.vue';
-import ReferenceCheckSection from '@/Components/Recruitment/ReferenceCheckSection.vue';
+import AssessmentSection from '@/components/Recruitment/AssessmentSection.vue';
+import BackgroundCheckSection from '@/components/Recruitment/BackgroundCheckSection.vue';
+import InterviewCard from '@/components/Recruitment/InterviewCard.vue';
+import ReferenceCheckSection from '@/components/Recruitment/ReferenceCheckSection.vue';
 
 interface InterviewSummary {
     id: number;

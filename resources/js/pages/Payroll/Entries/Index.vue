@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import EnumSelect from '@/Components/EnumSelect.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
 import PayrollComputeDialog from '@/components/Payroll/PayrollComputeDialog.vue';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

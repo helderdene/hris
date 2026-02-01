@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import EmployeeAvatar from '@/Components/EmployeeAvatar.vue';
-import EmployeeStatusBadge from '@/Components/EmployeeStatusBadge.vue';
-import EnumSelect from '@/Components/EnumSelect.vue';
+import EmployeeAvatar from '@/components/EmployeeAvatar.vue';
+import EmployeeStatusBadge from '@/components/EmployeeStatusBadge.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

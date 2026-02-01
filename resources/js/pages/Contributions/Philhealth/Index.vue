@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PhilhealthContributionFormModal from '@/Components/PhilhealthContributionFormModal.vue';
+import PhilhealthContributionFormModal from '@/components/PhilhealthContributionFormModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,

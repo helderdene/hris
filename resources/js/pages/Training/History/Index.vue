@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import EnumSelect from '@/Components/EnumSelect.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTenant } from '@/composables/useTenant';

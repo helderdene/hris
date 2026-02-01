@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import OfferPreview from '@/Components/Recruitment/OfferPreview.vue';
-import OfferStatusBadge from '@/Components/Recruitment/OfferStatusBadge.vue';
-import OfferStatusTimeline from '@/Components/Recruitment/OfferStatusTimeline.vue';
+import OfferPreview from '@/components/Recruitment/OfferPreview.vue';
+import OfferStatusBadge from '@/components/Recruitment/OfferStatusBadge.vue';
+import OfferStatusTimeline from '@/components/Recruitment/OfferStatusTimeline.vue';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';

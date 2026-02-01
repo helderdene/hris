@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import AttendanceDirectionBadge from '@/Components/AttendanceDirectionBadge.vue';
-import EnumSelect from '@/Components/EnumSelect.vue';
+import AttendanceDirectionBadge from '@/components/AttendanceDirectionBadge.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useAttendanceLive } from '@/composables/useAttendanceLive';

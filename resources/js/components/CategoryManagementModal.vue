@@ -7,7 +7,7 @@
  * - Create new custom categories
  * - Delete custom categories (predefined categories cannot be deleted)
  */
-import CreateCategoryModal from '@/Components/CreateCategoryModal.vue';
+import CreateCategoryModal from '@/components/CreateCategoryModal.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,

@@ -13,9 +13,9 @@ import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
-import ScheduleInterviewDialog from '@/Components/Recruitment/ScheduleInterviewDialog.vue';
-import InterviewFeedbackForm from '@/Components/Recruitment/InterviewFeedbackForm.vue';
-import InterviewPanelistList from '@/Components/Recruitment/InterviewPanelistList.vue';
+import ScheduleInterviewDialog from '@/components/Recruitment/ScheduleInterviewDialog.vue';
+import InterviewFeedbackForm from '@/components/Recruitment/InterviewFeedbackForm.vue';
+import InterviewPanelistList from '@/components/Recruitment/InterviewPanelistList.vue';
 
 interface Panelist {
     id: number;

@@ -8,7 +8,7 @@ import {
     MetricCard,
     PerformanceSection,
     RecruitmentSection,
-} from '@/Components/analytics';
+} from '@/components/analytics';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';

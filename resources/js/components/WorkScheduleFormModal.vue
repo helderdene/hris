@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import EnumSelect from '@/Components/EnumSelect.vue';
+import EnumSelect from '@/components/EnumSelect.vue';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -12,12 +12,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import CompressedScheduleConfig from '@/Components/WorkSchedule/CompressedScheduleConfig.vue';
-import FixedScheduleConfig from '@/Components/WorkSchedule/FixedScheduleConfig.vue';
-import FlexibleScheduleConfig from '@/Components/WorkSchedule/FlexibleScheduleConfig.vue';
-import NightDifferentialConfig from '@/Components/WorkSchedule/NightDifferentialConfig.vue';
-import OvertimeRulesConfig from '@/Components/WorkSchedule/OvertimeRulesConfig.vue';
-import ShiftingScheduleConfig from '@/Components/WorkSchedule/ShiftingScheduleConfig.vue';
+import CompressedScheduleConfig from '@/components/WorkSchedule/CompressedScheduleConfig.vue';
+import FixedScheduleConfig from '@/components/WorkSchedule/FixedScheduleConfig.vue';
+import FlexibleScheduleConfig from '@/components/WorkSchedule/FlexibleScheduleConfig.vue';
+import NightDifferentialConfig from '@/components/WorkSchedule/NightDifferentialConfig.vue';
+import OvertimeRulesConfig from '@/components/WorkSchedule/OvertimeRulesConfig.vue';
+import ShiftingScheduleConfig from '@/components/WorkSchedule/ShiftingScheduleConfig.vue';
 import { computed, ref, watch } from 'vue';
 
 interface TimeConfiguration {
