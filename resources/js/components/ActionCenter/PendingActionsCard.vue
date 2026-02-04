@@ -19,7 +19,7 @@ export interface PendingCounts {
 }
 
 const props = defineProps<{
-    counts: PendingCounts;
+    counts?: PendingCounts;
 }>();
 
 interface ActionItem {
@@ -30,38 +30,46 @@ interface ActionItem {
     color: string;
 }
 
+const safeCounts = computed<PendingCounts>(() => props.counts ?? {
+    leaveApprovals: 0,
+    requisitionApprovals: 0,
+    probationaryEvaluations: 0,
+    documentRequests: 0,
+    onboardingTasks: 0,
+});
+
 const actionItems = computed<ActionItem[]>(() => [
     {
         label: 'Leave Requests',
-        count: props.counts.leaveApprovals,
+        count: safeCounts.value.leaveApprovals,
         link: '/leave/applications',
         icon: 'calendar',
         color: 'blue',
     },
     {
         label: 'Job Requisitions',
-        count: props.counts.requisitionApprovals,
+        count: safeCounts.value.requisitionApprovals,
         link: '/recruitment/requisitions',
         icon: 'briefcase',
         color: 'purple',
     },
     {
         label: 'Probation Reviews',
-        count: props.counts.probationaryEvaluations,
+        count: safeCounts.value.probationaryEvaluations,
         link: '/employees?filter=probationary',
         icon: 'user-check',
         color: 'emerald',
     },
     {
         label: 'Document Requests',
-        count: props.counts.documentRequests,
+        count: safeCounts.value.documentRequests,
         link: '/document-requests',
         icon: 'document',
         color: 'amber',
     },
     {
         label: 'Onboarding Tasks',
-        count: props.counts.onboardingTasks,
+        count: safeCounts.value.onboardingTasks,
         link: '/onboarding',
         icon: 'clipboard',
         color: 'pink',
@@ -69,7 +77,7 @@ const actionItems = computed<ActionItem[]>(() => [
 ]);
 
 const totalPending = computed(() =>
-    Object.values(props.counts).reduce((sum, count) => sum + count, 0)
+    Object.values(safeCounts.value).reduce((sum, count) => sum + count, 0)
 );
 
 function getColorClasses(color: string): { bg: string; text: string; badge: string } {

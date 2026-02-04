@@ -26,7 +26,7 @@ export interface PriorityItem {
 }
 
 const props = defineProps<{
-    items: PriorityItem[];
+    items?: PriorityItem[];
 }>();
 
 const emit = defineEmits<{
@@ -34,7 +34,8 @@ const emit = defineEmits<{
     reject: [item: PriorityItem];
 }>();
 
-const hasItems = computed(() => props.items.length > 0);
+const safeItems = computed(() => props.items ?? []);
+const hasItems = computed(() => safeItems.value.length > 0);
 
 function getPriorityClasses(priority: string): string {
     switch (priority) {
@@ -60,10 +61,10 @@ function getPriorityBadgeClasses(priority: string): string {
 
 function formatTimeLabel(item: PriorityItem): string {
     if (item.priority === 'critical' && item.hours_overdue) {
-        return `${item.hours_overdue}h overdue`;
+        return `${Math.round(item.hours_overdue)}h overdue`;
     }
     if (item.hours_remaining) {
-        return `${item.hours_remaining}h remaining`;
+        return `${Math.round(item.hours_remaining)}h remaining`;
     }
     return '';
 }
@@ -99,12 +100,12 @@ function getTypeLabel(type: string): string {
                 <CardTitle class="text-lg">Priority Alerts</CardTitle>
             </div>
             <CardDescription>
-                {{ items.length }} item{{ items.length > 1 ? 's' : '' }} need{{ items.length === 1 ? 's' : '' }} immediate attention
+                {{ safeItems.length }} item{{ safeItems.length > 1 ? 's' : '' }} need{{ safeItems.length === 1 ? 's' : '' }} immediate attention
             </CardDescription>
         </CardHeader>
         <CardContent class="space-y-3">
             <div
-                v-for="item in items"
+                v-for="item in safeItems"
                 :key="`${item.type}-${item.id}`"
                 :class="[
                     'flex items-center justify-between gap-4 rounded-lg border p-3',
