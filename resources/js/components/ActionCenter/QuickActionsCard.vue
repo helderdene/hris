@@ -37,7 +37,7 @@ const actionGroups: ActionGroup[] = [
         title: 'Request Processing',
         actions: [
             { label: 'Leave Requests', link: '/leave/applications', icon: 'calendar' },
-            { label: 'Document Requests', link: '/document-requests', icon: 'document' },
+            { label: 'Document Requests', link: '/hr/document-requests', icon: 'document' },
             { label: 'Job Requisitions', link: '/recruitment/requisitions', icon: 'briefcase' },
         ],
     },

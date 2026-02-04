@@ -63,7 +63,7 @@ const actionItems = computed<ActionItem[]>(() => [
     {
         label: 'Document Requests',
         count: safeCounts.value.documentRequests,
-        link: '/document-requests',
+        link: '/hr/document-requests',
         icon: 'document',
         color: 'amber',
     },
