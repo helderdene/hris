@@ -18,6 +18,7 @@ interface Props {
 const props = defineProps<Props>();
 
 const slugInput = ref('');
+const tinInput = ref('');
 const slugAvailability = ref<'idle' | 'checking' | 'available' | 'taken'>(
     'idle',
 );
@@ -73,6 +74,27 @@ function handleNameChange(event: Event) {
     ) {
         slugInput.value = generateSlugFromName(name);
     }
+}
+
+function formatTin(value: string): string {
+    // Remove all non-digit characters
+    const digits = value.replace(/\D/g, '');
+
+    // Limit to 12 digits (Philippine TIN format: XXX-XXX-XXX-XXX)
+    const limited = digits.slice(0, 12);
+
+    // Insert dashes after every 3 digits
+    const parts = [];
+    for (let i = 0; i < limited.length; i += 3) {
+        parts.push(limited.slice(i, i + 3));
+    }
+
+    return parts.join('-');
+}
+
+function handleTinInput(event: Event) {
+    const target = event.target as HTMLInputElement;
+    tinInput.value = formatTin(target.value);
 }
 </script>
 
@@ -228,10 +250,12 @@ function handleNameChange(event: Event) {
                         :tabindex="5"
                         autocomplete="off"
                         name="business_info[tin]"
-                        placeholder="XXX-XXX-XXX-XXX"
+                        placeholder="123-456-789-000"
+                        v-model="tinInput"
+                        @input="handleTinInput"
                     />
                     <p class="text-sm text-slate-500 dark:text-slate-400">
-                        Philippine TIN format: 123-456-789-000
+                        Just type the numbers, dashes are added automatically
                     </p>
                     <InputError :message="errors['business_info.tin']" />
                 </div>

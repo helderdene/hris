@@ -8,7 +8,7 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface Department {
     id: number;
@@ -122,6 +122,25 @@ const form = useForm({
         phone: '',
     },
 });
+
+function formatTin(value: string): string {
+    const digits = value.replace(/\D/g, '').slice(0, 12);
+    const parts = [];
+    for (let i = 0; i < digits.length; i += 3) {
+        parts.push(digits.slice(i, i + 3));
+    }
+    return parts.join('-');
+}
+
+watch(
+    () => form.tin,
+    (newValue) => {
+        const formatted = formatTin(newValue);
+        if (formatted !== newValue) {
+            form.tin = formatted;
+        }
+    },
+);
 
 const genderOptions: EnumOption[] = [
     { value: 'male', label: 'Male' },
@@ -698,8 +717,14 @@ function handleCancel() {
                                     id="tin"
                                     v-model="form.tin"
                                     type="text"
-                                    placeholder="Enter TIN"
+                                    placeholder="123-456-789-000"
                                 />
+                                <p
+                                    class="text-sm text-muted-foreground"
+                                >
+                                    Just type numbers, dashes added
+                                    automatically
+                                </p>
                                 <InputError :message="form.errors.tin" />
                             </div>
 
