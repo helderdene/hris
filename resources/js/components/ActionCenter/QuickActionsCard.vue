@@ -45,7 +45,7 @@ const actionGroups: ActionGroup[] = [
         title: 'Reports & Analytics',
         actions: [
             { label: 'HR Analytics', link: '/employees/dashboard', icon: 'chart' },
-            { label: 'Payroll Summary', link: '/payroll/entries', icon: 'currency' },
+            { label: 'Payroll Summary', link: '/organization/payroll-periods', icon: 'currency' },
             { label: 'Attendance', link: '/attendance', icon: 'clock' },
         ],
     },
