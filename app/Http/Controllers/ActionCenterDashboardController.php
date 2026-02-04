@@ -240,7 +240,9 @@ class ActionCenterDashboardController extends Controller
             $leave = $approval->leaveApplication;
             $data['title'] = 'Leave Request';
             $data['employee_name'] = $leave?->employee?->full_name ?? 'Unknown';
-            $data['description'] = $leave ? "{$leave->leaveType?->name} ({$leave->total_days} days)" : 'Leave request';
+            $totalDays = $leave?->total_days;
+            $formattedDays = $totalDays == (int) $totalDays ? (int) $totalDays : $totalDays;
+            $data['description'] = $leave ? "{$leave->leaveType?->name} ({$formattedDays} days)" : 'Leave request';
             $data['start_date'] = $leave?->start_date?->toDateString();
             $data['end_date'] = $leave?->end_date?->toDateString();
             $data['hours_overdue'] = $approval->hours_overdue ?? 0;
