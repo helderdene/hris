@@ -280,13 +280,23 @@ class HelpContentSeeder extends Seeder
             $articles = $categoryData['articles'] ?? [];
             unset($categoryData['articles']);
 
-            $category = HelpCategory::create($categoryData);
+            $category = HelpCategory::updateOrCreate(
+                ['slug' => $categoryData['slug']],
+                $categoryData
+            );
 
             foreach ($articles as $articleData) {
                 $articleData['help_category_id'] = $category->id;
                 $articleData['is_active'] = true;
                 $articleData['is_featured'] = $articleData['is_featured'] ?? false;
-                HelpArticle::create($articleData);
+
+                HelpArticle::updateOrCreate(
+                    [
+                        'help_category_id' => $category->id,
+                        'slug' => $articleData['slug'],
+                    ],
+                    $articleData
+                );
             }
         }
     }
