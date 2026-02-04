@@ -35,6 +35,7 @@ interface AttendanceLog {
     direction: 'in' | 'out' | string | null;
     confidence: string | null;
     confidence_percent: number | null;
+    verification_method: 'face' | 'fingerprint' | 'unknown';
     device: Device | null;
 }
 
@@ -191,6 +192,16 @@ function formatConfidence(confidence: number | null): string {
         return '-';
     }
     return `${confidence}%`;
+}
+
+function formatVerificationMethod(log: AttendanceLog): string {
+    if (log.verification_method === 'fingerprint') {
+        return 'Fingerprint';
+    }
+    if (log.verification_method === 'face') {
+        return `Face (${log.confidence_percent}%)`;
+    }
+    return 'Unknown';
 }
 </script>
 
@@ -420,7 +431,7 @@ function formatConfidence(confidence: number | null): string {
                                     scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400"
                                 >
-                                    Confidence
+                                    Verification
                                 </th>
                             </tr>
                         </thead>
@@ -477,7 +488,7 @@ function formatConfidence(confidence: number | null): string {
                                 <td
                                     class="px-6 py-4 text-sm whitespace-nowrap text-slate-600 dark:text-slate-300"
                                 >
-                                    {{ formatConfidence(log.confidence_percent) }}
+                                    {{ formatVerificationMethod(log) }}
                                 </td>
                             </tr>
                         </tbody>
@@ -522,10 +533,7 @@ function formatConfidence(confidence: number | null): string {
                             class="mt-2 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400"
                         >
                             <span v-if="log.device">{{ log.device.name }}</span>
-                            <span v-if="log.confidence_percent"
-                                >{{ formatConfidence(log.confidence_percent) }}
-                                confidence</span
-                            >
+                            <span>{{ formatVerificationMethod(log) }}</span>
                         </div>
                     </div>
                 </div>

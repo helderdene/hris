@@ -35,6 +35,7 @@ class AttendanceLogResource extends JsonResource
             'direction' => $this->resource->direction,
             'confidence' => $this->resource->confidence,
             'confidence_percent' => $this->resource->confidence ? round((float) $this->resource->confidence, 1) : null,
+            'verification_method' => $this->getVerificationMethod(),
             'device' => $this->when(
                 $this->resource->relationLoaded('biometricDevice') && $this->resource->biometricDevice,
                 fn () => [
@@ -44,6 +45,34 @@ class AttendanceLogResource extends JsonResource
                 ]
             ),
         ];
+    }
+
+    /**
+     * Determine the verification method from raw payload.
+     */
+    protected function getVerificationMethod(): string
+    {
+        $rawPayload = $this->resource->raw_payload;
+
+        if (! $rawPayload || ! isset($rawPayload['info'])) {
+            return 'unknown';
+        }
+
+        $info = $rawPayload['info'];
+
+        // Check if fingerprint was used
+        $fingerUsed = $info['FingerUsed'] ?? null;
+        if ($fingerUsed && $fingerUsed !== '0' && $fingerUsed !== '') {
+            return 'fingerprint';
+        }
+
+        // Check if face recognition was used (confidence > 0)
+        $similarity = (float) ($info['similarity1'] ?? 0);
+        if ($similarity > 0) {
+            return 'face';
+        }
+
+        return 'unknown';
     }
 
     /**
