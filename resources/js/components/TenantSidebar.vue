@@ -41,6 +41,7 @@ import {
     ClipboardList,
     Contact,
     CreditCard,
+    HelpCircle,
     History,
     DollarSign,
     FileBarChart,
@@ -441,6 +442,9 @@ const bottomNavItems = computed(() => {
         items.push({ title: 'Audit Logs', href: '/settings/audit-logs', icon: History });
     }
 
+    // Help Center is available to all authenticated users
+    items.push({ title: 'Help', href: '/help', icon: HelpCircle });
+
     items.push({ title: 'Settings', href: '/settings/profile', icon: Settings });
 
     return items;
@@ -682,9 +686,13 @@ function isActive(href: string): boolean {
     if (href === '/settings/audit-logs') {
         return currentPath.startsWith('/settings/audit-logs');
     }
+    // Help Center
+    if (href === '/help') {
+        return currentPath.startsWith('/help');
+    }
     // Settings Profile
     if (href === '/settings/profile') {
-        return currentPath.startsWith('/settings');
+        return currentPath.startsWith('/settings') && !currentPath.startsWith('/settings/audit-logs') && !currentPath.startsWith('/settings/help-admin');
     }
     return currentPath.startsWith(href);
 }

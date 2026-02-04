@@ -84,7 +84,11 @@ use App\Http\Controllers\Reports\BirReportPageController;
 use App\Http\Controllers\Reports\PagibigReportPageController;
 use App\Http\Controllers\Reports\PhilhealthReportPageController;
 use App\Http\Controllers\Reports\SssReportPageController;
+use App\Http\Controllers\Api\HelpArticleController;
+use App\Http\Controllers\Api\HelpCategoryController;
+use App\Http\Controllers\Help\HelpCenterController;
 use App\Http\Controllers\Settings\AuditLogPageController;
+use App\Http\Controllers\Settings\HelpAdminPageController;
 use App\Http\Controllers\TrainingController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
@@ -164,6 +168,27 @@ Route::middleware(['auth'])->group(function () {
     // This page allows Admin users to view all model changes for compliance
     Route::get('/settings/audit-logs', AuditLogPageController::class)
         ->name('settings.audit-logs');
+
+    // Help Admin
+    // This page allows Super Admins to manage help center content
+    Route::get('/settings/help-admin', HelpAdminPageController::class)
+        ->name('settings.help-admin');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Help Center Routes
+    |--------------------------------------------------------------------------
+    |
+    | These routes render the help center pages where all authenticated users
+    | can access documentation, search for help articles, and browse categories.
+    |
+    */
+    Route::prefix('help')->name('help.')->group(function () {
+        Route::get('/', [HelpCenterController::class, 'index'])->name('index');
+        Route::get('/search', [HelpCenterController::class, 'search'])->name('search');
+        Route::get('/{categorySlug}', [HelpCenterController::class, 'showCategory'])->name('category');
+        Route::get('/{categorySlug}/{articleSlug}', [HelpCenterController::class, 'showArticle'])->name('article');
+    });
 
     /*
     |--------------------------------------------------------------------------
@@ -928,6 +953,21 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
             ->name('api.audit-logs.index');
         Route::get('/filters', [AuditLogController::class, 'filters'])
             ->name('api.audit-logs.filters');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Help Content API
+    |--------------------------------------------------------------------------
+    |
+    | These endpoints allow Super Admins to manage help center content
+    | including categories and articles. Uses standard CRUD operations.
+    |
+    */
+
+    Route::prefix('help')->name('api.help.')->group(function () {
+        Route::apiResource('categories', HelpCategoryController::class);
+        Route::apiResource('articles', HelpArticleController::class);
     });
 
     /*
