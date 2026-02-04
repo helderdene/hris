@@ -73,7 +73,7 @@ class HelpCenterController extends Controller
     /**
      * Display a category with its articles.
      */
-    public function showCategory(string $categorySlug): Response
+    public function showCategory(string $tenant, string $categorySlug): Response
     {
         $category = HelpCategory::query()
             ->where('slug', $categorySlug)
@@ -99,7 +99,7 @@ class HelpCenterController extends Controller
     /**
      * Display a single article.
      */
-    public function showArticle(string $categorySlug, string $articleSlug): Response
+    public function showArticle(string $tenant, string $categorySlug, string $articleSlug): Response
     {
         $category = HelpCategory::query()
             ->where('slug', $categorySlug)
