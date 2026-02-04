@@ -6,6 +6,7 @@ use App\Http\Requests\TenantRegistrationRequest;
 use App\Models\Tenant;
 use App\Models\TenantRedirectToken;
 use App\Services\Tenant\TenantDatabaseManager;
+use Database\Seeders\HelpContentSeeder;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -46,6 +47,9 @@ class TenantRegistrationController extends Controller
         // Provision the tenant database schema
         $this->tenantDatabaseManager->createSchema($tenant);
         $this->tenantDatabaseManager->migrateSchema($tenant);
+
+        // Seed initial help content
+        (new HelpContentSeeder)->run();
 
         // Add current user as tenant admin
         $tenant->users()->attach($user->id, ['role' => 'admin']);
