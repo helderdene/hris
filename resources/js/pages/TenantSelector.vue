@@ -1,8 +1,10 @@
 <script setup lang="ts">
+import { Button } from '@/components/ui/button';
 import TenantCard, { type TenantProps } from '@/components/TenantCard.vue';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { submit as selectTenantRoute } from '@/routes/tenant/select';
-import { Head, router } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { Plus } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Tenant extends TenantProps {
@@ -90,6 +92,16 @@ function handleTenantSelect(tenant: Tenant) {
             <p class="text-sm text-slate-500 dark:text-slate-400">
                 You don't have access to any organizations yet.
             </p>
+        </div>
+
+        <!-- Create Organization Button -->
+        <div class="mt-6 flex justify-center">
+            <Button as-child variant="outline" class="gap-2">
+                <Link href="/register-organization">
+                    <Plus class="h-4 w-4" />
+                    Create New Organization
+                </Link>
+            </Button>
         </div>
     </AuthLayout>
 </template>
