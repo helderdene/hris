@@ -732,6 +732,7 @@ function getCsrfToken(): string {
                                 variant="ghost"
                                 size="sm"
                                 class="h-8 w-8 p-0"
+                                @click="handleEditSchedule(schedule)"
                                 title="View Details"
                             >
                                 <svg
