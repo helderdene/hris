@@ -103,27 +103,34 @@ class SubscribeMqttAttendance extends Command
     ): void {
         $this->line("Received message on topic: {$topic}");
 
-        $data = $parser->parse($topic, $message);
+        try {
+            $data = $parser->parse($topic, $message);
 
-        if ($data === null) {
-            $this->warn('Failed to parse message');
+            if ($data === null) {
+                $this->warn('Failed to parse message');
 
-            return;
-        }
+                return;
+            }
 
-        $log = $processor->process($data);
+            $this->line("Parsed data for employee: {$data->employeeCode}, device: {$data->deviceIdentifier}");
 
-        if ($log === null) {
-            $this->warn("Failed to process attendance log for device: {$data->deviceIdentifier}");
+            $log = $processor->process($data);
 
-            return;
-        }
+            if ($log === null) {
+                $this->warn("Failed to process attendance log for device: {$data->deviceIdentifier}");
 
-        $this->info("Created attendance log #{$log->id} for employee: {$data->employeeCode}");
+                return;
+            }
 
-        // Broadcast the new log for real-time dashboard updates
-        if (class_exists(AttendanceLogReceived::class)) {
-            event(new AttendanceLogReceived($log));
+            $this->info("Created attendance log #{$log->id} for employee: {$data->employeeCode}");
+
+            // Broadcast the new log for real-time dashboard updates
+            if (class_exists(AttendanceLogReceived::class)) {
+                event(new AttendanceLogReceived($log));
+            }
+        } catch (\Throwable $e) {
+            $this->error("Error processing message: {$e->getMessage()}");
+            $this->error("File: {$e->getFile()}:{$e->getLine()}");
         }
     }
 
