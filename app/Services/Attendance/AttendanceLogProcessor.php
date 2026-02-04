@@ -42,8 +42,11 @@ class AttendanceLogProcessor
         $this->tenantManager->switchConnection($tenant);
         app()->instance('tenant', $tenant);
 
-        // Update device last seen timestamp
-        $device->update(['last_seen_at' => now()]);
+        // Update device last seen timestamp and status
+        $device->update([
+            'last_seen_at' => now(),
+            'status' => 'online',
+        ]);
 
         // Find employee by code
         $employee = Employee::where('employee_number', $data->employeeCode)->first();
