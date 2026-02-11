@@ -188,6 +188,43 @@ async function unsyncFromDevice(deviceId: number) {
             >
                 <RefreshCw class="h-3.5 w-3.5" />
             </Button>
+            <!-- Unsync: single device goes directly, multiple devices show a picker -->
+            <DropdownMenu v-if="displayStatuses.length > 1">
+                <DropdownMenuTrigger as-child>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        class="h-7 w-7 p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        :disabled="isLoading"
+                        title="Unsync from device"
+                    >
+                        <Unlink class="h-3.5 w-3.5" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" class="w-48">
+                    <DropdownMenuItem
+                        v-for="sync in displayStatuses"
+                        :key="sync.id"
+                        @click="unsyncFromDevice(sync.device_id)"
+                        :disabled="isLoading"
+                        class="cursor-pointer text-red-600 dark:text-red-400"
+                    >
+                        <Unlink class="mr-2 h-4 w-4" />
+                        {{ sync.device_name || `Device #${sync.device_id}` }}
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+                v-else-if="displayStatuses.length === 1"
+                variant="ghost"
+                size="sm"
+                class="h-7 w-7 p-0 text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                :disabled="isLoading"
+                title="Unsync from device"
+                @click="unsyncFromDevice(displayStatuses[0].device_id)"
+            >
+                <Unlink class="h-3.5 w-3.5" />
+            </Button>
         </div>
 
         <!-- Verifying or needs sync -->
@@ -257,51 +294,34 @@ async function unsyncFromDevice(deviceId: number) {
                 <DropdownMenuSeparator
                     v-if="displayStatuses.length > 0"
                 />
-                <template
+                <DropdownMenuItem
                     v-for="sync in displayStatuses"
                     :key="sync.id"
+                    @click="syncToDevice(sync.device_id)"
+                    :disabled="
+                        isLoading && loadingDeviceId === sync.device_id
+                    "
+                    class="cursor-pointer"
                 >
-                    <DropdownMenuItem
-                        @click="syncToDevice(sync.device_id)"
-                        :disabled="
-                            isLoading && loadingDeviceId === sync.device_id
-                        "
-                        class="cursor-pointer"
-                    >
-                        <span class="flex items-center gap-2">
-                            <span
-                                :class="[
-                                    'h-2 w-2 rounded-full',
-                                    sync.status === 'synced'
-                                        ? 'bg-green-500'
-                                        : sync.status === 'failed'
-                                          ? 'bg-red-500'
-                                          : sync.status === 'syncing'
-                                            ? 'bg-blue-500'
-                                            : 'bg-yellow-500',
-                                ]"
-                            ></span>
-                            {{
-                                sync.device_name ||
-                                `Device #${sync.device_id}`
-                            }}
-                        </span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                        v-if="
-                            sync.status === 'synced' ||
-                            sync.status === 'failed'
-                        "
-                        @click="unsyncFromDevice(sync.device_id)"
-                        :disabled="
-                            isLoading && loadingDeviceId === sync.device_id
-                        "
-                        class="cursor-pointer text-red-600 dark:text-red-400"
-                    >
-                        <Unlink class="mr-2 h-4 w-4" />
-                        Unsync {{ sync.device_name || `Device #${sync.device_id}` }}
-                    </DropdownMenuItem>
-                </template>
+                    <span class="flex items-center gap-2">
+                        <span
+                            :class="[
+                                'h-2 w-2 rounded-full',
+                                sync.status === 'synced'
+                                    ? 'bg-green-500'
+                                    : sync.status === 'failed'
+                                      ? 'bg-red-500'
+                                      : sync.status === 'syncing'
+                                        ? 'bg-blue-500'
+                                        : 'bg-yellow-500',
+                            ]"
+                        ></span>
+                        {{
+                            sync.device_name ||
+                            `Device #${sync.device_id}`
+                        }}
+                    </span>
+                </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>
 
