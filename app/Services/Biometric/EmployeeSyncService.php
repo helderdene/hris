@@ -87,8 +87,19 @@ class EmployeeSyncService
 
         $employees = $query->get();
 
+        if ($immediate) {
+            // Use Ack-waiting to ensure each message is processed before the next
+            return $employees->map(
+                fn (Employee $employee) => $this->performImmediateSyncWithAck(
+                    $this->getOrCreateSyncRecord($employee, $device),
+                    $employee,
+                    $device
+                )
+            );
+        }
+
         return $employees->map(
-            fn (Employee $employee) => $this->syncEmployeeToDevice($employee, $device, $immediate)
+            fn (Employee $employee) => $this->syncEmployeeToDevice($employee, $device, false)
         );
     }
 
@@ -163,7 +174,7 @@ class EmployeeSyncService
     }
 
     /**
-     * Perform an immediate sync operation.
+     * Perform an immediate sync operation (fire-and-forget).
      */
     protected function performImmediateSync(
         EmployeeDeviceSync $syncRecord,
@@ -173,9 +184,6 @@ class EmployeeSyncService
         try {
             $syncLog = $this->deviceCommandService->editPerson($device, $employee);
             $syncRecord->markSyncing($syncLog->message_id);
-
-            // For now, we assume success if the message was sent
-            // In a future iteration, we could wait for device acknowledgment
             $syncRecord->markSynced();
 
             Log::info('Employee synced to device', [
@@ -183,6 +191,58 @@ class EmployeeSyncService
                 'device_id' => $device->id,
                 'message_id' => $syncLog->message_id,
             ]);
+        } catch (\Throwable $e) {
+            $syncRecord->markFailed($e->getMessage());
+
+            Log::error('Failed to sync employee to device', [
+                'employee_id' => $employee->id,
+                'device_id' => $device->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $syncRecord->fresh();
+    }
+
+    /**
+     * Perform an immediate sync and wait for device Ack before returning.
+     *
+     * Used in bulk sync to ensure the device processes each message sequentially.
+     */
+    protected function performImmediateSyncWithAck(
+        EmployeeDeviceSync $syncRecord,
+        Employee $employee,
+        BiometricDevice $device
+    ): EmployeeDeviceSync {
+        try {
+            $syncLog = $this->deviceCommandService->editPersonAndWaitForAck($device, $employee);
+            $syncRecord->markSyncing($syncLog->message_id);
+
+            if ($syncLog->status === \App\Models\DeviceSyncLog::STATUS_ACKNOWLEDGED) {
+                $syncRecord->markSynced();
+                Log::info('Employee synced to device (Ack received)', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                    'message_id' => $syncLog->message_id,
+                ]);
+            } elseif ($syncLog->status === \App\Models\DeviceSyncLog::STATUS_FAILED) {
+                $errorMessage = $syncLog->response_payload['info']['result'] ?? 'Device returned error';
+                $syncRecord->markFailed($errorMessage);
+                Log::warning('Device rejected employee sync', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                    'message_id' => $syncLog->message_id,
+                    'error' => $errorMessage,
+                ]);
+            } else {
+                // Ack timeout — mark as synced optimistically
+                $syncRecord->markSynced();
+                Log::warning('Employee sync Ack timeout, marked as synced', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                    'message_id' => $syncLog->message_id,
+                ]);
+            }
         } catch (\Throwable $e) {
             $syncRecord->markFailed($e->getMessage());
 

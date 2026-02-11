@@ -47,6 +47,40 @@ class DeviceCommandService
     }
 
     /**
+     * Send an EditPerson command and wait for the device Ack before returning.
+     *
+     * Used for bulk sync to ensure each message is processed before the next.
+     */
+    public function editPersonAndWaitForAck(BiometricDevice $device, Employee $employee): DeviceSyncLog
+    {
+        $profilePhoto = $employee->getProfilePhoto();
+        $payload = $this->buildEditPersonPayload($employee, $profilePhoto);
+
+        $result = $this->mqttPublisher->publishAndWaitForAck($device, $payload);
+
+        $status = DeviceSyncLog::STATUS_SENT;
+        $responsePayload = null;
+
+        if ($result['ack'] !== null) {
+            $status = ($result['ack']['code'] ?? '') === '200'
+                ? DeviceSyncLog::STATUS_ACKNOWLEDGED
+                : DeviceSyncLog::STATUS_FAILED;
+            $responsePayload = $result['ack'];
+        }
+
+        return DeviceSyncLog::create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'operation' => DeviceSyncLog::OPERATION_EDIT_PERSON,
+            'message_id' => $result['message_id'],
+            'status' => $status,
+            'request_payload' => $this->sanitizePayloadForLogging($payload),
+            'response_payload' => $responsePayload,
+            'sent_at' => now(),
+        ]);
+    }
+
+    /**
      * Build the EditPerson payload for the MQTT message.
      *
      * @return array<string, mixed>
