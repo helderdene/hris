@@ -18,6 +18,7 @@ use App\Listeners\EvaluateComplianceOnPositionChange;
 use App\Listeners\HandleComplianceAssignmentCompleted;
 use App\Listeners\HandleComplianceAssignmentCreated;
 use App\Listeners\HandleComplianceAssignmentOverdue;
+use App\Listeners\InitializeBiometricSyncRecords;
 use App\Listeners\SyncProfilePhotoToDevices;
 use App\Models\Employee;
 use App\Models\Tenant;
@@ -62,6 +63,12 @@ class AppServiceProvider extends ServiceProvider
         Event::listen(
             ProfilePhotoUploaded::class,
             SyncProfilePhotoToDevices::class
+        );
+
+        // Biometric sync record initialization
+        Event::listen(
+            EmployeeCreated::class,
+            InitializeBiometricSyncRecords::class
         );
 
         // Compliance training event listeners

@@ -7,6 +7,7 @@ use App\Http\Requests\StoreBiometricDeviceRequest;
 use App\Http\Requests\UpdateBiometricDeviceRequest;
 use App\Http\Resources\BiometricDeviceResource;
 use App\Models\BiometricDevice;
+use App\Services\Biometric\EmployeeSyncService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -43,12 +44,14 @@ class BiometricDeviceController extends Controller
     /**
      * Store a newly created biometric device.
      */
-    public function store(StoreBiometricDeviceRequest $request): JsonResponse
+    public function store(StoreBiometricDeviceRequest $request, EmployeeSyncService $syncService): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
         $device = BiometricDevice::create($request->validated());
         $device->load('workLocation');
+
+        $syncService->initializeSyncRecordsForDevice($device);
 
         return (new BiometricDeviceResource($device))
             ->response()

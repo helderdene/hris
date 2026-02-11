@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentType;
+use App\Events\EmployeeCreated;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Http\Resources\EmployeeAssignmentHistoryResource;
@@ -116,6 +117,8 @@ class EmployeeController extends Controller
         Gate::authorize('can-manage-employees');
 
         $employee = Employee::create($request->validated());
+
+        EmployeeCreated::dispatch($employee);
 
         return redirect()
             ->route('employees.show', ['tenant' => tenant()->slug, 'employee' => $employee->id])

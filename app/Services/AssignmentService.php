@@ -9,6 +9,7 @@ use App\Models\Employee;
 use App\Models\EmployeeAssignmentHistory;
 use App\Models\Position;
 use App\Models\WorkLocation;
+use App\Services\Biometric\EmployeeSyncService;
 use Illuminate\Support\Facades\DB;
 
 class AssignmentService
@@ -53,6 +54,12 @@ class AssignmentService
             // Handle department head assignment if requested
             if ($assignmentType === AssignmentType::Department && ($data['set_as_department_head'] ?? false)) {
                 $this->setAsDepartmentHead($employee, $data['new_value_id'], $data['effective_date']);
+            }
+
+            // Initialize biometric sync records when work location changes
+            if ($assignmentType === AssignmentType::Location) {
+                $employee->refresh();
+                app(EmployeeSyncService::class)->initializeSyncRecords($employee);
             }
 
             return $assignment;

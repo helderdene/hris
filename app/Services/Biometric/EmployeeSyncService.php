@@ -120,6 +120,26 @@ class EmployeeSyncService
     }
 
     /**
+     * Initialize sync records for all active employees at a device's work location.
+     *
+     * Used when a new biometric device is created to create pending sync records
+     * for every active employee assigned to that location.
+     *
+     * @return Collection<int, EmployeeDeviceSync>
+     */
+    public function initializeSyncRecordsForDevice(BiometricDevice $device): Collection
+    {
+        $employees = Employee::query()
+            ->active()
+            ->where('work_location_id', $device->work_location_id)
+            ->get();
+
+        return $employees->map(
+            fn (Employee $employee) => $this->getOrCreateSyncRecord($employee, $device)
+        );
+    }
+
+    /**
      * Verify an employee's presence on each device via SearchPerson and update sync records.
      *
      * Queries each device the employee should be synced to, and updates the
