@@ -5,6 +5,7 @@ namespace App\Services\Biometric;
 use App\Enums\SyncStatus;
 use App\Jobs\SyncEmployeeToDeviceJob;
 use App\Models\BiometricDevice;
+use App\Models\DeviceSyncLog;
 use App\Models\Employee;
 use App\Models\EmployeeDeviceSync;
 use Illuminate\Support\Collection;
@@ -101,6 +102,64 @@ class EmployeeSyncService
         return $employees->map(
             fn (Employee $employee) => $this->syncEmployeeToDevice($employee, $device, false)
         );
+    }
+
+    /**
+     * Unsync (delete) an employee from a specific device.
+     *
+     * Sends a DelPerson command and updates the sync record based on the result.
+     */
+    public function unsyncEmployeeFromDevice(Employee $employee, BiometricDevice $device): EmployeeDeviceSync
+    {
+        $syncRecord = EmployeeDeviceSync::where('employee_id', $employee->id)
+            ->where('biometric_device_id', $device->id)
+            ->firstOrFail();
+
+        try {
+            $syncLog = $this->deviceCommandService->deletePerson($device, $employee);
+
+            if ($syncLog->status === DeviceSyncLog::STATUS_ACKNOWLEDGED) {
+                $syncRecord->update([
+                    'status' => SyncStatus::Pending,
+                    'last_synced_at' => null,
+                    'last_error' => null,
+                ]);
+
+                Log::info('Employee unsynced from device', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                    'message_id' => $syncLog->message_id,
+                ]);
+            } elseif ($syncLog->status === DeviceSyncLog::STATUS_FAILED) {
+                $errorMessage = $syncLog->response_payload['info']['result'] ?? 'Device returned error';
+                $syncRecord->markFailed($errorMessage);
+
+                Log::warning('Device rejected employee unsync', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                    'message_id' => $syncLog->message_id,
+                    'error' => $errorMessage,
+                ]);
+            } else {
+                $syncRecord->markFailed('Device did not acknowledge within timeout period');
+
+                Log::warning('Employee unsync Ack timeout', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                    'message_id' => $syncLog->message_id,
+                ]);
+            }
+        } catch (\Throwable $e) {
+            $syncRecord->markFailed($e->getMessage());
+
+            Log::error('Failed to unsync employee from device', [
+                'employee_id' => $employee->id,
+                'device_id' => $device->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $syncRecord->fresh()->load('biometricDevice');
     }
 
     /**

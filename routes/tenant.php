@@ -1009,6 +1009,8 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
             ->name('api.employees.verify-devices');
         Route::post('/sync-to-devices', [BiometricSyncController::class, 'syncEmployeeToDevices'])
             ->name('api.employees.sync-to-devices');
+        Route::post('/unsync-from-device', [BiometricSyncController::class, 'unsyncEmployeeFromDevice'])
+            ->name('api.employees.unsync-from-device');
     });
 
     /*

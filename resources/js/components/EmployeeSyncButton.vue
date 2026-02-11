@@ -10,7 +10,7 @@ import {
 import { type EmployeeDeviceSync } from '@/types/sync';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { CheckCircle, Loader2, RefreshCw, XCircle } from 'lucide-vue-next';
+import { CheckCircle, Loader2, RefreshCw, Unlink, XCircle } from 'lucide-vue-next';
 import { computed, onMounted, ref } from 'vue';
 
 interface Props {
@@ -133,6 +133,39 @@ async function syncToAllDevices() {
         isLoading.value = false;
     }
 }
+
+async function unsyncFromDevice(deviceId: number) {
+    const statuses = displayStatuses.value;
+    const device = statuses.find((s) => s.device_id === deviceId);
+    const deviceName = device?.device_name || `Device #${deviceId}`;
+
+    if (!confirm(`Remove employee from ${deviceName}?`)) {
+        return;
+    }
+
+    loadingDeviceId.value = deviceId;
+    isLoading.value = true;
+
+    try {
+        await axios.post(
+            `/api/employees/${props.employeeId}/unsync-from-device`,
+            {
+                device_id: deviceId,
+            },
+        );
+
+        showNotification(`Removed from ${deviceName}`, 'success');
+        verifiedStatuses.value = null;
+        router.reload({ only: ['syncStatuses'] });
+        emit('sync-complete');
+    } catch (error) {
+        console.error('Unsync failed:', error);
+        showNotification(`Failed to remove from ${deviceName}`, 'error');
+    } finally {
+        isLoading.value = false;
+        loadingDeviceId.value = null;
+    }
+}
 </script>
 
 <template>
@@ -224,34 +257,51 @@ async function syncToAllDevices() {
                 <DropdownMenuSeparator
                     v-if="displayStatuses.length > 0"
                 />
-                <DropdownMenuItem
+                <template
                     v-for="sync in displayStatuses"
                     :key="sync.id"
-                    @click="syncToDevice(sync.device_id)"
-                    :disabled="
-                        isLoading && loadingDeviceId === sync.device_id
-                    "
-                    class="cursor-pointer"
                 >
-                    <span class="flex items-center gap-2">
-                        <span
-                            :class="[
-                                'h-2 w-2 rounded-full',
-                                sync.status === 'synced'
-                                    ? 'bg-green-500'
-                                    : sync.status === 'failed'
-                                      ? 'bg-red-500'
-                                      : sync.status === 'syncing'
-                                        ? 'bg-blue-500'
-                                        : 'bg-yellow-500',
-                            ]"
-                        ></span>
-                        {{
-                            sync.device_name ||
-                            `Device #${sync.device_id}`
-                        }}
-                    </span>
-                </DropdownMenuItem>
+                    <DropdownMenuItem
+                        @click="syncToDevice(sync.device_id)"
+                        :disabled="
+                            isLoading && loadingDeviceId === sync.device_id
+                        "
+                        class="cursor-pointer"
+                    >
+                        <span class="flex items-center gap-2">
+                            <span
+                                :class="[
+                                    'h-2 w-2 rounded-full',
+                                    sync.status === 'synced'
+                                        ? 'bg-green-500'
+                                        : sync.status === 'failed'
+                                          ? 'bg-red-500'
+                                          : sync.status === 'syncing'
+                                            ? 'bg-blue-500'
+                                            : 'bg-yellow-500',
+                                ]"
+                            ></span>
+                            {{
+                                sync.device_name ||
+                                `Device #${sync.device_id}`
+                            }}
+                        </span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                        v-if="
+                            sync.status === 'synced' ||
+                            sync.status === 'failed'
+                        "
+                        @click="unsyncFromDevice(sync.device_id)"
+                        :disabled="
+                            isLoading && loadingDeviceId === sync.device_id
+                        "
+                        class="cursor-pointer text-red-600 dark:text-red-400"
+                    >
+                        <Unlink class="mr-2 h-4 w-4" />
+                        Unsync {{ sync.device_name || `Device #${sync.device_id}` }}
+                    </DropdownMenuItem>
+                </template>
             </DropdownMenuContent>
         </DropdownMenu>
 

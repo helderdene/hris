@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SyncAllToDeviceRequest;
 use App\Http\Requests\SyncEmployeeRequest;
+use App\Http\Requests\UnsyncEmployeeRequest;
 use App\Http\Resources\EmployeeDeviceSyncResource;
 use App\Jobs\BulkSyncEmployeesToDeviceJob;
 use App\Models\BiometricDevice;
@@ -188,5 +189,27 @@ class BiometricSyncController extends Controller
             'message' => $message,
             'data' => EmployeeDeviceSyncResource::collection($syncRecords),
         ], $immediate ? 200 : 202);
+    }
+
+    /**
+     * Unsync (delete) an employee from a specific biometric device.
+     *
+     * Note: $tenant parameter is captured from subdomain but not used directly.
+     */
+    public function unsyncEmployeeFromDevice(
+        UnsyncEmployeeRequest $request,
+        string $tenant,
+        Employee $employee
+    ): JsonResponse {
+        Gate::authorize('can-manage-employee-documents', $employee);
+
+        $device = BiometricDevice::findOrFail($request->validated('device_id'));
+
+        $syncRecord = $this->syncService->unsyncEmployeeFromDevice($employee, $device);
+
+        return response()->json([
+            'message' => 'Unsync completed',
+            'data' => new EmployeeDeviceSyncResource($syncRecord),
+        ]);
     }
 }

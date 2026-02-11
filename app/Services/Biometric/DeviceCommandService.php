@@ -81,6 +81,42 @@ class DeviceCommandService
     }
 
     /**
+     * Send a DelPerson command to remove an employee from a device and wait for Ack.
+     */
+    public function deletePerson(BiometricDevice $device, Employee $employee): DeviceSyncLog
+    {
+        $payload = [
+            'operator' => 'DelPerson',
+            'info' => [
+                'customId' => $employee->employee_number,
+            ],
+        ];
+
+        $result = $this->mqttPublisher->publishAndWaitForAck($device, $payload);
+
+        $status = DeviceSyncLog::STATUS_SENT;
+        $responsePayload = null;
+
+        if ($result['ack'] !== null) {
+            $status = ($result['ack']['code'] ?? '') === '200'
+                ? DeviceSyncLog::STATUS_ACKNOWLEDGED
+                : DeviceSyncLog::STATUS_FAILED;
+            $responsePayload = $result['ack'];
+        }
+
+        return DeviceSyncLog::create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'operation' => DeviceSyncLog::OPERATION_DELETE_PERSON,
+            'message_id' => $result['message_id'],
+            'status' => $status,
+            'request_payload' => $payload,
+            'response_payload' => $responsePayload,
+            'sent_at' => now(),
+        ]);
+    }
+
+    /**
      * Search for an employee on a device to check if they are already registered.
      *
      * @return array{exists: bool, data: array<string, mixed>|null}
