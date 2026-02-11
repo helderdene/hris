@@ -26,7 +26,7 @@ class MqttPublisher
         $messageId = Str::uuid()->toString();
         $payload['messageId'] = $messageId;
 
-        $encodedPayload = json_encode($payload, JSON_THROW_ON_ERROR);
+        $encodedPayload = json_encode($payload, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
 
         Log::info('Publishing MQTT message to device', [
             'topic' => $topic,
@@ -42,11 +42,9 @@ class MqttPublisher
 
     /**
      * Build the MQTT topic for sending commands to a device.
-     *
-     * Commands are sent to the /Ack topic, responses come from /Rec topic.
      */
     protected function buildTopic(BiometricDevice $device): string
     {
-        return "mqtt/face/{$device->device_identifier}/Ack";
+        return "mqtt/face/{$device->device_identifier}";
     }
 }

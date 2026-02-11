@@ -26,7 +26,7 @@ class SyncEmployeeRequest extends FormRequest
     {
         return [
             'device_ids' => ['nullable', 'array'],
-            'device_ids.*' => ['integer', 'exists:biometric_devices,id'],
+            'device_ids.*' => ['integer', 'exists:tenant.biometric_devices,id'],
             'immediate' => ['nullable', 'boolean'],
         ];
     }

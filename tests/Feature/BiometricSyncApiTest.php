@@ -66,6 +66,8 @@ function createSyncAllToDeviceRequest(array $data, User $user): SyncAllToDeviceR
 
 /**
  * Helper to create a validated SyncEmployeeRequest.
+ *
+ * Uses default connection for exists rules since tests run tenant tables on the default connection.
  */
 function createSyncEmployeeRequest(array $data, User $user): SyncEmployeeRequest
 {
@@ -73,7 +75,11 @@ function createSyncEmployeeRequest(array $data, User $user): SyncEmployeeRequest
     $request->setUserResolver(fn () => $user);
     $request->setContainer(app());
 
-    $validator = Validator::make($data, (new SyncEmployeeRequest)->rules());
+    // Override tenant-prefixed exists rules to use default connection for testing
+    $rules = (new SyncEmployeeRequest)->rules();
+    $rules['device_ids.*'] = ['integer', 'exists:biometric_devices,id'];
+
+    $validator = Validator::make($data, $rules);
 
     $reflection = new ReflectionClass($request);
     $property = $reflection->getProperty('validator');
@@ -331,6 +337,8 @@ describe('Sync Employee to Devices Endpoint', function () {
         $device2 = BiometricDevice::factory()->create(['work_location_id' => $workLocation->id]);
 
         $rules = (new SyncEmployeeRequest)->rules();
+        // Override tenant-prefixed exists rules to use default connection for testing
+        $rules['device_ids.*'] = ['integer', 'exists:biometric_devices,id'];
 
         $validData = ['device_ids' => [$device1->id, $device2->id], 'immediate' => true];
         $validator = Validator::make($validData, $rules);
