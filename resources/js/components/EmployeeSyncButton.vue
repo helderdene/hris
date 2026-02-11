@@ -10,8 +10,8 @@ import {
 import { type EmployeeDeviceSync } from '@/types/sync';
 import { router } from '@inertiajs/vue3';
 import axios from 'axios';
-import { CheckCircle, XCircle } from 'lucide-vue-next';
-import { computed, ref } from 'vue';
+import { CheckCircle, Loader2, RefreshCw, XCircle } from 'lucide-vue-next';
+import { computed, onMounted, ref } from 'vue';
 
 interface Props {
     employeeId: number;
@@ -25,6 +25,8 @@ const emit = defineEmits<{
 
 const isLoading = ref(false);
 const loadingDeviceId = ref<number | null>(null);
+const isVerifying = ref(false);
+const verifiedStatuses = ref<EmployeeDeviceSync[] | null>(null);
 
 const notification = ref<{ message: string; type: 'success' | 'error' } | null>(null);
 let notificationTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -39,14 +41,49 @@ function showNotification(message: string, type: 'success' | 'error') {
     }, 4000);
 }
 
-const hasPendingSyncs = computed(() =>
-    props.syncStatuses.some(
-        (s) => s.status === 'pending' || s.status === 'failed'
-    )
+const displayStatuses = computed(() =>
+    verifiedStatuses.value ?? props.syncStatuses,
 );
 
+const hasPendingSyncs = computed(() =>
+    displayStatuses.value.some(
+        (s) => s.status === 'pending' || s.status === 'failed',
+    ),
+);
+
+const allSynced = computed(
+    () =>
+        displayStatuses.value.length > 0 &&
+        displayStatuses.value.every((s) => s.status === 'synced'),
+);
+
+async function verifyDevices() {
+    if (props.syncStatuses.length === 0) {
+        return;
+    }
+
+    isVerifying.value = true;
+
+    try {
+        const response = await axios.get(
+            `/api/employees/${props.employeeId}/verify-devices`,
+        );
+
+        verifiedStatuses.value = response.data.data;
+    } catch {
+        // Silently fall back to prop-based statuses
+    } finally {
+        isVerifying.value = false;
+    }
+}
+
+onMounted(() => {
+    verifyDevices();
+});
+
 async function syncToDevice(deviceId: number) {
-    const device = props.syncStatuses.find((s) => s.device_id === deviceId);
+    const statuses = displayStatuses.value;
+    const device = statuses.find((s) => s.device_id === deviceId);
     const deviceName = device?.device_name || `Device #${deviceId}`;
 
     loadingDeviceId.value = deviceId;
@@ -62,6 +99,7 @@ async function syncToDevice(deviceId: number) {
         );
 
         showNotification(`Synced to ${deviceName}`, 'success');
+        verifiedStatuses.value = null;
         router.reload({ only: ['syncStatuses'] });
         emit('sync-complete');
     } catch (error) {
@@ -85,6 +123,7 @@ async function syncToAllDevices() {
         );
 
         showNotification('Sync jobs queued for all devices', 'success');
+        verifiedStatuses.value = null;
         router.reload({ only: ['syncStatuses'] });
         emit('sync-complete');
     } catch (error) {
@@ -98,35 +137,39 @@ async function syncToAllDevices() {
 
 <template>
     <div class="relative">
-        <DropdownMenu>
+        <!-- All devices verified as synced -->
+        <div v-if="allSynced && !isVerifying" class="flex items-center gap-2">
+            <span
+                class="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1.5 text-sm font-medium text-green-700 ring-1 ring-green-600/20 ring-inset dark:bg-green-500/10 dark:text-green-400 dark:ring-green-500/20"
+            >
+                <CheckCircle class="h-3.5 w-3.5" />
+                Synced
+            </span>
+            <Button
+                variant="ghost"
+                size="sm"
+                class="h-7 w-7 p-0"
+                :disabled="isLoading"
+                @click="syncToAllDevices"
+                title="Re-sync to all devices"
+            >
+                <RefreshCw class="h-3.5 w-3.5" />
+            </Button>
+        </div>
+
+        <!-- Verifying or needs sync -->
+        <DropdownMenu v-else>
             <DropdownMenuTrigger as-child>
                 <Button
                     variant="outline"
                     size="sm"
-                    :disabled="isLoading || syncStatuses.length === 0"
+                    :disabled="isLoading || displayStatuses.length === 0"
                     class="gap-2"
                 >
-                    <svg
-                        v-if="isLoading"
+                    <Loader2
+                        v-if="isLoading || isVerifying"
                         class="h-4 w-4 animate-spin"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                    >
-                        <circle
-                            class="opacity-25"
-                            cx="12"
-                            cy="12"
-                            r="10"
-                            stroke="currentColor"
-                            stroke-width="4"
-                        ></circle>
-                        <path
-                            class="opacity-75"
-                            fill="currentColor"
-                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                    </svg>
+                    />
                     <svg
                         v-else
                         class="h-4 w-4"
@@ -142,9 +185,9 @@ async function syncToAllDevices() {
                             d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99"
                         />
                     </svg>
-                    Sync to Devices
+                    {{ isVerifying ? 'Verifying...' : 'Sync to Devices' }}
                     <span
-                        v-if="hasPendingSyncs"
+                        v-if="hasPendingSyncs && !isVerifying"
                         class="flex h-2 w-2"
                     >
                         <span
@@ -178,12 +221,16 @@ async function syncToAllDevices() {
                     </svg>
                     Sync to All Devices
                 </DropdownMenuItem>
-                <DropdownMenuSeparator v-if="syncStatuses.length > 0" />
+                <DropdownMenuSeparator
+                    v-if="displayStatuses.length > 0"
+                />
                 <DropdownMenuItem
-                    v-for="sync in syncStatuses"
+                    v-for="sync in displayStatuses"
                     :key="sync.id"
                     @click="syncToDevice(sync.device_id)"
-                    :disabled="isLoading && loadingDeviceId === sync.device_id"
+                    :disabled="
+                        isLoading && loadingDeviceId === sync.device_id
+                    "
                     class="cursor-pointer"
                 >
                     <span class="flex items-center gap-2">
@@ -199,7 +246,10 @@ async function syncToAllDevices() {
                                         : 'bg-yellow-500',
                             ]"
                         ></span>
-                        {{ sync.device_name || `Device #${sync.device_id}` }}
+                        {{
+                            sync.device_name ||
+                            `Device #${sync.device_id}`
+                        }}
                     </span>
                 </DropdownMenuItem>
             </DropdownMenuContent>

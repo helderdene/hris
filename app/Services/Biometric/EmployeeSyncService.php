@@ -120,6 +120,49 @@ class EmployeeSyncService
     }
 
     /**
+     * Verify an employee's presence on each device via SearchPerson and update sync records.
+     *
+     * Queries each device the employee should be synced to, and updates the
+     * EmployeeDeviceSync records to reflect the actual device state.
+     *
+     * @return Collection<int, EmployeeDeviceSync>
+     */
+    public function verifyEmployeeOnDevices(Employee $employee): Collection
+    {
+        $devices = $employee->getDevicesToSyncTo();
+
+        if ($devices->isEmpty()) {
+            return collect();
+        }
+
+        return $devices->map(function (BiometricDevice $device) use ($employee) {
+            $syncRecord = $this->getOrCreateSyncRecord($employee, $device);
+
+            try {
+                $result = $this->deviceCommandService->searchPerson($device, $employee);
+
+                if ($result['exists']) {
+                    $syncRecord->markSynced();
+                } else {
+                    // Only downgrade to pending if currently marked as synced
+                    if ($syncRecord->status === SyncStatus::Synced) {
+                        $syncRecord->update(['status' => SyncStatus::Pending]);
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Device verification failed', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                    'error' => $e->getMessage(),
+                ]);
+                // Leave current status unchanged on error
+            }
+
+            return $syncRecord->fresh()->load('biometricDevice');
+        });
+    }
+
+    /**
      * Get the sync status for an employee across all devices.
      *
      * @return Collection<int, EmployeeDeviceSync>
@@ -174,6 +217,26 @@ class EmployeeSyncService
     }
 
     /**
+     * Check if an employee already exists on a device via SearchPerson.
+     */
+    protected function isAlreadyOnDevice(Employee $employee, BiometricDevice $device): bool
+    {
+        try {
+            $result = $this->deviceCommandService->searchPerson($device, $employee);
+
+            return $result['exists'];
+        } catch (\Throwable $e) {
+            Log::warning('SearchPerson check failed, proceeding with sync', [
+                'employee_id' => $employee->id,
+                'device_id' => $device->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return false;
+        }
+    }
+
+    /**
      * Perform an immediate sync operation (fire-and-forget).
      */
     protected function performImmediateSync(
@@ -182,6 +245,16 @@ class EmployeeSyncService
         BiometricDevice $device
     ): EmployeeDeviceSync {
         try {
+            if ($this->isAlreadyOnDevice($employee, $device)) {
+                $syncRecord->markSynced();
+                Log::info('Employee already on device, skipping sync', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                ]);
+
+                return $syncRecord->fresh();
+            }
+
             $syncLog = $this->deviceCommandService->editPerson($device, $employee);
             $syncRecord->markSyncing($syncLog->message_id);
             $syncRecord->markSynced();
@@ -215,6 +288,16 @@ class EmployeeSyncService
         BiometricDevice $device
     ): EmployeeDeviceSync {
         try {
+            if ($this->isAlreadyOnDevice($employee, $device)) {
+                $syncRecord->markSynced();
+                Log::info('Employee already on device, skipping sync', [
+                    'employee_id' => $employee->id,
+                    'device_id' => $device->id,
+                ]);
+
+                return $syncRecord->fresh();
+            }
+
             $syncLog = $this->deviceCommandService->editPersonAndWaitForAck($device, $employee);
             $syncRecord->markSyncing($syncLog->message_id);
 

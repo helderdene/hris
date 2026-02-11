@@ -134,6 +134,24 @@ class BiometricSyncController extends Controller
     }
 
     /**
+     * Verify an employee's actual presence on each device via MQTT SearchPerson.
+     *
+     * Queries devices and updates sync records to reflect real-time device state.
+     *
+     * Note: $tenant parameter is captured from subdomain but not used directly.
+     */
+    public function verifyEmployeeDevices(string $tenant, Employee $employee): JsonResponse
+    {
+        Gate::authorize('can-view-employee-documents', $employee);
+
+        $syncStatuses = $this->syncService->verifyEmployeeOnDevices($employee);
+
+        return response()->json([
+            'data' => EmployeeDeviceSyncResource::collection($syncStatuses),
+        ]);
+    }
+
+    /**
      * Trigger sync for an employee to specific devices or all devices.
      *
      * Note: $tenant parameter is captured from subdomain but not used directly.

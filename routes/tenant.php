@@ -29,6 +29,8 @@ use App\Http\Controllers\Api\EmployeeController as ApiEmployeeController;
 use App\Http\Controllers\Api\EmployeeDocumentController;
 use App\Http\Controllers\Api\EmployeeLoanController;
 use App\Http\Controllers\Api\EmployeeScheduleAssignmentController;
+use App\Http\Controllers\Api\HelpArticleController;
+use App\Http\Controllers\Api\HelpCategoryController;
 use App\Http\Controllers\Api\HolidayController;
 use App\Http\Controllers\Api\LeaveBalanceController;
 use App\Http\Controllers\Api\LeaveTypeController;
@@ -60,6 +62,7 @@ use App\Http\Controllers\DtrController;
 use App\Http\Controllers\EmployeeAssignmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDashboardController;
+use App\Http\Controllers\Help\HelpCenterController;
 use App\Http\Controllers\Hr\CertificationPageController;
 use App\Http\Controllers\HRAnalyticsDashboardController;
 use App\Http\Controllers\LoanApprovalPageController;
@@ -84,9 +87,6 @@ use App\Http\Controllers\Reports\BirReportPageController;
 use App\Http\Controllers\Reports\PagibigReportPageController;
 use App\Http\Controllers\Reports\PhilhealthReportPageController;
 use App\Http\Controllers\Reports\SssReportPageController;
-use App\Http\Controllers\Api\HelpArticleController;
-use App\Http\Controllers\Api\HelpCategoryController;
-use App\Http\Controllers\Help\HelpCenterController;
 use App\Http\Controllers\Settings\AuditLogPageController;
 use App\Http\Controllers\Settings\HelpAdminPageController;
 use App\Http\Controllers\TrainingController;
@@ -1005,6 +1005,8 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
     Route::prefix('employees/{employee}')->group(function () {
         Route::get('/sync-status', [BiometricSyncController::class, 'employeeSyncStatus'])
             ->name('api.employees.sync-status');
+        Route::get('/verify-devices', [BiometricSyncController::class, 'verifyEmployeeDevices'])
+            ->name('api.employees.verify-devices');
         Route::post('/sync-to-devices', [BiometricSyncController::class, 'syncEmployeeToDevices'])
             ->name('api.employees.sync-to-devices');
     });

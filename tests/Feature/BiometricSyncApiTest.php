@@ -291,6 +291,185 @@ describe('Employee Sync Status Endpoint', function () {
     });
 });
 
+describe('Verify Employee Devices Endpoint', function () {
+    it('marks employee as synced when found on device', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'test-tenant']);
+        bindTenantContextForBiometricSyncApi($tenant);
+
+        $hrManager = createTenantUserForBiometricSyncApi($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        $workLocation = WorkLocation::factory()->create(['status' => 'active']);
+        $employee = Employee::factory()->active()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        $device = BiometricDevice::factory()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        EmployeeDeviceSync::factory()->pending()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+        ]);
+
+        $mockDeviceCommandService = mock(DeviceCommandService::class);
+        $mockDeviceCommandService->shouldReceive('searchPerson')
+            ->once()
+            ->andReturn(['exists' => true, 'data' => ['customId' => $employee->employee_number]]);
+
+        $syncService = new EmployeeSyncService($mockDeviceCommandService);
+
+        $controller = new BiometricSyncController($syncService);
+        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+
+        $data = json_decode($response->getContent(), true);
+
+        expect($response->getStatusCode())->toBe(200);
+        expect($data['data'])->toHaveCount(1);
+        expect($data['data'][0]['status'])->toBe('synced');
+    });
+
+    it('marks synced record as pending when not found on device', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'test-tenant']);
+        bindTenantContextForBiometricSyncApi($tenant);
+
+        $hrManager = createTenantUserForBiometricSyncApi($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        $workLocation = WorkLocation::factory()->create(['status' => 'active']);
+        $employee = Employee::factory()->active()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        $device = BiometricDevice::factory()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        EmployeeDeviceSync::factory()->synced()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+        ]);
+
+        $mockDeviceCommandService = mock(DeviceCommandService::class);
+        $mockDeviceCommandService->shouldReceive('searchPerson')
+            ->once()
+            ->andReturn(['exists' => false, 'data' => null]);
+
+        $syncService = new EmployeeSyncService($mockDeviceCommandService);
+
+        $controller = new BiometricSyncController($syncService);
+        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+
+        $data = json_decode($response->getContent(), true);
+
+        expect($response->getStatusCode())->toBe(200);
+        expect($data['data'])->toHaveCount(1);
+        expect($data['data'][0]['status'])->toBe('pending');
+    });
+
+    it('leaves failed status unchanged when not found on device', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'test-tenant']);
+        bindTenantContextForBiometricSyncApi($tenant);
+
+        $hrManager = createTenantUserForBiometricSyncApi($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        $workLocation = WorkLocation::factory()->create(['status' => 'active']);
+        $employee = Employee::factory()->active()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        $device = BiometricDevice::factory()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        EmployeeDeviceSync::factory()->failed()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+        ]);
+
+        $mockDeviceCommandService = mock(DeviceCommandService::class);
+        $mockDeviceCommandService->shouldReceive('searchPerson')
+            ->once()
+            ->andReturn(['exists' => false, 'data' => null]);
+
+        $syncService = new EmployeeSyncService($mockDeviceCommandService);
+
+        $controller = new BiometricSyncController($syncService);
+        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+
+        $data = json_decode($response->getContent(), true);
+
+        expect($response->getStatusCode())->toBe(200);
+        expect($data['data'][0]['status'])->toBe('failed');
+    });
+
+    it('leaves status unchanged when device query fails', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'test-tenant']);
+        bindTenantContextForBiometricSyncApi($tenant);
+
+        $hrManager = createTenantUserForBiometricSyncApi($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        $workLocation = WorkLocation::factory()->create(['status' => 'active']);
+        $employee = Employee::factory()->active()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        $device = BiometricDevice::factory()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        EmployeeDeviceSync::factory()->synced()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+        ]);
+
+        $mockDeviceCommandService = mock(DeviceCommandService::class);
+        $mockDeviceCommandService->shouldReceive('searchPerson')
+            ->once()
+            ->andThrow(new \RuntimeException('MQTT connection failed'));
+
+        $syncService = new EmployeeSyncService($mockDeviceCommandService);
+
+        $controller = new BiometricSyncController($syncService);
+        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+
+        $data = json_decode($response->getContent(), true);
+
+        expect($response->getStatusCode())->toBe(200);
+        expect($data['data'][0]['status'])->toBe('synced');
+    });
+
+    it('returns empty data when employee has no devices to sync to', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'test-tenant']);
+        bindTenantContextForBiometricSyncApi($tenant);
+
+        $hrManager = createTenantUserForBiometricSyncApi($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        // Employee at a work location with no devices
+        $workLocation = WorkLocation::factory()->create(['status' => 'active']);
+        $employee = Employee::factory()->active()->create([
+            'work_location_id' => $workLocation->id,
+        ]);
+
+        $mockDeviceCommandService = mock(DeviceCommandService::class);
+        $mockDeviceCommandService->shouldNotReceive('searchPerson');
+
+        $syncService = new EmployeeSyncService($mockDeviceCommandService);
+
+        $controller = new BiometricSyncController($syncService);
+        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+
+        $data = json_decode($response->getContent(), true);
+
+        expect($response->getStatusCode())->toBe(200);
+        expect($data['data'])->toBeEmpty();
+    });
+});
+
 describe('Sync Employee to Devices Endpoint', function () {
     it('syncs employee to specific devices', function () {
         $tenant = Tenant::factory()->create(['slug' => 'test-tenant']);

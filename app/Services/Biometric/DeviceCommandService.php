@@ -81,6 +81,47 @@ class DeviceCommandService
     }
 
     /**
+     * Search for an employee on a device to check if they are already registered.
+     *
+     * @return array{exists: bool, data: array<string, mixed>|null}
+     */
+    public function searchPerson(BiometricDevice $device, Employee $employee): array
+    {
+        $payload = [
+            'operator' => 'SearchPerson',
+            'info' => [
+                'customId' => $employee->employee_number,
+                'Picture' => 0,
+            ],
+        ];
+
+        $result = $this->mqttPublisher->publishAndWaitForAck($device, $payload);
+
+        if ($result['ack'] === null) {
+            Log::warning('SearchPerson Ack timeout', [
+                'employee_id' => $employee->id,
+                'device_id' => $device->id,
+            ]);
+
+            return ['exists' => false, 'data' => null];
+        }
+
+        $exists = ($result['ack']['code'] ?? '') === '200'
+            && ($result['ack']['info']['result'] ?? '') === 'ok';
+
+        Log::info('SearchPerson result', [
+            'employee_id' => $employee->id,
+            'device_id' => $device->id,
+            'exists' => $exists,
+        ]);
+
+        return [
+            'exists' => $exists,
+            'data' => $exists ? $result['ack']['info'] : null,
+        ];
+    }
+
+    /**
      * Build the EditPerson payload for the MQTT message.
      *
      * @return array<string, mixed>
