@@ -23,7 +23,7 @@ class TenantSampleDataSeeder extends Seeder
     /**
      * Run the database seeds.
      */
-    public function run(): void
+    public function run(?string $tenantSlug = null): void
     {
         $tenants = Tenant::all();
 
@@ -33,11 +33,13 @@ class TenantSampleDataSeeder extends Seeder
             return;
         }
 
-        $tenantSlug = select(
-            label: 'Which tenant do you want to seed?',
-            options: $tenants->pluck('name', 'slug')->toArray(),
-            default: 'test',
-        );
+        if ($tenantSlug === null) {
+            $tenantSlug = select(
+                label: 'Which tenant do you want to seed?',
+                options: $tenants->pluck('name', 'slug')->toArray(),
+                default: 'test',
+            );
+        }
 
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
 

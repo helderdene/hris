@@ -80,7 +80,7 @@ class DemoCompanySeeder extends Seeder
      * Run the database seeds.
      *
      * Creates a complete demo company with realistic data across all modules.
-     * Requires TenantSampleDataSeeder to be run first for foundation data.
+     * Automatically runs TenantSampleDataSeeder if no employees exist.
      *
      * Usage: php artisan db:seed --class=DemoCompanySeeder
      */
@@ -110,10 +110,11 @@ class DemoCompanySeeder extends Seeder
         $this->command->info('--- Phase 1: Foundation Data ---');
 
         if (Employee::count() === 0) {
-            $this->command->error('No employees found. Please run TenantSampleDataSeeder first:');
-            $this->command->info('  php artisan db:seed --class=TenantSampleDataSeeder');
+            $this->command->info('No employees found. Running TenantSampleDataSeeder...');
 
-            return;
+            $tenantSeeder = new TenantSampleDataSeeder;
+            $tenantSeeder->setCommand($this->command);
+            $tenantSeeder->run($this->tenant->slug);
         }
 
         $this->command->info('Foundation employee data found ('.Employee::count().' employees).');
@@ -1131,6 +1132,7 @@ class DemoCompanySeeder extends Seeder
         $positions = Position::all()->keyBy('code');
         $hrDirector = Employee::whereHas('position', fn ($q) => $q->where('code', 'HRD-001'))->first();
         $itDirector = Employee::whereHas('position', fn ($q) => $q->where('code', 'ITD-001'))->first();
+        $financeDirector = Employee::whereHas('position', fn ($q) => $q->where('code', 'FND-001'))->first();
 
         // Job Requisitions
         $requisitions = [];
@@ -1192,6 +1194,7 @@ class DemoCompanySeeder extends Seeder
             $requisitions[] = JobRequisition::create([
                 'position_id' => $positions['AC1-001']->id,
                 'department_id' => $departments['FIN-ACC']->id,
+                'requested_by_employee_id' => $financeDirector?->id,
                 'headcount' => 1,
                 'employment_type' => EmploymentType::Probationary,
                 'salary_range_min' => 25000,
