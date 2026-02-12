@@ -3,31 +3,26 @@ import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { toUrl, urlIsActive } from '@/lib/utils';
-import { edit as editAppearance } from '@/routes/appearance';
-import { edit as editProfile } from '@/routes/profile';
-import { show } from '@/routes/two-factor';
-import { edit as editPassword } from '@/routes/user-password';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
-const sidebarNavItems: NavItem[] = [
-    {
-        title: 'Profile',
-        href: editProfile(),
-    },
-    {
-        title: 'Password',
-        href: editPassword(),
-    },
-    {
-        title: 'Two-Factor Auth',
-        href: show(),
-    },
-    {
-        title: 'Appearance',
-        href: editAppearance(),
-    },
-];
+const page = usePage();
+
+const sidebarNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        { title: 'Profile', href: '/settings/profile' },
+        { title: 'Password', href: '/settings/password' },
+    ];
+
+    if (page.props.features?.twoFactorAuthentication) {
+        items.push({ title: 'Two-Factor Auth', href: '/settings/two-factor' });
+    }
+
+    items.push({ title: 'Appearance', href: '/settings/appearance' });
+
+    return items;
+});
 
 const currentPath = typeof window !== undefined ? window.location.pathname : '';
 </script>

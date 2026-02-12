@@ -6,13 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useTwoFactorAuth } from '@/composables/useTwoFactorAuth';
 import AppLayout from '@/layouts/AppLayout.vue';
+import TenantLayout from '@/layouts/TenantLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { show } from '@/routes/two-factor';
 import { BreadcrumbItem } from '@/types';
 import { disable, enable } from '@/utils/twoFactorMocks';
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, usePage } from '@inertiajs/vue3';
 import { ShieldBan, ShieldCheck } from 'lucide-vue-next';
-import { onUnmounted, ref } from 'vue';
+import { computed, onUnmounted, ref } from 'vue';
 
 interface Props {
     requiresConfirmation?: boolean;
@@ -24,10 +24,13 @@ withDefaults(defineProps<Props>(), {
     twoFactorEnabled: false,
 });
 
+const page = usePage();
+const layout = computed(() => (page.props.tenant ? TenantLayout : AppLayout));
+
 const breadcrumbs: BreadcrumbItem[] = [
     {
         title: 'Two-Factor Authentication',
-        href: show.url(),
+        href: '/settings/two-factor',
     },
 ];
 
@@ -40,7 +43,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbs">
+    <component :is="layout" :breadcrumbs="breadcrumbs">
         <Head title="Two-Factor Authentication" />
         <SettingsLayout>
             <div class="space-y-6">
@@ -118,5 +121,5 @@ onUnmounted(() => {
                 />
             </div>
         </SettingsLayout>
-    </AppLayout>
+    </component>
 </template>

@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
-import { edit } from '@/routes/profile';
 import { send } from '@/routes/verification';
 import { Form, Head, Link, usePage } from '@inertiajs/vue3';
 
@@ -11,8 +9,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AppLayout from '@/layouts/AppLayout.vue';
+import TenantLayout from '@/layouts/TenantLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
 import { type BreadcrumbItem } from '@/types';
+import { computed } from 'vue';
 
 interface Props {
     mustVerifyEmail: boolean;
@@ -24,16 +24,17 @@ defineProps<Props>();
 const breadcrumbItems: BreadcrumbItem[] = [
     {
         title: 'Profile settings',
-        href: edit().url,
+        href: '/settings/profile',
     },
 ];
 
 const page = usePage();
 const user = page.props.auth.user;
+const layout = computed(() => (page.props.tenant ? TenantLayout : AppLayout));
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbItems">
+    <component :is="layout" :breadcrumbs="breadcrumbItems">
         <Head title="Profile settings" />
 
         <SettingsLayout>
@@ -44,7 +45,8 @@ const user = page.props.auth.user;
                 />
 
                 <Form
-                    v-bind="ProfileController.update.form()"
+                    action="/settings/profile"
+                    method="patch"
                     class="space-y-6"
                     v-slot="{ errors, processing, recentlySuccessful }"
                 >
@@ -124,5 +126,5 @@ const user = page.props.auth.user;
 
             <DeleteUser />
         </SettingsLayout>
-    </AppLayout>
+    </component>
 </template>

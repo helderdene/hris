@@ -9,6 +9,7 @@ use App\Models\Tenant;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Laravel\Fortify\Features;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -54,6 +55,9 @@ class HandleInertiaRequests extends Middleware
                 'error' => fn () => $request->session()->get('error'),
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'features' => [
+                'twoFactorAuthentication' => Features::enabled(Features::twoFactorAuthentication()),
+            ],
             // Use lazy evaluation so tenant is resolved after ResolveTenant middleware runs
             'tenant' => fn () => $this->getTenantContext($request),
         ];
