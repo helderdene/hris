@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Events\AttendanceLogReceived;
 use App\Services\Attendance\AttendanceLogProcessor;
+use App\Services\Attendance\HeartbeatProcessor;
 use App\Services\Attendance\MqttMessageParser;
 use Illuminate\Console\Command;
 use PhpMqtt\Client\Facades\MQTT;
@@ -17,7 +18,8 @@ class SubscribeMqttAttendance extends Command
      * @var string
      */
     protected $signature = 'mqtt:subscribe-attendance
-                            {--topic=mqtt/face/+/Rec : The MQTT topic pattern to subscribe to}';
+                            {--topic=mqtt/face/+/Rec : The MQTT topic pattern to subscribe to}
+                            {--heartbeat-topic=mqtt/face/heartbeat : The MQTT heartbeat topic}';
 
     /**
      * The console command description.
@@ -41,12 +43,17 @@ class SubscribeMqttAttendance extends Command
     /**
      * Execute the console command.
      */
-    public function handle(MqttMessageParser $parser, AttendanceLogProcessor $processor): int
-    {
+    public function handle(
+        MqttMessageParser $parser,
+        AttendanceLogProcessor $processor,
+        HeartbeatProcessor $heartbeatProcessor
+    ): int {
         $topic = $this->option('topic');
+        $heartbeatTopic = $this->option('heartbeat-topic');
 
         $this->info('Starting MQTT attendance subscriber...');
         $this->info("Subscribing to topic: {$topic}");
+        $this->info("Subscribing to heartbeat topic: {$heartbeatTopic}");
 
         // Register signal handlers for graceful shutdown
         if (extension_loaded('pcntl')) {
@@ -66,6 +73,14 @@ class SubscribeMqttAttendance extends Command
                     $this->processMessage($topic, $message, $parser, $processor);
                 },
                 MqttClient::QOS_AT_LEAST_ONCE
+            );
+
+            $mqtt->subscribe(
+                $heartbeatTopic,
+                function (string $topic, string $message) use ($heartbeatProcessor) {
+                    $this->processHeartbeat($topic, $message, $heartbeatProcessor);
+                },
+                MqttClient::QOS_AT_MOST_ONCE
             );
 
             $this->info('Subscribed successfully. Waiting for messages...');
@@ -131,6 +146,23 @@ class SubscribeMqttAttendance extends Command
         } catch (\Throwable $e) {
             $this->error("Error processing message: {$e->getMessage()}");
             $this->error("File: {$e->getFile()}:{$e->getLine()}");
+        }
+    }
+
+    /**
+     * Process an incoming MQTT heartbeat message.
+     */
+    private function processHeartbeat(
+        string $topic,
+        string $message,
+        HeartbeatProcessor $heartbeatProcessor
+    ): void {
+        $this->line("Received heartbeat on topic: {$topic}");
+
+        try {
+            $heartbeatProcessor->process($message);
+        } catch (\Throwable $e) {
+            $this->error("Error processing heartbeat: {$e->getMessage()}");
         }
     }
 

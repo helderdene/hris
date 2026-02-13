@@ -2,6 +2,7 @@
 
 use App\Jobs\CheckOverduePreboardingJob;
 use App\Jobs\ExpireCarryOverBalancesJob;
+use App\Jobs\MarkOfflineDevicesJob;
 use App\Jobs\MonthlyLeaveAccrualJob;
 use App\Jobs\ScheduledBatchSyncJob;
 use App\Jobs\YearEndLeaveProcessingJob;
@@ -22,6 +23,12 @@ Artisan::command('inspire', function () {
 | at the intervals specified.
 |
 */
+
+// Biometric device heartbeat staleness check - every 2 minutes
+Schedule::job(new MarkOfflineDevicesJob)
+    ->everyTwoMinutes()
+    ->withoutOverlapping()
+    ->name('mark-offline-devices');
 
 // Biometric device sync - every 15 minutes
 Schedule::job(new ScheduledBatchSyncJob)->everyFifteenMinutes()->withoutOverlapping();
