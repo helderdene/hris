@@ -37,6 +37,7 @@ const dayOptions: EnumOption[] = [
     { value: 'thursday', label: 'Thursday' },
     { value: 'friday', label: 'Friday' },
     { value: 'saturday', label: 'Saturday' },
+    { value: 'sunday', label: 'Sunday' },
 ];
 
 const days = [
@@ -46,6 +47,7 @@ const days = [
     { value: 'thursday', label: 'Thu' },
     { value: 'friday', label: 'Fri' },
     { value: 'saturday', label: 'Sat' },
+    { value: 'sunday', label: 'Sun' },
 ];
 
 const workDays = computed({

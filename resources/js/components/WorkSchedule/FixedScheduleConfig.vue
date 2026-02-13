@@ -27,6 +27,7 @@ const days = [
     { value: 'thursday', label: 'Thu' },
     { value: 'friday', label: 'Fri' },
     { value: 'saturday', label: 'Sat' },
+    { value: 'sunday', label: 'Sun' },
 ];
 
 const workDays = computed({
