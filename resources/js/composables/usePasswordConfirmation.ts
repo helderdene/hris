@@ -1,4 +1,3 @@
-import { confirmation } from '@/routes/password';
 import { readonly, ref } from 'vue';
 
 /**
@@ -70,7 +69,7 @@ export const usePasswordConfirmation = () => {
      */
     const checkConfirmationStatus = async (): Promise<boolean> => {
         try {
-            const response = await fetch(confirmation.url(), {
+            const response = await fetch('/api/password/confirmation-status', {
                 method: 'GET',
                 headers: {
                     Accept: 'application/json',

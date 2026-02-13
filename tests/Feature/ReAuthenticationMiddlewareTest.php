@@ -4,7 +4,7 @@
  * Tests for Re-Authentication Middleware Application.
  *
  * These tests verify that sensitive actions (user role changes, user deactivation)
- * require password confirmation via the `password.confirm` middleware, while
+ * require password confirmation via the `tenant.password.confirm` middleware, while
  * regular endpoints do not require re-authentication.
  *
  * The password confirmation is valid for 3 hours (10800 seconds) as configured
@@ -75,9 +75,7 @@ beforeEach(function () {
 });
 
 describe('Re-Authentication Middleware Configuration', function () {
-    it('has password.confirm middleware applied to role change route', function () {
-        // Re-register routes to access them in the test
-        // This tests that the route file correctly applies the middleware
+    it('has tenant.password.confirm middleware applied to role change route', function () {
         $routeCollection = Route::getRoutes();
 
         // Find the route for user update
@@ -91,12 +89,12 @@ describe('Re-Authentication Middleware Configuration', function () {
 
         expect($updateRoute)->not->toBeNull();
 
-        // Check that password.confirm middleware is applied
+        // Check that tenant.password.confirm middleware is applied
         $middleware = $updateRoute->middleware();
-        expect($middleware)->toContain('password.confirm');
+        expect($middleware)->toContain('tenant.password.confirm');
     });
 
-    it('has password.confirm middleware applied to user deactivation route', function () {
+    it('has tenant.password.confirm middleware applied to user deactivation route', function () {
         $routeCollection = Route::getRoutes();
 
         // Find the route for user deletion
@@ -110,12 +108,12 @@ describe('Re-Authentication Middleware Configuration', function () {
 
         expect($deleteRoute)->not->toBeNull();
 
-        // Check that password.confirm middleware is applied
+        // Check that tenant.password.confirm middleware is applied
         $middleware = $deleteRoute->middleware();
-        expect($middleware)->toContain('password.confirm');
+        expect($middleware)->toContain('tenant.password.confirm');
     });
 
-    it('does NOT have password.confirm middleware on user listing route', function () {
+    it('does NOT have tenant.password.confirm middleware on user listing route', function () {
         $routeCollection = Route::getRoutes();
 
         // Find the route for user listing
@@ -132,12 +130,12 @@ describe('Re-Authentication Middleware Configuration', function () {
 
         expect($indexRoute)->not->toBeNull();
 
-        // Check that password.confirm middleware is NOT applied
+        // Check that tenant.password.confirm middleware is NOT applied
         $middleware = $indexRoute->middleware();
-        expect($middleware)->not->toContain('password.confirm');
+        expect($middleware)->not->toContain('tenant.password.confirm');
     });
 
-    it('does NOT have password.confirm middleware on user invite route', function () {
+    it('does NOT have tenant.password.confirm middleware on user invite route', function () {
         $routeCollection = Route::getRoutes();
 
         // Find the route for user invite
@@ -151,9 +149,9 @@ describe('Re-Authentication Middleware Configuration', function () {
 
         expect($inviteRoute)->not->toBeNull();
 
-        // Check that password.confirm middleware is NOT applied
+        // Check that tenant.password.confirm middleware is NOT applied
         $middleware = $inviteRoute->middleware();
-        expect($middleware)->not->toContain('password.confirm');
+        expect($middleware)->not->toContain('tenant.password.confirm');
     });
 });
 

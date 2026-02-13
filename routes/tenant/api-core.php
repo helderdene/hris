@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\AuditLogController;
 use App\Http\Controllers\Api\HelpArticleController;
 use App\Http\Controllers\Api\HelpCategoryController;
 use App\Http\Controllers\Api\NotificationController;
+use App\Http\Controllers\Api\PasswordConfirmationController;
 use App\Http\Controllers\Api\TenantPayrollSettingsController;
 use App\Http\Controllers\Api\TenantUserController;
 use Illuminate\Support\Facades\Route;
@@ -55,6 +56,21 @@ Route::prefix('evaluation-reviewers/{reviewer}')->group(function () {
 Route::post('/participants/{participant}/summary/acknowledge', [\App\Http\Controllers\Api\EvaluationSummaryController::class, 'acknowledge'])
     ->name('api.evaluation-summary.acknowledge');
 
+/*
+|--------------------------------------------------------------------------
+| Password Confirmation API (Tenant-Scoped)
+|--------------------------------------------------------------------------
+|
+| These endpoints mirror Fortify's password confirmation functionality
+| but are scoped to the tenant subdomain to avoid cross-origin issues.
+|
+*/
+
+Route::get('/password/confirmation-status', [PasswordConfirmationController::class, 'status'])
+    ->name('api.tenant.password.confirmation');
+Route::post('/password/confirm', [PasswordConfirmationController::class, 'store'])
+    ->name('api.tenant.password.confirm');
+
 // User Management API
 // These endpoints allow Admin users to manage tenant members
 Route::get('/users', [TenantUserController::class, 'index'])
@@ -64,14 +80,14 @@ Route::post('/users/invite', [TenantUserController::class, 'invite'])
     ->name('api.tenant.users.invite');
 
 // Sensitive actions requiring password confirmation
-// These routes use the password.confirm middleware to ensure
-// the user has recently verified their identity
+// These routes use the tenant-safe password confirmation middleware
+// that returns 423 JSON instead of redirecting to the main domain
 Route::patch('/users/{user}', [TenantUserController::class, 'update'])
-    ->middleware('password.confirm')
+    ->middleware('tenant.password.confirm')
     ->name('api.tenant.users.update');
 
 Route::delete('/users/{user}', [TenantUserController::class, 'destroy'])
-    ->middleware('password.confirm')
+    ->middleware('tenant.password.confirm')
     ->name('api.tenant.users.destroy');
 
 Route::post('/users/{user}/send-account-setup', [TenantUserController::class, 'sendAccountSetupEmail'])

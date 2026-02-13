@@ -6,6 +6,7 @@ use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\EnsureTenantMember;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RequirePasswordConfirmation;
 use App\Http\Middleware\ResolveTenant;
 use App\Http\Middleware\SwitchTenantDatabase;
 use Illuminate\Foundation\Application;
@@ -68,6 +69,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Usage in routes: ->middleware('ensure-role:admin,hr_manager')
         $middleware->alias([
             'ensure-role' => EnsureRole::class,
+            'tenant.password.confirm' => RequirePasswordConfirmation::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

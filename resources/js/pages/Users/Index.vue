@@ -147,6 +147,9 @@ async function handleRemoveUser(user: TenantUser) {
         return;
     }
 
+    const confirmed = await confirmPassword();
+    if (!confirmed) return;
+
     removingUserId.value = user.id;
 
     router.delete(`/api/users/${user.id}`, {

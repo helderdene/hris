@@ -13,7 +13,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { store } from '@/routes/password/confirm';
 import { ref, useTemplateRef, watch } from 'vue';
 
 interface Props {
@@ -49,7 +48,7 @@ const handleSubmit = async () => {
     processing.value = true;
 
     try {
-        const response = await fetch(store.url(), {
+        const response = await fetch('/api/password/confirm', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
