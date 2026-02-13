@@ -55,6 +55,10 @@ class ResolveTenant
         // Bind tenant to app container as singleton
         app()->instance('tenant', $tenant);
 
+        // Remove the {tenant} route parameter so it doesn't get passed
+        // as a positional argument to controller methods
+        $request->route()?->forgetParameter('tenant');
+
         return $next($request);
     }
 

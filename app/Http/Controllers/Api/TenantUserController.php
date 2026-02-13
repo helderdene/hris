@@ -94,7 +94,7 @@ class TenantUserController extends Controller
     /**
      * Remove a user from the current tenant.
      */
-    public function destroy(User $user): JsonResponse
+    public function destroy(User $user): \Illuminate\Http\RedirectResponse
     {
         Gate::authorize('can-manage-users');
 
@@ -116,9 +116,7 @@ class TenantUserController extends Controller
         // Detach the user from the tenant
         $tenant->users()->detach($user->id);
 
-        return response()->json([
-            'message' => 'User removed from tenant successfully.',
-        ]);
+        return redirect()->back();
     }
 
     /**
