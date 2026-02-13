@@ -129,17 +129,31 @@ class Department extends TenantModel
 
     /**
      * Check if a department is a descendant of this department.
+     *
+     * Uses a single query to load all departments, then traverses in memory.
      */
     protected function isDescendant(int $departmentId): bool
     {
-        $children = $this->children()->get();
+        $allDepartments = self::all(['id', 'parent_id'])->groupBy('parent_id');
+
+        return $this->isDescendantInMemory($departmentId, $allDepartments);
+    }
+
+    /**
+     * Recursively check descendant status using pre-loaded department data.
+     *
+     * @param  \Illuminate\Support\Collection<int|null, \Illuminate\Support\Collection<int, Department>>  $groupedByParent
+     */
+    protected function isDescendantInMemory(int $departmentId, \Illuminate\Support\Collection $groupedByParent): bool
+    {
+        $children = $groupedByParent->get($this->id, collect());
 
         foreach ($children as $child) {
             if ($child->id === $departmentId) {
                 return true;
             }
 
-            if ($child->isDescendant($departmentId)) {
+            if ($child->isDescendantInMemory($departmentId, $groupedByParent)) {
                 return true;
             }
         }
@@ -150,16 +164,31 @@ class Department extends TenantModel
     /**
      * Get all descendants of this department.
      *
+     * Uses a single query to load all departments, then traverses in memory.
+     *
      * @return \Illuminate\Support\Collection<int, Department>
      */
     public function getAllDescendants(): \Illuminate\Support\Collection
     {
+        $allDepartments = self::all()->groupBy('parent_id');
+
+        return $this->getDescendantsInMemory($allDepartments);
+    }
+
+    /**
+     * Recursively collect descendants using pre-loaded department data.
+     *
+     * @param  \Illuminate\Support\Collection<int|null, \Illuminate\Support\Collection<int, Department>>  $groupedByParent
+     * @return \Illuminate\Support\Collection<int, Department>
+     */
+    protected function getDescendantsInMemory(\Illuminate\Support\Collection $groupedByParent): \Illuminate\Support\Collection
+    {
         $descendants = collect();
-        $children = $this->children()->get();
+        $children = $groupedByParent->get($this->id, collect());
 
         foreach ($children as $child) {
             $descendants->push($child);
-            $descendants = $descendants->merge($child->getAllDescendants());
+            $descendants = $descendants->merge($child->getDescendantsInMemory($groupedByParent));
         }
 
         return $descendants;

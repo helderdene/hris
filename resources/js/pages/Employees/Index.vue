@@ -51,6 +51,26 @@ interface Employee {
     work_location: WorkLocation | null;
 }
 
+interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
+}
+
+interface PaginatedData<T> {
+    data: T[];
+    links: { first: string | null; last: string | null; prev: string | null; next: string | null };
+    meta: {
+        current_page: number;
+        last_page: number;
+        per_page: number;
+        total: number;
+        from: number | null;
+        to: number | null;
+        links: PaginationLink[];
+    };
+}
+
 interface EnumOption {
     value: string;
     label: string;
@@ -63,7 +83,7 @@ interface Filters {
 }
 
 const props = defineProps<{
-    employees: Employee[];
+    employees: PaginatedData<Employee>;
     departments: Department[];
     filters: Filters;
 }>();
@@ -99,7 +119,9 @@ const departmentOptions = computed<EnumOption[]>(() => {
     ];
 });
 
-const employeeCount = computed(() => props.employees?.length || 0);
+const employeeCount = computed(() => props.employees?.meta?.total || 0);
+const showingFrom = computed(() => props.employees?.meta?.from || 0);
+const showingTo = computed(() => props.employees?.meta?.to || 0);
 
 let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -161,6 +183,15 @@ function handleExport() {
 function handleAddEmployee() {
     router.visit('/employees/create');
 }
+
+function goToPage(url: string | null) {
+    if (url) {
+        router.visit(url, {
+            preserveState: true,
+            preserveScroll: true,
+        });
+    }
+}
 </script>
 
 <template>
@@ -179,7 +210,8 @@ function handleAddEmployee() {
                         Employees
                     </h1>
                     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                        {{ employeeCount }} of {{ employeeCount }} employees
+                        Showing {{ showingFrom }}-{{ showingTo }} of
+                        {{ employeeCount }} employees
                     </p>
                 </div>
                 <div class="flex items-center gap-3">
@@ -366,7 +398,7 @@ function handleAddEmployee() {
                             class="divide-y divide-slate-200 dark:divide-slate-700"
                         >
                             <tr
-                                v-for="employee in employees"
+                                v-for="employee in employees.data"
                                 :key="employee.id"
                                 class="hover:bg-slate-50 dark:hover:bg-slate-800/50"
                                 :data-test="`employee-row-${employee.id}`"
@@ -519,7 +551,7 @@ function handleAddEmployee() {
                     class="divide-y divide-slate-200 md:hidden dark:divide-slate-700"
                 >
                     <div
-                        v-for="employee in employees"
+                        v-for="employee in employees.data"
                         :key="employee.id"
                         class="p-4"
                         :data-test="`employee-card-${employee.id}`"
@@ -613,7 +645,7 @@ function handleAddEmployee() {
 
                 <!-- Empty State -->
                 <div
-                    v-if="!employees || employees.length === 0"
+                    v-if="!employees?.data || employees.data.length === 0"
                     class="px-6 py-12 text-center"
                 >
                     <svg
@@ -671,6 +703,53 @@ function handleAddEmployee() {
                             </Link>
                         </Button>
                     </div>
+                </div>
+
+                <!-- Pagination -->
+                <div
+                    v-if="employees?.meta?.last_page > 1"
+                    class="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-3 dark:border-slate-700 dark:bg-slate-900"
+                >
+                    <div>
+                        <p
+                            class="text-sm text-slate-700 dark:text-slate-300"
+                        >
+                            Showing page
+                            <span class="font-medium">{{
+                                employees.meta.current_page
+                            }}</span>
+                            of
+                            <span class="font-medium">{{
+                                employees.meta.last_page
+                            }}</span>
+                        </p>
+                    </div>
+                    <nav
+                        class="isolate inline-flex -space-x-px rounded-md shadow-sm"
+                        aria-label="Pagination"
+                    >
+                        <button
+                            v-for="(link, index) in employees.meta.links"
+                            :key="index"
+                            :disabled="!link.url"
+                            @click="goToPage(link.url)"
+                            class="relative inline-flex items-center px-4 py-2 text-sm font-medium"
+                            :class="[
+                                link.active
+                                    ? 'z-10 bg-blue-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                                    : 'text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:ring-slate-600 dark:hover:bg-slate-700',
+                                !link.url
+                                    ? 'cursor-not-allowed opacity-50'
+                                    : 'cursor-pointer',
+                                index === 0 ? 'rounded-l-md' : '',
+                                index ===
+                                employees.meta.links.length - 1
+                                    ? 'rounded-r-md'
+                                    : '',
+                            ]"
+                            v-html="link.label"
+                        ></button>
+                    </nav>
                 </div>
             </div>
         </div>

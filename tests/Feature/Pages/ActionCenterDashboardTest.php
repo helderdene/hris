@@ -598,13 +598,15 @@ it('InlineApprovalController validates rejection requires reason', function () {
         'decision' => LeaveApprovalDecision::Pending,
     ]);
 
-    // Create a request without the reason
-    $request = new \Illuminate\Http\Request();
-    $request->setUserResolver(fn () => $admin);
+    // Validate that the RejectLeaveRequest enforces the 'reason' field
+    $formRequest = new \App\Http\Requests\Api\RejectLeaveRequest;
+    $validator = \Illuminate\Support\Facades\Validator::make(
+        [], // No reason provided
+        $formRequest->rules(),
+        $formRequest->messages()
+    );
 
-    $controller = app(\App\Http\Controllers\Api\InlineApprovalController::class);
-
-    // The controller should validate and throw ValidationException
-    expect(fn () => $controller->rejectLeave($request, $leaveApplication))
-        ->toThrow(\Illuminate\Validation\ValidationException::class);
+    expect($validator->fails())->toBeTrue();
+    expect($validator->errors()->has('reason'))->toBeTrue();
+    expect($validator->errors()->first('reason'))->toBe('Please provide a reason for rejection.');
 });

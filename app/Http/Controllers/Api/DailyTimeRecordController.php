@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\CalculateDtrRangeRequest;
+use App\Http\Requests\Api\CalculateDtrRequest;
+use App\Http\Requests\Api\ResolveDtrReviewRequest;
 use App\Http\Requests\DtrFilterRequest;
 use App\Http\Resources\DailyTimeRecordResource;
 use App\Http\Resources\DtrPeriodSummaryResource;
@@ -136,13 +139,9 @@ class DailyTimeRecordController extends Controller
     /**
      * Calculate/recalculate DTR for an employee on a specific date.
      */
-    public function calculate(Request $request, string $tenant, Employee $employee): DailyTimeRecordResource
+    public function calculate(CalculateDtrRequest $request, string $tenant, Employee $employee): DailyTimeRecordResource
     {
-        $request->validate([
-            'date' => ['required', 'date'],
-        ]);
-
-        $date = Carbon::parse($request->input('date'));
+        $date = Carbon::parse($request->validated('date'));
         $dtr = $this->calculationService->calculateForDate($employee, $date);
 
         return new DailyTimeRecordResource($dtr);
@@ -151,15 +150,11 @@ class DailyTimeRecordController extends Controller
     /**
      * Calculate/recalculate DTR for an employee over a date range.
      */
-    public function calculateRange(Request $request, string $tenant, Employee $employee): AnonymousResourceCollection
+    public function calculateRange(CalculateDtrRangeRequest $request, string $tenant, Employee $employee): AnonymousResourceCollection
     {
-        $request->validate([
-            'date_from' => ['required', 'date'],
-            'date_to' => ['required', 'date', 'after_or_equal:date_from'],
-        ]);
-
-        $startDate = Carbon::parse($request->input('date_from'));
-        $endDate = Carbon::parse($request->input('date_to'));
+        $validated = $request->validated();
+        $startDate = Carbon::parse($validated['date_from']);
+        $endDate = Carbon::parse($validated['date_to']);
 
         $records = $this->calculationService->calculateForDateRange($employee, $startDate, $endDate);
 
@@ -190,11 +185,8 @@ class DailyTimeRecordController extends Controller
     /**
      * Resolve review flag for a DTR record.
      */
-    public function resolveReview(Request $request, string $tenant, DailyTimeRecord $dailyTimeRecord): JsonResponse
+    public function resolveReview(ResolveDtrReviewRequest $request, string $tenant, DailyTimeRecord $dailyTimeRecord): JsonResponse
     {
-        $request->validate([
-            'remarks' => ['nullable', 'string', 'max:1000'],
-        ]);
 
         if (! $dailyTimeRecord->needs_review) {
             return response()->json([

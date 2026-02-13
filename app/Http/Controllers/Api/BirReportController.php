@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\BirReportType;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\Download2316Request;
+use App\Http\Requests\Api\GenerateBulk2316Request;
+use App\Http\Requests\Api\PreviewBirReportRequest;
+use App\Http\Requests\Api\SummaryBirReportRequest;
 use App\Http\Requests\GenerateBirReportRequest;
 use App\Services\Reports\BirReportService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -35,19 +38,11 @@ class BirReportController extends Controller
     /**
      * Preview report data (limited rows for UI display).
      */
-    public function preview(Request $request): JsonResponse
+    public function preview(PreviewBirReportRequest $request): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
-        $validated = $request->validate([
-            'report_type' => ['required', 'string'],
-            'year' => ['required', 'integer'],
-            'month' => ['nullable', 'integer', 'min:1', 'max:12'],
-            'quarter' => ['nullable', 'integer', 'min:1', 'max:4'],
-            'department_ids' => ['nullable', 'array'],
-            'department_ids.*' => ['integer'],
-            'schedule' => ['nullable', 'string', 'in:7.1,7.2,7.3'],
-        ]);
+        $validated = $request->validated();
 
         $reportType = BirReportType::tryFrom($validated['report_type']);
 
@@ -75,19 +70,11 @@ class BirReportController extends Controller
     /**
      * Get summary totals for a report.
      */
-    public function summary(Request $request): JsonResponse
+    public function summary(SummaryBirReportRequest $request): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
-        $validated = $request->validate([
-            'report_type' => ['required', 'string'],
-            'year' => ['required', 'integer'],
-            'month' => ['nullable', 'integer', 'min:1', 'max:12'],
-            'quarter' => ['nullable', 'integer', 'min:1', 'max:4'],
-            'department_ids' => ['nullable', 'array'],
-            'department_ids.*' => ['integer'],
-            'schedule' => ['nullable', 'string', 'in:7.1,7.2,7.3'],
-        ]);
+        $validated = $request->validated();
 
         $reportType = BirReportType::tryFrom($validated['report_type']);
 
@@ -141,15 +128,11 @@ class BirReportController extends Controller
     /**
      * Generate bulk BIR 2316 certificates for all employees.
      */
-    public function generateBulk2316(Request $request): JsonResponse
+    public function generateBulk2316(GenerateBulk2316Request $request): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
-        $validated = $request->validate([
-            'year' => ['required', 'integer', 'min:2020', 'max:'.now()->year],
-            'department_ids' => ['nullable', 'array'],
-            'department_ids.*' => ['integer', 'exists:tenant.departments,id'],
-        ]);
+        $validated = $request->validated();
 
         $result = $this->reportService->generateBulk2316(
             year: $validated['year'],
@@ -166,13 +149,11 @@ class BirReportController extends Controller
     /**
      * Download a single employee's BIR 2316 certificate.
      */
-    public function download2316(Request $request, int $employeeId): StreamedResponse
+    public function download2316(Download2316Request $request, int $employeeId): StreamedResponse
     {
         Gate::authorize('can-manage-organization');
 
-        $validated = $request->validate([
-            'year' => ['required', 'integer', 'min:2020', 'max:'.now()->year],
-        ]);
+        $validated = $request->validated();
 
         $result = $this->reportService->generate2316ForEmployee(
             employeeId: $employeeId,

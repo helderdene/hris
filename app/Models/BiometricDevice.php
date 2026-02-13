@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\DeviceStatus;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -93,32 +94,28 @@ class BiometricDevice extends TenantModel
 
     /**
      * Get the device uptime in seconds.
-     *
-     * Returns null if the device has no connection_started_at timestamp.
      */
-    public function getUptimeSecondsAttribute(): ?int
+    protected function uptimeSeconds(): Attribute
     {
-        if ($this->connection_started_at === null) {
-            return null;
-        }
-
-        return (int) Carbon::now()->diffInSeconds($this->connection_started_at, absolute: true);
+        return Attribute::make(
+            get: fn () => $this->connection_started_at
+                ? (int) Carbon::now()->diffInSeconds($this->connection_started_at, absolute: true)
+                : null,
+        );
     }
 
     /**
      * Get the device uptime in human-readable format.
-     *
-     * Returns null if the device has no connection_started_at timestamp.
      */
-    public function getUptimeHumanAttribute(): ?string
+    protected function uptimeHuman(): Attribute
     {
-        if ($this->connection_started_at === null) {
-            return null;
-        }
-
-        return $this->connection_started_at->diffForHumans(Carbon::now(), [
-            'syntax' => Carbon::DIFF_ABSOLUTE,
-            'parts' => 2,
-        ]);
+        return Attribute::make(
+            get: fn () => $this->connection_started_at
+                ? $this->connection_started_at->diffForHumans(Carbon::now(), [
+                    'syntax' => Carbon::DIFF_ABSOLUTE,
+                    'parts' => 2,
+                ])
+                : null,
+        );
     }
 }

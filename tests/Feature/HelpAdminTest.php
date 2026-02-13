@@ -253,6 +253,45 @@ describe('Article API', function () {
         $response->assertJsonCount(1, 'data');
     });
 
+    it('sanitizes HTML content when creating article', function () {
+        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/articles', [
+            'help_category_id' => $this->category->id,
+            'title' => 'Sanitize Test',
+            'slug' => 'sanitize-test',
+            'content' => '<p>Safe content</p><script>alert("xss")</script><h1>Heading</h1>',
+            'is_active' => true,
+        ]);
+
+        $response->assertCreated();
+
+        $article = HelpArticle::where('slug', 'sanitize-test')->first();
+        expect($article->content)->not->toContain('<script>');
+        expect($article->content)->toContain('<p>Safe content</p>');
+        expect($article->content)->toContain('<h1>Heading</h1>');
+    });
+
+    it('sanitizes HTML content when updating article', function () {
+        $article = HelpArticle::create([
+            'help_category_id' => $this->category->id,
+            'title' => 'Update Sanitize',
+            'slug' => 'update-sanitize',
+            'content' => '<p>Original content</p>',
+            'sort_order' => 1,
+            'is_active' => true,
+        ]);
+
+        $response = $this->actingAs($this->superAdmin)->putJson("/api/help/articles/{$article->id}", [
+            'content' => '<p>Updated</p><script>alert("xss")</script><img src="x" onerror="alert(1)">',
+        ]);
+
+        $response->assertOk();
+
+        $article->refresh();
+        expect($article->content)->not->toContain('<script>');
+        expect($article->content)->not->toContain('onerror');
+        expect($article->content)->toContain('<p>Updated</p>');
+    });
+
     it('filters articles by search', function () {
         HelpArticle::create([
             'help_category_id' => $this->category->id,

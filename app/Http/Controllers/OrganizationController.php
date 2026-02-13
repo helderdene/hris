@@ -22,7 +22,6 @@ use App\Http\Resources\WorkLocationResource;
 use App\Models\BiometricDevice;
 use App\Models\Department;
 use App\Models\Employee;
-use App\Models\EmployeeDeviceSync;
 use App\Models\Holiday;
 use App\Models\LeaveType;
 use App\Models\Position;
@@ -48,18 +47,8 @@ class OrganizationController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Build hierarchical tree for root departments
-        $departmentTree = Department::query()
-            ->root()
-            ->with(['children' => function ($query) {
-                $query->with(['children' => function ($query) {
-                    $query->with(['children' => function ($query) {
-                        $query->with('children');
-                    }]);
-                }]);
-            }])
-            ->orderBy('name')
-            ->get();
+        // Build hierarchical tree from the flat list (unlimited depth, no extra query)
+        $departmentTree = $this->buildDepartmentTree($departments);
 
         return Inertia::render('Organization/Departments/Index', [
             'departments' => DepartmentResource::collection($departments),
@@ -165,15 +154,18 @@ class OrganizationController extends Controller
             $query->where('work_location_id', $request->input('work_location_id'));
         }
 
-        $devices = $query->get();
+        $devices = $query->withCount([
+            'employeeDeviceSyncs as synced_count' => fn ($q) => $q->where('status', SyncStatus::Synced),
+            'employeeDeviceSyncs as pending_count' => fn ($q) => $q->where('status', SyncStatus::Pending),
+            'employeeDeviceSyncs as failed_count' => fn ($q) => $q->where('status', SyncStatus::Failed),
+        ])->get();
 
-        // Get all devices for status counts (unfiltered)
-        $allDevices = BiometricDevice::query()->get();
-        $statusCounts = [
-            'total' => $allDevices->count(),
-            'online' => $allDevices->where('status', DeviceStatus::Online)->count(),
-            'offline' => $allDevices->where('status', DeviceStatus::Offline)->count(),
-        ];
+        // Get status counts using DB-level aggregation (unfiltered)
+        $statusCounts = BiometricDevice::query()
+            ->selectRaw('count(*) as total')
+            ->selectRaw('count(case when status = ? then 1 end) as online', [DeviceStatus::Online->value])
+            ->selectRaw('count(case when status = ? then 1 end) as offline', [DeviceStatus::Offline->value])
+            ->first();
 
         // Get active work locations for filter dropdown
         $workLocations = WorkLocation::query()
@@ -181,21 +173,23 @@ class OrganizationController extends Controller
             ->orderBy('name')
             ->get();
 
-        // Get sync status counts per device
+        // Pre-fetch employee counts per location in a single query
+        $locationEmployeeCounts = Employee::active()
+            ->whereIn('work_location_id', $devices->pluck('work_location_id')->unique()->filter())
+            ->groupBy('work_location_id')
+            ->selectRaw('work_location_id, count(*) as count')
+            ->pluck('count', 'work_location_id');
+
+        // Build sync meta from pre-fetched data
         $deviceSyncMeta = [];
         foreach ($devices as $device) {
-            $syncStatuses = EmployeeDeviceSync::where('biometric_device_id', $device->id)->get();
-            $totalEmployeesAtLocation = Employee::where('work_location_id', $device->work_location_id)
-                ->active()
-                ->count();
-
             $deviceSyncMeta[$device->id] = [
                 'device_id' => $device->id,
                 'device_name' => $device->name,
-                'total_employees' => $totalEmployeesAtLocation,
-                'synced_count' => $syncStatuses->where('status', SyncStatus::Synced)->count(),
-                'pending_count' => $syncStatuses->where('status', SyncStatus::Pending)->count(),
-                'failed_count' => $syncStatuses->where('status', SyncStatus::Failed)->count(),
+                'total_employees' => $locationEmployeeCounts[$device->work_location_id] ?? 0,
+                'synced_count' => $device->synced_count,
+                'pending_count' => $device->pending_count,
+                'failed_count' => $device->failed_count,
             ];
         }
 
@@ -367,5 +361,31 @@ class OrganizationController extends Controller
             ],
             GenderRestriction::cases()
         );
+    }
+
+    /**
+     * Build a hierarchical tree from a flat department collection.
+     *
+     * Supports unlimited depth by grouping departments by parent_id
+     * and recursively setting the children relation in memory.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection<int, Department>  $departments
+     * @return \Illuminate\Support\Collection<int, Department>
+     */
+    private function buildDepartmentTree(\Illuminate\Database\Eloquent\Collection $departments): \Illuminate\Support\Collection
+    {
+        $grouped = $departments->groupBy(fn (Department $d) => $d->parent_id ?? 'root');
+
+        $buildLevel = function (string|int $parentKey) use ($grouped, &$buildLevel): \Illuminate\Support\Collection {
+            $nodes = $grouped->get($parentKey, collect())->sortBy('name')->values();
+
+            foreach ($nodes as $node) {
+                $node->setRelation('children', $buildLevel($node->id));
+            }
+
+            return $nodes;
+        };
+
+        return $buildLevel('root');
     }
 }

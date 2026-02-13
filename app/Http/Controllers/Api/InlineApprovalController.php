@@ -4,13 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Events\ActionCenterUpdated;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\ApproveLeaveRequest;
+use App\Http\Requests\Api\ApproveRequisitionRequest;
+use App\Http\Requests\Api\RejectLeaveRequest;
+use App\Http\Requests\Api\RejectRequisitionRequest;
 use App\Models\Employee;
 use App\Models\JobRequisition;
 use App\Models\LeaveApplication;
 use App\Services\JobRequisitionService;
 use App\Services\LeaveApplicationService;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -29,11 +32,9 @@ class InlineApprovalController extends Controller
     /**
      * Approve a leave application inline.
      */
-    public function approveLeave(Request $request, LeaveApplication $leaveApplication): JsonResponse
+    public function approveLeave(ApproveLeaveRequest $request, LeaveApplication $leaveApplication): JsonResponse
     {
-        $validated = $request->validate([
-            'remarks' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         $employee = Employee::where('user_id', $user->id)->first();
@@ -79,13 +80,9 @@ class InlineApprovalController extends Controller
     /**
      * Reject a leave application inline.
      */
-    public function rejectLeave(Request $request, LeaveApplication $leaveApplication): JsonResponse
+    public function rejectLeave(RejectLeaveRequest $request, LeaveApplication $leaveApplication): JsonResponse
     {
-        $validated = $request->validate([
-            'reason' => ['required', 'string', 'max:1000'],
-        ], [
-            'reason.required' => 'Please provide a reason for rejection.',
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         $employee = Employee::where('user_id', $user->id)->first();
@@ -130,11 +127,9 @@ class InlineApprovalController extends Controller
     /**
      * Approve a job requisition inline.
      */
-    public function approveRequisition(Request $request, JobRequisition $jobRequisition): JsonResponse
+    public function approveRequisition(ApproveRequisitionRequest $request, JobRequisition $jobRequisition): JsonResponse
     {
-        $validated = $request->validate([
-            'remarks' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         $employee = Employee::where('user_id', $user->id)->first();
@@ -179,13 +174,9 @@ class InlineApprovalController extends Controller
     /**
      * Reject a job requisition inline.
      */
-    public function rejectRequisition(Request $request, JobRequisition $jobRequisition): JsonResponse
+    public function rejectRequisition(RejectRequisitionRequest $request, JobRequisition $jobRequisition): JsonResponse
     {
-        $validated = $request->validate([
-            'reason' => ['required', 'string', 'max:1000'],
-        ], [
-            'reason.required' => 'Please provide a reason for rejection.',
-        ]);
+        $validated = $request->validated();
 
         $user = $request->user();
         $employee = Employee::where('user_id', $user->id)->first();

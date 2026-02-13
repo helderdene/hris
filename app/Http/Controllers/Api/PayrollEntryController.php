@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Enums\PayrollEntryStatus;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\BulkUpdatePayrollStatusRequest;
+use App\Http\Requests\Api\DownloadBulkPayslipRequest;
 use App\Http\Requests\UpdatePayrollEntryStatusRequest;
 use App\Http\Resources\PayrollEntryListResource;
 use App\Http\Resources\PayrollEntryResource;
@@ -109,19 +111,14 @@ class PayrollEntryController extends Controller
      * Bulk update status for multiple entries.
      */
     public function bulkUpdateStatus(
-        Request $request,
+        BulkUpdatePayrollStatusRequest $request,
         string $tenant,
         PayrollPeriod $payrollPeriod
     ): JsonResponse {
         Gate::authorize('can-manage-organization');
 
-        $request->validate([
-            'entry_ids' => ['required', 'array'],
-            'entry_ids.*' => ['integer', 'exists:payroll_entries,id'],
-            'status' => ['required', 'string'],
-        ]);
-
-        $newStatus = PayrollEntryStatus::tryFrom($request->input('status'));
+        $validated = $request->validated();
+        $newStatus = PayrollEntryStatus::tryFrom($validated['status']);
 
         if (! $newStatus) {
             return response()->json([
@@ -131,7 +128,7 @@ class PayrollEntryController extends Controller
 
         $entries = PayrollEntry::query()
             ->where('payroll_period_id', $payrollPeriod->id)
-            ->whereIn('id', $request->input('entry_ids'))
+            ->whereIn('id', $validated['entry_ids'])
             ->get();
 
         $updated = 0;
@@ -278,21 +275,16 @@ class PayrollEntryController extends Controller
      * For more than 10 entries, queues a background job.
      */
     public function downloadBulkPdf(
-        Request $request,
+        DownloadBulkPayslipRequest $request,
         string $tenant,
         PayrollPeriod $payrollPeriod,
         PayslipPdfService $pdfService
     ): Response|JsonResponse {
         Gate::authorize('can-manage-organization');
 
-        $request->validate([
-            'entry_ids' => ['nullable', 'array'],
-            'entry_ids.*' => ['integer', 'exists:payroll_entries,id'],
-            'format' => ['nullable', 'string', 'in:pdf,zip'],
-        ]);
-
-        $entryIds = $request->input('entry_ids');
-        $format = $request->input('format', 'pdf');
+        $validated = $request->validated();
+        $entryIds = $validated['entry_ids'] ?? null;
+        $format = $validated['format'] ?? 'pdf';
 
         $query = PayrollEntry::query()
             ->where('payroll_period_id', $payrollPeriod->id);

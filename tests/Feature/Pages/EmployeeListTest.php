@@ -87,8 +87,9 @@ it('renders employee list page with correct data', function () {
     $propsProperty->setAccessible(true);
     $props = $propsProperty->getValue($inertiaResponse);
 
-    // Check that 3 employees are returned
-    $employees = $props['employees']->collection;
+    // Check that 3 employees are returned (paginated response)
+    $employeesResource = $props['employees'];
+    $employees = $employeesResource->resource;
     expect($employees)->toHaveCount(3);
 
     // Check that departments are included
@@ -129,11 +130,14 @@ it('displays correct table columns in employee list', function () {
     $propsProperty->setAccessible(true);
     $props = $propsProperty->getValue($inertiaResponse);
 
-    // Check employee data
-    $employees = $props['employees']->collection;
+    // Check employee data (paginated response)
+    $employeesResource = $props['employees'];
+    $employees = $employeesResource->resource;
     expect($employees)->toHaveCount(1);
 
-    $employee = $employees->first()->toArray(request());
+    $employee = $employees->first();
+    $employee->load(['department', 'position', 'workLocation']);
+    $employee = (new \App\Http\Resources\EmployeeListResource($employee))->toArray(request());
     expect($employee['first_name'])->toBe('Ricardo');
     expect($employee['last_name'])->toBe('Dela Cruz');
     expect($employee['employee_number'])->toBe('2019-0001');
@@ -174,8 +178,8 @@ it('supports search functionality', function () {
     $propsProperty->setAccessible(true);
     $props = $propsProperty->getValue($inertiaResponse);
 
-    // Check that only 1 employee is returned (John Doe)
-    $employees = $props['employees']->collection;
+    // Check that only 1 employee is returned (John Doe) - paginated response
+    $employees = $props['employees']->resource;
     expect($employees)->toHaveCount(1);
     expect($employees->first()->first_name)->toBe('John');
 

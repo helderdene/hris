@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Services\HtmlSanitizerService;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -64,5 +65,17 @@ class UpdateHelpArticleRequest extends FormRequest
             'content.required' => 'The article content is required.',
             'excerpt.max' => 'The excerpt must not exceed 500 characters.',
         ];
+    }
+
+    /**
+     * Handle a passed validation attempt and sanitize HTML content.
+     */
+    protected function passedValidation(): void
+    {
+        if ($this->has('content')) {
+            $this->merge([
+                'content' => app(HtmlSanitizerService::class)->sanitize($this->input('content')),
+            ]);
+        }
     }
 }

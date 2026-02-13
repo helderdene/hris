@@ -14,7 +14,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { computed, ref, watch } from 'vue';
+import { useForm } from '@inertiajs/vue3';
+import { computed, watch } from 'vue';
 
 interface Department {
     id: number;
@@ -44,17 +45,13 @@ const emit = defineEmits<{
     (e: 'success'): void;
 }>();
 
-const form = ref({
+const form = useForm({
     name: '',
     code: '',
     parent_id: null as number | null,
     description: '',
     status: 'active',
 });
-
-const errors = ref<Record<string, string>>({});
-const processing = ref(false);
-const recentlySuccessful = ref(false);
 
 /**
  * Determine if we're editing or creating
@@ -115,88 +112,29 @@ const validParentDepartments = computed(() => {
 /**
  * Handles the form submission.
  */
-const handleSubmit = async () => {
-    errors.value = {};
-    processing.value = true;
+const handleSubmit = () => {
+    const url = isEditing.value
+        ? `/api/organization/departments/${props.department!.id}`
+        : '/api/organization/departments';
 
-    try {
-        const url = isEditing.value
-            ? `/api/organization/departments/${props.department!.id}`
-            : '/api/organization/departments';
+    const submitMethod = isEditing.value ? 'put' : 'post';
 
-        const method = isEditing.value ? 'PUT' : 'POST';
-
-        const response = await fetch(url, {
-            method,
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-XSRF-TOKEN': getCsrfToken(),
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                name: form.value.name,
-                code: form.value.code,
-                parent_id: form.value.parent_id,
-                description: form.value.description || null,
-                status: form.value.status,
-            }),
-        });
-
-        if (response.status === 201 || response.ok) {
-            recentlySuccessful.value = true;
+    form.transform((data) => ({
+        ...data,
+        description: data.description || null,
+    }))[submitMethod](url, {
+        onSuccess: () => {
             emit('success');
-
-            setTimeout(() => {
-                recentlySuccessful.value = false;
-            }, 2000);
-        } else if (response.status === 422) {
-            const data = await response.json();
-            if (data.errors) {
-                errors.value = Object.fromEntries(
-                    Object.entries(data.errors as Record<string, string[]>).map(
-                        ([key, messages]) => [key, messages[0]],
-                    ),
-                );
-            }
-        } else if (response.status === 403) {
-            errors.value = {
-                name: 'You do not have permission to manage departments.',
-            };
-        } else {
-            errors.value = {
-                name: 'An unexpected error occurred. Please try again.',
-            };
-        }
-    } catch {
-        errors.value = {
-            name: 'An unexpected error occurred. Please try again.',
-        };
-    } finally {
-        processing.value = false;
-    }
-};
-
-/**
- * Gets the CSRF token from cookies for the request header.
- */
-const getCsrfToken = (): string => {
-    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-    return match ? decodeURIComponent(match[1]) : '';
+        },
+    });
 };
 
 /**
  * Resets the form to initial state.
  */
 const resetForm = () => {
-    form.value = {
-        name: '',
-        code: '',
-        parent_id: null,
-        description: '',
-        status: 'active',
-    };
-    errors.value = {};
+    form.reset();
+    form.clearErrors();
 };
 
 /**
@@ -204,19 +142,17 @@ const resetForm = () => {
  */
 const initializeForm = () => {
     if (props.department) {
-        form.value = {
-            name: props.department.name,
-            code: props.department.code,
-            parent_id: props.department.parent_id,
-            description: props.department.description ?? '',
-            status: props.department.status,
-        };
+        form.name = props.department.name;
+        form.code = props.department.code;
+        form.parent_id = props.department.parent_id;
+        form.description = props.department.description ?? '';
+        form.status = props.department.status;
     } else {
         resetForm();
         // Set parent_id if adding a child
-        form.value.parent_id = props.parentId;
+        form.parent_id = props.parentId;
     }
-    errors.value = {};
+    form.clearErrors();
 };
 
 /**
@@ -260,7 +196,7 @@ watch(
     () => props.parentId,
     () => {
         if (props.open && !props.department) {
-            form.value.parent_id = props.parentId;
+            form.parent_id = props.parentId;
         }
     },
 );
@@ -291,7 +227,7 @@ watch(
                             required
                             data-test="department-name-input"
                         />
-                        <InputError :message="errors.name" />
+                        <InputError :message="form.errors.name" />
                     </div>
 
                     <!-- Code Field -->
@@ -310,7 +246,7 @@ watch(
                         <p class="text-xs text-slate-500 dark:text-slate-400">
                             A unique code/abbreviation for this department.
                         </p>
-                        <InputError :message="errors.code" />
+                        <InputError :message="form.errors.code" />
                     </div>
 
                     <!-- Parent Department Field -->
@@ -326,7 +262,7 @@ watch(
                         <p class="text-xs text-slate-500 dark:text-slate-400">
                             Leave empty for a root-level department.
                         </p>
-                        <InputError :message="errors.parent_id" />
+                        <InputError :message="form.errors.parent_id" />
                     </div>
 
                     <!-- Description Field -->
@@ -340,7 +276,7 @@ watch(
                             class="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
                             data-test="department-description-input"
                         />
-                        <InputError :message="errors.description" />
+                        <InputError :message="form.errors.description" />
                     </div>
 
                     <!-- Status Field -->
@@ -357,7 +293,7 @@ watch(
                             <option value="active">Active</option>
                             <option value="inactive">Inactive</option>
                         </select>
-                        <InputError :message="errors.status" />
+                        <InputError :message="form.errors.status" />
                     </div>
                 </div>
 
@@ -367,7 +303,7 @@ watch(
                             type="button"
                             variant="secondary"
                             @click="handleCancel"
-                            :disabled="processing"
+                            :disabled="form.processing"
                             data-test="department-cancel-button"
                         >
                             Cancel
@@ -376,12 +312,12 @@ watch(
 
                     <Button
                         type="submit"
-                        :disabled="processing || !form.name || !form.code"
+                        :disabled="form.processing || !form.name || !form.code"
                         data-test="department-submit-button"
                     >
-                        <Spinner v-if="processing" class="mr-2" />
+                        <Spinner v-if="form.processing" class="mr-2" />
                         {{
-                            processing
+                            form.processing
                                 ? 'Saving...'
                                 : isEditing
                                   ? 'Update'
@@ -398,7 +334,7 @@ watch(
                     leave-to-class="opacity-0"
                 >
                     <p
-                        v-if="recentlySuccessful"
+                        v-if="form.recentlySuccessful"
                         class="text-center text-sm text-green-600 dark:text-green-400"
                     >
                         Department

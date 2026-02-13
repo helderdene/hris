@@ -60,7 +60,8 @@ class EmployeeController extends Controller
 
         $employees = $query->orderBy('last_name')
             ->orderBy('first_name')
-            ->get();
+            ->paginate(25)
+            ->withQueryString();
 
         $departments = Department::query()
             ->orderBy('name')
