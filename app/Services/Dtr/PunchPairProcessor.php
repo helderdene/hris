@@ -46,6 +46,11 @@ class PunchPairProcessor
             $direction = $this->normalizeDirection($log->direction);
             $loggedAt = Carbon::parse($log->logged_at);
 
+            // Safety net: treat any remaining null direction as alternating IN/OUT
+            if ($direction === null) {
+                $direction = $currentIn === null ? PunchType::In : PunchType::Out;
+            }
+
             // Track first IN
             if ($direction === PunchType::In && $firstIn === null) {
                 $firstIn = $loggedAt;
@@ -188,6 +193,143 @@ class PunchPairProcessor
         }
 
         return $breakMinutes;
+    }
+
+    /**
+     * Remove duplicate scans where the same employee taps the FR device
+     * multiple times in quick succession.
+     *
+     * Only collapses consecutive null-direction logs within the threshold.
+     * Logs with explicit direction are always kept.
+     *
+     * @param  Collection<int, AttendanceLog>  $logs
+     */
+    public function collapseDuplicateScans(Collection $logs, int $thresholdMinutes = 3): Collection
+    {
+        $sortedLogs = $logs->sortBy('logged_at')->values();
+        $keepIds = [];
+        $previousNullLog = null;
+
+        foreach ($sortedLogs as $log) {
+            if ($this->normalizeDirection($log->direction) !== null) {
+                // Always keep logs with explicit direction
+                $keepIds[] = $log->id;
+                $previousNullLog = null;
+
+                continue;
+            }
+
+            if ($previousNullLog !== null) {
+                $gap = Carbon::parse($previousNullLog->logged_at)
+                    ->diffInMinutes(Carbon::parse($log->logged_at));
+
+                if ($gap < $thresholdMinutes) {
+                    // Skip this duplicate — keep the earlier one
+                    continue;
+                }
+            }
+
+            $keepIds[] = $log->id;
+            $previousNullLog = $log;
+        }
+
+        return $logs->filter(fn (AttendanceLog $log) => in_array($log->id, $keepIds))->values();
+    }
+
+    /**
+     * Match null-direction punches to expected schedule events by proximity.
+     *
+     * Each punch is assigned the direction of the nearest unconsumed schedule
+     * event within the tolerance window. Punches that don't match any event
+     * are removed from the collection and counted as dropped.
+     *
+     * @param  Collection<int, AttendanceLog>  $logs
+     * @param  array<int, array{time: Carbon, direction: PunchType}>  $scheduleEvents
+     * @return array{logs: Collection<int, AttendanceLog>, droppedCount: int}
+     */
+    public function matchToSchedule(Collection $logs, array $scheduleEvents, int $toleranceMinutes = 90): array
+    {
+        $sortedLogs = $logs->sortBy('logged_at')->values();
+        $matchedIds = [];
+        $consumedEventIndexes = [];
+
+        // For each event, find the closest unmatched null-direction punch
+        foreach ($scheduleEvents as $eventIndex => $event) {
+            $bestLog = null;
+            $bestDistance = $toleranceMinutes + 1;
+
+            foreach ($sortedLogs as $log) {
+                // Skip logs with explicit direction (they're always kept as-is)
+                if ($this->normalizeDirection($log->direction) !== null) {
+                    continue;
+                }
+
+                // Skip already matched logs
+                if (in_array($log->id, $matchedIds)) {
+                    continue;
+                }
+
+                $distance = abs(Carbon::parse($log->logged_at)->diffInMinutes($event['time']));
+
+                if ($distance < $bestDistance) {
+                    $bestDistance = $distance;
+                    $bestLog = $log;
+                }
+            }
+
+            if ($bestLog !== null) {
+                $bestLog->direction = $event['direction']->value;
+                $matchedIds[] = $bestLog->id;
+                $consumedEventIndexes[] = $eventIndex;
+            }
+        }
+
+        // Keep: logs with explicit direction + matched logs. Drop: unmatched null-direction logs.
+        $droppedCount = 0;
+        $filteredLogs = $logs->filter(function (AttendanceLog $log) use ($matchedIds, &$droppedCount) {
+            if ($this->normalizeDirection($log->direction) !== null) {
+                return true;
+            }
+
+            if (in_array($log->id, $matchedIds)) {
+                return true;
+            }
+
+            $droppedCount++;
+
+            return false;
+        })->values();
+
+        return [
+            'logs' => $filteredLogs,
+            'droppedCount' => $droppedCount,
+        ];
+    }
+
+    /**
+     * Fallback: infer IN/OUT direction using simple alternating.
+     *
+     * Used when no schedule events are available (no schedule assigned).
+     *
+     * @param  Collection<int, AttendanceLog>  $logs
+     */
+    public function inferDirections(Collection $logs): Collection
+    {
+        $sortedLogs = $logs->sortBy('logged_at')->values();
+        $expectingIn = true;
+
+        foreach ($sortedLogs as $log) {
+            if ($this->normalizeDirection($log->direction) !== null) {
+                $expectingIn = $this->normalizeDirection($log->direction)->isOutType();
+
+                continue;
+            }
+
+            $log->direction = $expectingIn ? PunchType::In->value : PunchType::Out->value;
+            $expectingIn = ! $expectingIn;
+        }
+
+        return $logs;
     }
 
     /**

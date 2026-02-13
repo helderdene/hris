@@ -40,11 +40,18 @@ class DtrCalculationService
         $schedule = $scheduleData['schedule'];
         $shiftName = $scheduleData['shift_name'];
 
-        // Get attendance logs for the date
+        // Get attendance logs and run inference once (collapse duplicates + match to schedule)
         $logs = $this->getAttendanceLogsForDate($employee, $date);
+        $droppedPunchCount = 0;
+
+        if ($logs->isNotEmpty()) {
+            $inferResult = $this->inferDirectionsForLogs($logs, $schedule, $date, $shiftName);
+            $logs = $inferResult['logs'];
+            $droppedPunchCount = $inferResult['droppedCount'];
+        }
 
         // Determine status and calculate times
-        $dtrData = $this->buildDtrData($employee, $date, $schedule, $shiftName, $logs);
+        $dtrData = $this->buildDtrData($employee, $date, $schedule, $shiftName, $logs, $droppedPunchCount);
 
         // Create or update the record
         if ($existingRecord !== null) {
@@ -54,7 +61,7 @@ class DtrCalculationService
             $dtr = DailyTimeRecord::create($dtrData);
         }
 
-        // Save punch records
+        // Save punch records (logs already have inferred directions)
         $this->savePunchRecords($dtr, $logs);
 
         return $dtr->fresh(['employee', 'workSchedule', 'punches']);
@@ -89,7 +96,8 @@ class DtrCalculationService
         Carbon $date,
         ?\App\Models\WorkSchedule $schedule,
         ?string $shiftName,
-        Collection $logs
+        Collection $logs,
+        int $droppedPunchCount = 0
     ): array {
         // No schedule assigned
         if ($schedule === null) {
@@ -112,10 +120,10 @@ class DtrCalculationService
             return $this->buildAbsentData($employee, $date, $schedule);
         }
 
-        // Process punch pairs
+        // Process punch pairs (logs already have inferred directions from calculateForDate)
         $punchResult = $this->punchPairProcessor->process($logs);
 
-        return $this->buildPresentData($employee, $date, $schedule, $shiftName, $punchResult);
+        return $this->buildPresentData($employee, $date, $schedule, $shiftName, $punchResult, $droppedPunchCount);
     }
 
     /**
@@ -311,7 +319,8 @@ class DtrCalculationService
         Carbon $date,
         \App\Models\WorkSchedule $schedule,
         ?string $shiftName,
-        array $punchResult
+        array $punchResult,
+        int $droppedPunchCount = 0
     ): array {
         $firstIn = $punchResult['first_in'];
         $lastOut = $punchResult['last_out'];
@@ -363,7 +372,10 @@ class DtrCalculationService
         $needsReview = false;
         $reviewReason = null;
 
-        if ($unpairedIn !== null) {
+        if ($droppedPunchCount > 0) {
+            $needsReview = true;
+            $reviewReason = $droppedPunchCount.' unmatched attendance scan(s) excluded';
+        } elseif ($unpairedIn !== null) {
             $needsReview = true;
             $reviewReason = 'Missing time-out';
         } elseif ($lastOut === null && $firstIn !== null) {
@@ -438,7 +450,7 @@ class DtrCalculationService
             return;
         }
 
-        // Process logs and create punch records
+        // Process logs and create punch records (directions already inferred)
         $punchResult = $this->punchPairProcessor->process($logs);
         $punchRecords = $this->punchPairProcessor->getPunchRecords(
             $punchResult['pairs'],
@@ -455,6 +467,107 @@ class DtrCalculationService
                 'invalidation_reason' => null,
             ]);
         }
+    }
+
+    /**
+     * Collapse duplicate scans and infer directions for attendance logs
+     * that lack a direction field.
+     *
+     * Uses schedule-event matching when a schedule is available, with
+     * simple alternating as a fallback for no-schedule cases.
+     *
+     * @param  Collection<int, AttendanceLog>  $logs
+     * @return array{logs: Collection<int, AttendanceLog>, droppedCount: int}
+     */
+    protected function inferDirectionsForLogs(
+        Collection $logs,
+        ?\App\Models\WorkSchedule $schedule,
+        Carbon $date,
+        ?string $shiftName
+    ): array {
+        // Collapse duplicate FR scans (e.g. double-taps within 3 minutes)
+        $logs = $this->punchPairProcessor->collapseDuplicateScans($logs);
+
+        // Build expected schedule events if a schedule is available
+        $scheduleEvents = $this->buildScheduleEvents($schedule, $date, $shiftName);
+
+        if (! empty($scheduleEvents)) {
+            // Match punches to schedule events by proximity
+            return $this->punchPairProcessor->matchToSchedule($logs, $scheduleEvents);
+        }
+
+        // Fallback: simple alternating (no schedule available)
+        $this->punchPairProcessor->inferDirections($logs);
+
+        return ['logs' => $logs, 'droppedCount' => 0];
+    }
+
+    /**
+     * Build expected schedule events (shift start/end, break start/end)
+     * for matching against actual punches.
+     *
+     * @return array<int, array{time: Carbon, direction: \App\Enums\PunchType}>
+     */
+    protected function buildScheduleEvents(
+        ?\App\Models\WorkSchedule $schedule,
+        Carbon $date,
+        ?string $shiftName
+    ): array {
+        if ($schedule === null) {
+            return [];
+        }
+
+        $start = $this->scheduleResolver->getScheduledStartTime($schedule, $date, $shiftName);
+        $end = $this->scheduleResolver->getScheduledEndTime($schedule, $date, $shiftName);
+
+        if ($start === null || $end === null) {
+            return [];
+        }
+
+        $events = [
+            ['time' => $start, 'direction' => \App\Enums\PunchType::In],
+        ];
+
+        // Add break events if break is configured
+        $config = $schedule->time_configuration ?? [];
+        $breakStartTime = null;
+        $breakDuration = null;
+
+        if ($schedule->schedule_type === \App\Enums\ScheduleType::Shifting && $shiftName !== null) {
+            foreach ($config['shifts'] ?? [] as $shift) {
+                if (($shift['name'] ?? '') === $shiftName) {
+                    $breakStartTime = $shift['break']['start_time'] ?? null;
+                    $breakDuration = $shift['break']['duration_minutes'] ?? null;
+
+                    break;
+                }
+            }
+        } else {
+            $breakStartTime = $config['break']['start_time'] ?? null;
+            $breakDuration = $config['break']['duration_minutes'] ?? null;
+        }
+
+        if ($breakStartTime !== null && $breakDuration !== null) {
+            $breakStart = $this->parseTimeOnDate($breakStartTime, $date);
+            $breakEnd = $breakStart->copy()->addMinutes((int) $breakDuration);
+
+            $events[] = ['time' => $breakStart, 'direction' => \App\Enums\PunchType::Out];
+            $events[] = ['time' => $breakEnd, 'direction' => \App\Enums\PunchType::In];
+        }
+
+        $events[] = ['time' => $end, 'direction' => \App\Enums\PunchType::Out];
+
+        return $events;
+    }
+
+    /**
+     * Parse a time string onto a specific date.
+     */
+    protected function parseTimeOnDate(string $time, Carbon $date): Carbon
+    {
+        $parts = explode(':', $time);
+
+        return $date->copy()->setTime((int) ($parts[0] ?? 0), (int) ($parts[1] ?? 0), 0);
     }
 
     /**
