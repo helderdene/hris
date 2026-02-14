@@ -17,7 +17,7 @@ class CalculateDailyDtrCommand extends Command
      * @var string
      */
     protected $signature = 'dtr:calculate-daily
-                            {--tenant= : Specific tenant ID to process}
+                            {--tenant= : Specific tenant ID or slug to process}
                             {--date= : Specific date to calculate (YYYY-MM-DD, default: yesterday)}
                             {--range=1 : Number of days back to process}';
 
@@ -96,11 +96,15 @@ class CalculateDailyDtrCommand extends Command
      */
     protected function resolveTenants(): \Illuminate\Database\Eloquent\Collection
     {
-        $tenantId = $this->option('tenant');
+        $tenant = $this->option('tenant');
 
-        return $tenantId
-            ? Tenant::where('id', $tenantId)->get()
-            : Tenant::all();
+        if ($tenant === null) {
+            return Tenant::all();
+        }
+
+        return Tenant::where('id', $tenant)
+            ->orWhere('slug', $tenant)
+            ->get();
     }
 
     /**
