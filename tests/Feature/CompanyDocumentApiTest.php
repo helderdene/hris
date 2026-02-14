@@ -115,7 +115,7 @@ describe('GET /api/company-documents', function () {
         ]);
 
         $controller = new CompanyDocumentController(new DocumentStorageService);
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
 
         $data = $response->getData(true);
 
@@ -153,7 +153,7 @@ describe('GET /api/company-documents', function () {
         $request = request();
         $request->merge(['category_id' => $category1->id]);
 
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
 
         $data = $response->getData(true);
 
@@ -242,7 +242,7 @@ describe('GET /api/company-documents/{document}', function () {
         ]);
 
         $controller = new CompanyDocumentController(new DocumentStorageService);
-        $response = $controller->show('test-tenant', $document);
+        $response = $controller->show($document);
 
         $data = $response->getData(true);
 
@@ -271,7 +271,7 @@ describe('DELETE /api/company-documents/{document}', function () {
         $documentId = $document->id;
 
         $controller = new CompanyDocumentController(new DocumentStorageService);
-        $response = $controller->destroy('test-tenant', $document);
+        $response = $controller->destroy($document);
 
         expect($response->getStatusCode())->toBe(204);
 
@@ -301,7 +301,7 @@ describe('Company Document Authorization', function () {
         expect(Gate::allows('can-view-company-documents'))->toBeTrue();
 
         $controller = new CompanyDocumentController(new DocumentStorageService);
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
 
         expect($response->getStatusCode())->toBe(200);
     });

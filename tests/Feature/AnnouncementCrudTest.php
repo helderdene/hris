@@ -167,7 +167,7 @@ it('deletes an announcement', function () {
     $this->actingAs($user);
 
     $controller = new AnnouncementController;
-    $controller->destroy('acme', $announcement);
+    $controller->destroy($announcement);
 
     $this->assertDatabaseMissing('announcements', ['id' => $announcement->id]);
 });

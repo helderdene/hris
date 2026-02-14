@@ -134,7 +134,7 @@ describe('Device Sync Status Endpoint', function () {
         $syncService = new EmployeeSyncService($mockDeviceCommandService);
 
         $controller = new BiometricSyncController($syncService);
-        $response = $controller->deviceSyncStatus('test-tenant', $device);
+        $response = $controller->deviceSyncStatus($device);
 
         $data = json_decode($response->getContent(), true);
 
@@ -278,7 +278,7 @@ describe('Employee Sync Status Endpoint', function () {
         $syncService = new EmployeeSyncService($mockDeviceCommandService);
 
         $controller = new BiometricSyncController($syncService);
-        $response = $controller->employeeSyncStatus('test-tenant', $employee);
+        $response = $controller->employeeSyncStatus($employee);
 
         $data = json_decode($response->getContent(), true);
 
@@ -321,7 +321,7 @@ describe('Verify Employee Devices Endpoint', function () {
         $syncService = new EmployeeSyncService($mockDeviceCommandService);
 
         $controller = new BiometricSyncController($syncService);
-        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+        $response = $controller->verifyEmployeeDevices($employee);
 
         $data = json_decode($response->getContent(), true);
 
@@ -359,7 +359,7 @@ describe('Verify Employee Devices Endpoint', function () {
         $syncService = new EmployeeSyncService($mockDeviceCommandService);
 
         $controller = new BiometricSyncController($syncService);
-        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+        $response = $controller->verifyEmployeeDevices($employee);
 
         $data = json_decode($response->getContent(), true);
 
@@ -397,7 +397,7 @@ describe('Verify Employee Devices Endpoint', function () {
         $syncService = new EmployeeSyncService($mockDeviceCommandService);
 
         $controller = new BiometricSyncController($syncService);
-        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+        $response = $controller->verifyEmployeeDevices($employee);
 
         $data = json_decode($response->getContent(), true);
 
@@ -434,7 +434,7 @@ describe('Verify Employee Devices Endpoint', function () {
         $syncService = new EmployeeSyncService($mockDeviceCommandService);
 
         $controller = new BiometricSyncController($syncService);
-        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+        $response = $controller->verifyEmployeeDevices($employee);
 
         $data = json_decode($response->getContent(), true);
 
@@ -461,7 +461,7 @@ describe('Verify Employee Devices Endpoint', function () {
         $syncService = new EmployeeSyncService($mockDeviceCommandService);
 
         $controller = new BiometricSyncController($syncService);
-        $response = $controller->verifyEmployeeDevices('test-tenant', $employee);
+        $response = $controller->verifyEmployeeDevices($employee);
 
         $data = json_decode($response->getContent(), true);
 

@@ -161,7 +161,7 @@ describe('End-to-End: HR uploads employee document, employee views it', function
         // Employee should be able to view their own documents
         expect(Gate::allows('can-view-employee-documents', $employee))->toBeTrue();
 
-        $viewResponse = $controller->index('test-tenant', $employee);
+        $viewResponse = $controller->index($employee);
         expect($viewResponse->getStatusCode())->toBe(200);
 
         $data = $viewResponse->getData(true);
@@ -322,7 +322,7 @@ describe('End-to-End: Company document lifecycle', function () {
 
         expect(Gate::allows('can-view-company-documents'))->toBeTrue();
 
-        $listResponse = $controller->index('test-tenant');
+        $listResponse = $controller->index();
         expect($listResponse->getStatusCode())->toBe(200);
 
         $data = $listResponse->getData(true);
@@ -335,7 +335,7 @@ describe('End-to-End: Company document lifecycle', function () {
         $this->actingAs($hrManager);
 
         $document = Document::find($documentId);
-        $deleteResponse = $controller->destroy('test-tenant', $document);
+        $deleteResponse = $controller->destroy($document);
 
         expect($deleteResponse->getStatusCode())->toBe(204);
         expect(Document::find($documentId))->toBeNull();
@@ -407,7 +407,7 @@ describe('Integration: Preview endpoint with MIME type detection', function () {
             'uploaded_by' => $admin->id,
         ]);
 
-        $pdfResponse = $controller->preview('test-tenant', $pdfDocument, $pdfVersion);
+        $pdfResponse = $controller->preview($pdfDocument, $pdfVersion);
         expect($pdfResponse->headers->get('Content-Type'))->toContain('application/pdf');
         expect($pdfResponse->headers->get('Content-Disposition'))->toContain('inline');
 
@@ -431,7 +431,7 @@ describe('Integration: Preview endpoint with MIME type detection', function () {
             'uploaded_by' => $admin->id,
         ]);
 
-        $pngResponse = $controller->preview('test-tenant', $pngDocument, $pngVersion);
+        $pngResponse = $controller->preview($pngDocument, $pngVersion);
         expect($pngResponse->headers->get('Content-Type'))->toContain('image/png');
         expect($pngResponse->headers->get('Content-Disposition'))->toContain('inline');
     });
@@ -482,7 +482,7 @@ describe('Security: Tenant isolation verification', function () {
 
         // Verify documents are isolated (only tenant 2's document in current context)
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->index('tenant-two', $employee2);
+        $response = $controller->index($employee2);
 
         $data = $response->getData(true);
         expect($data['data'])->toHaveCount(1);

@@ -359,7 +359,7 @@ describe('Authorization Edge Cases', function () {
         expect(Gate::allows('can-manage-employees'))->toBeTrue();
 
         $controller = new EmployeeCompensationController;
-        $response = $controller->index('test-tenant', $employee);
+        $response = $controller->index($employee);
 
         expect($response->getStatusCode())->toBe(200);
     });

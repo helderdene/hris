@@ -298,7 +298,7 @@ describe('Employee Training History Page', function () {
         $request = Request::create("/training/history/employee/{$employee1->id}", 'GET');
         app()->instance('request', $request);
 
-        $response = $controller->employeeHistory('testco', $employee1, $request);
+        $response = $controller->employeeHistory($employee1, $request);
         $props = getTrainingHistoryInertiaData($response);
 
         expect(getTrainingHistoryComponent($response))->toBe('Training/History/Employee');

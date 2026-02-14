@@ -101,7 +101,7 @@ describe('Company Documents Page', function () {
 
         // Invoke the controller directly and check the Inertia response
         $controller = new CompanyDocumentController;
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
 
         // Verify it returns an Inertia response with correct component
         expect($response)->toBeInstanceOf(\Inertia\Response::class);
@@ -118,7 +118,7 @@ describe('Company Documents Page', function () {
         $this->actingAs($hrManager);
 
         $controller = new CompanyDocumentController;
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
 
         // HR Manager should have manage permission
         $data = getInertiaResponseData($response);
@@ -128,7 +128,7 @@ describe('Company Documents Page', function () {
         $employee = createCompanyDocPageTenantUser($tenant, TenantUserRole::Employee);
         $this->actingAs($employee);
 
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
         $data = getInertiaResponseData($response);
 
         // Employee should not have manage permission
@@ -154,7 +154,7 @@ describe('Company Documents Page', function () {
         expect(Gate::allows('can-view-company-documents'))->toBeTrue();
 
         $controller = new CompanyDocumentController;
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
 
         // Employee should be able to access the page
         expect($response)->toBeInstanceOf(\Inertia\Response::class);
@@ -170,7 +170,7 @@ describe('Company Documents Page', function () {
         $this->actingAs($hrStaff);
 
         $controller = new CompanyDocumentController;
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
         $data = getInertiaResponseData($response);
 
         // Check that the Inertia response includes the permission
@@ -181,7 +181,7 @@ describe('Company Documents Page', function () {
         $supervisor = createCompanyDocPageTenantUser($tenant, TenantUserRole::Supervisor);
         $this->actingAs($supervisor);
 
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
         $data = getInertiaResponseData($response);
 
         expect($data)->toHaveKey('can_manage_company_documents');

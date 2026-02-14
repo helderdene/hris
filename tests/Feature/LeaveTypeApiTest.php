@@ -254,7 +254,7 @@ describe('Leave Type API', function () {
             'code' => 'DEL',
         ]);
 
-        $response = $controller->destroy('', $leaveType);
+        $response = $controller->destroy($leaveType);
 
         expect($response->getStatusCode())->toBe(200);
 

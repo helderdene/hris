@@ -74,9 +74,11 @@ class CompanyDocumentController extends Controller
         $validated = $request->validated();
         $file = $request->file('file');
 
-        $result = DB::transaction(function () use ($validated, $file, $tenant) {
+        $tenantSlug = tenant()->slug;
+
+        $result = DB::transaction(function () use ($validated, $file, $tenantSlug) {
             // Store the file with employeeId = null for company documents
-            $fileData = $this->storageService->store($file, $tenant, null);
+            $fileData = $this->storageService->store($file, $tenantSlug, null);
 
             // Create the document record
             $document = Document::create([

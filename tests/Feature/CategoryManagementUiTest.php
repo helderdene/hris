@@ -145,7 +145,7 @@ describe('Category Appears in List After Creation', function () {
 
         // Get initial count
         $controller = new DocumentCategoryController;
-        $initialResponse = $controller->index('test-tenant');
+        $initialResponse = $controller->index();
         $initialData = $initialResponse->getData(true);
         $initialCount = count($initialData['data']);
 
@@ -163,7 +163,7 @@ describe('Category Appears in List After Creation', function () {
         expect($createResponse->getStatusCode())->toBe(201);
 
         // Fetch list again
-        $updatedResponse = $controller->index('test-tenant');
+        $updatedResponse = $controller->index();
         $updatedData = $updatedResponse->getData(true);
 
         expect(count($updatedData['data']))->toBe($initialCount + 1);
@@ -188,7 +188,7 @@ describe('Delete Confirmation Prevents Accidental Deletion', function () {
         ]);
 
         $controller = new DocumentCategoryController;
-        $response = $controller->destroy('test-tenant', $predefinedCategory);
+        $response = $controller->destroy($predefinedCategory);
 
         // Should return 403 Forbidden
         expect($response->getStatusCode())->toBe(403);
@@ -215,7 +215,7 @@ describe('Delete Confirmation Prevents Accidental Deletion', function () {
         $categoryId = $customCategory->id;
 
         $controller = new DocumentCategoryController;
-        $response = $controller->destroy('test-tenant', $customCategory);
+        $response = $controller->destroy($customCategory);
 
         // Should return 204 No Content
         expect($response->getStatusCode())->toBe(204);
@@ -240,15 +240,15 @@ describe('Delete Confirmation Prevents Accidental Deletion', function () {
         $controller = new DocumentCategoryController;
 
         // Get initial list
-        $initialResponse = $controller->index('test-tenant');
+        $initialResponse = $controller->index();
         $initialData = $initialResponse->getData(true);
         $initialCount = count($initialData['data']);
 
         // Delete the category
-        $controller->destroy('test-tenant', $customCategory);
+        $controller->destroy($customCategory);
 
         // Get updated list
-        $updatedResponse = $controller->index('test-tenant');
+        $updatedResponse = $controller->index();
         $updatedData = $updatedResponse->getData(true);
 
         expect(count($updatedData['data']))->toBe($initialCount - 1);

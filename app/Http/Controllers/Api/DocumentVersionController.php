@@ -43,7 +43,9 @@ class DocumentVersionController extends Controller
         $validated = $request->validated();
         $file = $request->file('file');
 
-        $result = DB::transaction(function () use ($document, $validated, $file, $tenant) {
+        $tenantSlug = tenant()->slug;
+
+        $result = DB::transaction(function () use ($document, $validated, $file, $tenantSlug) {
             // Get the next version number
             $nextVersion = $document->versions()->max('version_number') + 1;
 
@@ -51,7 +53,7 @@ class DocumentVersionController extends Controller
             $employeeId = $document->is_company_document ? null : $document->employee_id;
 
             // Store the file
-            $fileData = $this->storageService->store($file, $tenant, $employeeId);
+            $fileData = $this->storageService->store($file, $tenantSlug, $employeeId);
 
             // Create the new version
             $version = DocumentVersion::create([

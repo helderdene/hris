@@ -69,7 +69,7 @@ class CourseMaterialController extends Controller
         if ($materialType->requiresFile() && $request->hasFile('file')) {
             $file = $request->file('file');
             $storedFilename = $this->generateUniqueFilename($file->getClientOriginalName());
-            $path = $this->generateStoragePath($tenant, $course->id);
+            $path = $this->generateStoragePath(tenant()->slug, $course->id);
             $fullPath = $path.'/'.$storedFilename;
 
             Storage::disk(self::DISK)->putFileAs($path, $file, $storedFilename);

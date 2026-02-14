@@ -122,7 +122,7 @@ describe('GET /api/employees/{employee}/compensation', function () {
         ]);
 
         $controller = new EmployeeCompensationController;
-        $response = $controller->index('test-tenant', $employee);
+        $response = $controller->index($employee);
 
         $data = $response->getData(true);
 
@@ -141,7 +141,7 @@ describe('GET /api/employees/{employee}/compensation', function () {
         $employee = Employee::factory()->create();
 
         $controller = new EmployeeCompensationController;
-        $response = $controller->index('test-tenant', $employee);
+        $response = $controller->index($employee);
 
         $data = $response->getData(true);
 
@@ -283,7 +283,7 @@ describe('Authorization', function () {
         expect(Gate::allows('can-manage-employees'))->toBeTrue();
 
         $controller = new EmployeeCompensationController;
-        $response = $controller->index('test-tenant', $employee);
+        $response = $controller->index($employee);
 
         expect($response->getStatusCode())->toBe(200);
     });
@@ -301,7 +301,7 @@ describe('Authorization', function () {
         expect(Gate::allows('can-manage-employees'))->toBeTrue();
 
         $controller = new EmployeeCompensationController;
-        $response = $controller->index('test-tenant', $employee);
+        $response = $controller->index($employee);
 
         expect($response->getStatusCode())->toBe(200);
     });

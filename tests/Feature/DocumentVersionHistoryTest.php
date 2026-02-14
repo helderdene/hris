@@ -143,7 +143,7 @@ describe('Document Version Timeline', function () {
 
         // Fetch document with versions via controller
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->show('test-tenant', $employee, $document);
+        $response = $controller->show($employee, $document);
 
         $data = $response->getData(true);
 
@@ -181,7 +181,7 @@ describe('Document Version Timeline', function () {
         ]);
 
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->show('test-tenant', $employee, $document);
+        $response = $controller->show($employee, $document);
 
         $data = $response->getData(true);
 
@@ -225,7 +225,7 @@ describe('Version Download', function () {
         ]);
 
         $controller = new DocumentVersionController(new DocumentStorageService);
-        $response = $controller->download('test-tenant', $document, $version);
+        $response = $controller->download($document, $version);
 
         expect($response->getStatusCode())->toBe(200);
         expect($response->headers->get('Content-Type'))->toContain('application/pdf');

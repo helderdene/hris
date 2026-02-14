@@ -100,7 +100,7 @@ describe('GET /api/document-categories', function () {
         DocumentCategory::factory()->custom()->create(['name' => 'Custom Category 2']);
 
         $controller = new DocumentCategoryController;
-        $response = $controller->index('test-tenant');
+        $response = $controller->index();
 
         $data = $response->getData(true);
 
@@ -164,7 +164,7 @@ describe('DELETE /api/document-categories/{category}', function () {
         $controller = new DocumentCategoryController;
 
         // Attempt to delete should be forbidden
-        $response = $controller->destroy('test-tenant', $predefinedCategory);
+        $response = $controller->destroy($predefinedCategory);
 
         expect($response->getStatusCode())->toBe(403);
 
@@ -187,7 +187,7 @@ describe('DELETE /api/document-categories/{category}', function () {
         $categoryId = $customCategory->id;
 
         $controller = new DocumentCategoryController;
-        $response = $controller->destroy('test-tenant', $customCategory);
+        $response = $controller->destroy($customCategory);
 
         expect($response->getStatusCode())->toBe(204);
 

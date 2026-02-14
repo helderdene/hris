@@ -117,7 +117,7 @@ describe('GET /api/employees/{employee}/documents', function () {
         ]);
 
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->index('test-tenant', $employee);
+        $response = $controller->index($employee);
 
         $data = $response->getData(true);
 
@@ -154,7 +154,7 @@ describe('GET /api/employees/{employee}/documents', function () {
         $request = request();
         $request->merge(['category_id' => $category1->id]);
 
-        $response = $controller->index('test-tenant', $employee);
+        $response = $controller->index($employee);
 
         // Parse the response as the index method reads from request()
         $data = $response->getData(true);
@@ -189,7 +189,7 @@ describe('POST /api/employees/{employee}/documents', function () {
         $request->files->set('file', $file);
 
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->store($request, 'test-tenant', $employee);
+        $response = $controller->store($request, $employee);
 
         expect($response->getStatusCode())->toBe(201);
 
@@ -243,7 +243,7 @@ describe('GET /api/employees/{employee}/documents/{document}', function () {
         ]);
 
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->show('test-tenant', $employee, $document);
+        $response = $controller->show($employee, $document);
 
         $data = $response->getData(true);
 
@@ -271,7 +271,7 @@ describe('DELETE /api/employees/{employee}/documents/{document}', function () {
         $documentId = $document->id;
 
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->destroy('test-tenant', $employee, $document);
+        $response = $controller->destroy($employee, $document);
 
         expect($response->getStatusCode())->toBe(204);
 
@@ -317,7 +317,7 @@ describe('Document Version Download', function () {
         ]);
 
         $controller = new DocumentVersionController(new DocumentStorageService);
-        $response = $controller->download('test-tenant', $document, $version);
+        $response = $controller->download($document, $version);
 
         expect($response->getStatusCode())->toBe(200);
         expect($response->headers->get('Content-Type'))->toContain('application/pdf');
@@ -364,7 +364,7 @@ describe('Authorization', function () {
         expect(Gate::allows('can-view-employee-documents', $employee))->toBeTrue();
 
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->index('test-tenant', $employee);
+        $response = $controller->index($employee);
 
         expect($response->getStatusCode())->toBe(200);
     });

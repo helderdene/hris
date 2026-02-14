@@ -100,7 +100,7 @@ describe('Document Preview API', function () {
         ]);
 
         $controller = new DocumentVersionController(new DocumentStorageService);
-        $response = $controller->preview('test-tenant', $document, $version);
+        $response = $controller->preview($document, $version);
 
         expect($response->getStatusCode())->toBe(200);
         expect($response->headers->get('Content-Type'))->toContain('application/pdf');
@@ -142,7 +142,7 @@ describe('Document Preview API', function () {
         ]);
 
         $controller = new DocumentVersionController(new DocumentStorageService);
-        $response = $controller->preview('test-tenant', $document, $version);
+        $response = $controller->preview($document, $version);
 
         expect($response->getStatusCode())->toBe(200);
         expect($response->headers->get('Content-Type'))->toContain('image/jpeg');
@@ -224,7 +224,7 @@ describe('Document Preview API', function () {
         $controller = new DocumentVersionController(new DocumentStorageService);
 
         try {
-            $controller->preview('test-tenant', $document, $version);
+            $controller->preview($document, $version);
             expect(false)->toBeTrue(); // Should not reach here
         } catch (\Symfony\Component\HttpKernel\Exception\NotFoundHttpException $e) {
             expect($e->getMessage())->toBe('File not found');
