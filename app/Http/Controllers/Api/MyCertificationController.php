@@ -75,7 +75,7 @@ class MyCertificationController extends Controller
     /**
      * Display the specified certification.
      */
-    public function show(string $tenant, Certification $certification): CertificationResource|JsonResponse
+    public function show(Certification $certification): CertificationResource|JsonResponse
     {
         $employee = $this->getEmployee();
 
@@ -95,7 +95,6 @@ class MyCertificationController extends Controller
      */
     public function update(
         UpdateCertificationRequest $request,
-        string $tenant,
         Certification $certification
     ): CertificationResource|JsonResponse {
         $employee = $this->getEmployee();
@@ -121,7 +120,7 @@ class MyCertificationController extends Controller
     /**
      * Remove the specified certification.
      */
-    public function destroy(string $tenant, Certification $certification): JsonResponse
+    public function destroy(Certification $certification): JsonResponse
     {
         $employee = $this->getEmployee();
 
@@ -152,7 +151,7 @@ class MyCertificationController extends Controller
     /**
      * Submit the certification for approval.
      */
-    public function submit(string $tenant, Certification $certification): JsonResponse
+    public function submit(Certification $certification): JsonResponse
     {
         $employee = $this->getEmployee();
 

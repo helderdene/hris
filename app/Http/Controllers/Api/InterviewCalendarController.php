@@ -16,7 +16,7 @@ class InterviewCalendarController extends Controller
     /**
      * Download an iCal file for an interview.
      */
-    public function download(string $tenant, Interview $interview): Response
+    public function download(Interview $interview): Response
     {
         $ics = $this->calendarService->generateIcs($interview);
         $filename = 'interview-'.$interview->id.'.ics';

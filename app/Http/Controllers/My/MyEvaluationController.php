@@ -132,7 +132,7 @@ class MyEvaluationController extends Controller
     /**
      * Display the self-evaluation form.
      */
-    public function selfEvaluation(string $tenant, PerformanceCycleParticipant $participant): Response
+    public function selfEvaluation(PerformanceCycleParticipant $participant): Response
     {
         $user = request()->user();
         $employee = $user->employee;
@@ -230,7 +230,7 @@ class MyEvaluationController extends Controller
     /**
      * Display the peer/direct report review form.
      */
-    public function peerReview(string $tenant, EvaluationReviewer $reviewer): Response
+    public function peerReview(EvaluationReviewer $reviewer): Response
     {
         $user = request()->user();
         $employee = $user->employee;
@@ -303,7 +303,7 @@ class MyEvaluationController extends Controller
     /**
      * Display the evaluation results.
      */
-    public function viewResults(string $tenant, PerformanceCycleParticipant $participant): Response
+    public function viewResults(PerformanceCycleParticipant $participant): Response
     {
         $user = request()->user();
         $employee = $user->employee;

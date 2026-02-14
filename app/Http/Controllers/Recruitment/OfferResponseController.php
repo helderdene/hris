@@ -13,7 +13,7 @@ class OfferResponseController extends Controller
     /**
      * Display the public offer response page for candidates.
      */
-    public function show(string $tenant, Offer $offer, OfferService $offerService): Response
+    public function show(Offer $offer, OfferService $offerService): Response
     {
         // Record that the candidate viewed the offer
         $offerService->recordView($offer);

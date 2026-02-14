@@ -61,7 +61,7 @@ class AnnouncementController extends Controller
     /**
      * Update the specified announcement.
      */
-    public function update(UpdateAnnouncementRequest $request, string $tenant, Announcement $announcement): AnnouncementResource
+    public function update(UpdateAnnouncementRequest $request, Announcement $announcement): AnnouncementResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -73,7 +73,7 @@ class AnnouncementController extends Controller
     /**
      * Remove the specified announcement.
      */
-    public function destroy(string $tenant, Announcement $announcement): JsonResponse
+    public function destroy(Announcement $announcement): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

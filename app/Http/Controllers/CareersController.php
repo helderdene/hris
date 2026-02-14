@@ -71,7 +71,7 @@ class CareersController extends Controller
     /**
      * Display a single public job posting.
      */
-    public function show(string $tenant, string $slug): Response
+    public function show(string $slug): Response
     {
         $posting = JobPosting::query()
             ->publiclyVisible()

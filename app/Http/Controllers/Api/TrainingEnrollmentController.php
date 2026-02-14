@@ -23,7 +23,7 @@ class TrainingEnrollmentController extends Controller
     /**
      * Display a listing of enrollments for a session.
      */
-    public function index(Request $request, string $tenant, TrainingSession $session): AnonymousResourceCollection
+    public function index(Request $request, TrainingSession $session): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-training');
 
@@ -72,7 +72,7 @@ class TrainingEnrollmentController extends Controller
     /**
      * Display the specified enrollment.
      */
-    public function show(string $tenant, TrainingEnrollment $enrollment): TrainingEnrollmentResource
+    public function show(TrainingEnrollment $enrollment): TrainingEnrollmentResource
     {
         Gate::authorize('can-view-training');
 
@@ -90,7 +90,7 @@ class TrainingEnrollmentController extends Controller
     /**
      * Cancel an enrollment.
      */
-    public function destroy(Request $request, string $tenant, TrainingEnrollment $enrollment): JsonResponse
+    public function destroy(Request $request, TrainingEnrollment $enrollment): JsonResponse
     {
         // Allow employees to cancel their own enrollments
         $employee = auth()->user()->employee;
@@ -118,7 +118,7 @@ class TrainingEnrollmentController extends Controller
     /**
      * Mark an enrollment as attended.
      */
-    public function markAttended(string $tenant, TrainingEnrollment $enrollment): TrainingEnrollmentResource
+    public function markAttended(TrainingEnrollment $enrollment): TrainingEnrollmentResource
     {
         Gate::authorize('can-manage-training');
 
@@ -131,7 +131,7 @@ class TrainingEnrollmentController extends Controller
     /**
      * Mark an enrollment as no-show.
      */
-    public function markNoShow(string $tenant, TrainingEnrollment $enrollment): TrainingEnrollmentResource
+    public function markNoShow(TrainingEnrollment $enrollment): TrainingEnrollmentResource
     {
         Gate::authorize('can-manage-training');
 
@@ -144,7 +144,7 @@ class TrainingEnrollmentController extends Controller
     /**
      * Bulk enroll multiple employees.
      */
-    public function bulkEnroll(Request $request, string $tenant, TrainingSession $session): JsonResponse
+    public function bulkEnroll(Request $request, TrainingSession $session): JsonResponse
     {
         Gate::authorize('can-manage-training');
 

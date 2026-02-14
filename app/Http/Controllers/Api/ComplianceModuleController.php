@@ -21,7 +21,6 @@ class ComplianceModuleController extends Controller
      */
     public function index(
         Request $request,
-        string $tenant,
         ComplianceCourse $complianceCourse
     ): AnonymousResourceCollection {
         Gate::authorize('can-view-training');
@@ -39,7 +38,6 @@ class ComplianceModuleController extends Controller
      */
     public function store(
         StoreComplianceModuleRequest $request,
-        string $tenant,
         ComplianceCourse $complianceCourse
     ): JsonResponse {
         Gate::authorize('can-manage-training');
@@ -76,7 +74,6 @@ class ComplianceModuleController extends Controller
      * Display the specified module.
      */
     public function show(
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceModule $complianceModule
     ): ComplianceModuleResource {
@@ -97,7 +94,6 @@ class ComplianceModuleController extends Controller
      */
     public function update(
         UpdateComplianceModuleRequest $request,
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceModule $complianceModule
     ): ComplianceModuleResource {
@@ -136,7 +132,6 @@ class ComplianceModuleController extends Controller
      * Remove the specified module.
      */
     public function destroy(
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceModule $complianceModule
     ): JsonResponse {
@@ -164,7 +159,6 @@ class ComplianceModuleController extends Controller
      */
     public function reorder(
         Request $request,
-        string $tenant,
         ComplianceCourse $complianceCourse
     ): JsonResponse {
         Gate::authorize('can-manage-training');
@@ -190,7 +184,6 @@ class ComplianceModuleController extends Controller
      * Download module file.
      */
     public function download(
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceModule $complianceModule
     ): \Symfony\Component\HttpFoundation\StreamedResponse {

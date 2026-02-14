@@ -65,7 +65,7 @@ class MyComplianceController extends Controller
     /**
      * Display a specific compliance assignment with content player.
      */
-    public function show(string $tenant, ComplianceAssignment $assignment): Response
+    public function show(ComplianceAssignment $assignment): Response
     {
         $employee = $this->getAuthenticatedEmployee();
 

@@ -132,7 +132,7 @@ class EmployeeController extends Controller
      * Note: $tenant parameter captures the subdomain route parameter but is unused
      * since tenant context is handled by middleware.
      */
-    public function show(string $tenant, Employee|int|string $employee): Response
+    public function show(Employee|int|string $employee): Response
     {
         Gate::authorize('can-manage-employees');
 
@@ -196,7 +196,7 @@ class EmployeeController extends Controller
      * Note: $tenant parameter captures the subdomain route parameter but is unused
      * since tenant context is handled by middleware.
      */
-    public function edit(string $tenant, Employee|int|string $employee): Response
+    public function edit(Employee|int|string $employee): Response
     {
         Gate::authorize('can-manage-employees');
 
@@ -243,7 +243,7 @@ class EmployeeController extends Controller
      * Note: $tenant parameter captures the subdomain route parameter but is unused
      * since tenant context is handled by middleware.
      */
-    public function update(UpdateEmployeeRequest $request, string $tenant, Employee|int|string $employee): RedirectResponse
+    public function update(UpdateEmployeeRequest $request, Employee|int|string $employee): RedirectResponse
     {
         Gate::authorize('can-manage-employees');
 

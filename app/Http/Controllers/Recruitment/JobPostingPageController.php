@@ -154,7 +154,7 @@ class JobPostingPageController extends Controller
     /**
      * Display a specific job posting.
      */
-    public function show(string $tenant, JobPosting $jobPosting): Response
+    public function show(JobPosting $jobPosting): Response
     {
         $jobPosting->load(['department', 'position', 'createdByEmployee', 'jobRequisition']);
 
@@ -206,7 +206,7 @@ class JobPostingPageController extends Controller
     /**
      * Display the edit job posting page.
      */
-    public function edit(string $tenant, JobPosting $jobPosting): Response
+    public function edit(JobPosting $jobPosting): Response
     {
         $jobPosting->load(['department', 'position']);
 

@@ -22,7 +22,6 @@ class EvaluationSummaryController extends Controller
      * Display the evaluation summary for a participant.
      */
     public function show(
-        string $tenant,
         PerformanceCycleParticipant $participant
     ): JsonResponse {
         // Authorization: Either manage organization OR be the participant (if results are visible)
@@ -99,7 +98,6 @@ class EvaluationSummaryController extends Controller
      */
     public function calibrate(
         CalibrateEvaluationRequest $request,
-        string $tenant,
         PerformanceCycleParticipant $participant
     ): JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -128,7 +126,6 @@ class EvaluationSummaryController extends Controller
      */
     public function acknowledge(
         Request $request,
-        string $tenant,
         PerformanceCycleParticipant $participant
     ): JsonResponse {
         // Authorization: Must be the participant
@@ -173,7 +170,6 @@ class EvaluationSummaryController extends Controller
      * Recalculate summary scores.
      */
     public function recalculate(
-        string $tenant,
         PerformanceCycleParticipant $participant
     ): JsonResponse {
         Gate::authorize('can-manage-organization');

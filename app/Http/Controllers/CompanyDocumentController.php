@@ -26,7 +26,7 @@ class CompanyDocumentController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function index(string $tenant): Response
+    public function index(): Response
     {
         // All authenticated tenant users can view company documents
         Gate::authorize('can-view-company-documents');

@@ -23,7 +23,7 @@ class GoalKeyResultController extends Controller
     /**
      * Display a listing of key results for a goal.
      */
-    public function index(string $tenant, Goal $goal): AnonymousResourceCollection
+    public function index(Goal $goal): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-organization');
 
@@ -38,7 +38,7 @@ class GoalKeyResultController extends Controller
     /**
      * Store a newly created key result.
      */
-    public function store(StoreKeyResultRequest $request, string $tenant, Goal $goal): JsonResponse
+    public function store(StoreKeyResultRequest $request, Goal $goal): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -65,7 +65,7 @@ class GoalKeyResultController extends Controller
     /**
      * Display the specified key result.
      */
-    public function show(string $tenant, Goal $goal, GoalKeyResult $keyResult): GoalKeyResultResource
+    public function show(Goal $goal, GoalKeyResult $keyResult): GoalKeyResultResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -77,7 +77,7 @@ class GoalKeyResultController extends Controller
     /**
      * Update the specified key result.
      */
-    public function update(UpdateKeyResultRequest $request, string $tenant, Goal $goal, GoalKeyResult $keyResult): GoalKeyResultResource
+    public function update(UpdateKeyResultRequest $request, Goal $goal, GoalKeyResult $keyResult): GoalKeyResultResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -95,7 +95,7 @@ class GoalKeyResultController extends Controller
     /**
      * Remove the specified key result.
      */
-    public function destroy(string $tenant, Goal $goal, GoalKeyResult $keyResult): JsonResponse
+    public function destroy(Goal $goal, GoalKeyResult $keyResult): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -113,7 +113,7 @@ class GoalKeyResultController extends Controller
     /**
      * Record progress for a key result.
      */
-    public function recordProgress(Request $request, string $tenant, Goal $goal, GoalKeyResult $keyResult): JsonResponse
+    public function recordProgress(Request $request, Goal $goal, GoalKeyResult $keyResult): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

@@ -92,7 +92,7 @@ class PositionCompetencyController extends Controller
     /**
      * Display the specified position competency.
      */
-    public function show(string $tenant, PositionCompetency $positionCompetency): PositionCompetencyResource
+    public function show(PositionCompetency $positionCompetency): PositionCompetencyResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -106,7 +106,6 @@ class PositionCompetencyController extends Controller
      */
     public function update(
         UpdatePositionCompetencyRequest $request,
-        string $tenant,
         PositionCompetency $positionCompetency
     ): PositionCompetencyResource {
         Gate::authorize('can-manage-organization');
@@ -121,7 +120,7 @@ class PositionCompetencyController extends Controller
     /**
      * Remove the specified position competency.
      */
-    public function destroy(string $tenant, PositionCompetency $positionCompetency): JsonResponse
+    public function destroy(PositionCompetency $positionCompetency): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

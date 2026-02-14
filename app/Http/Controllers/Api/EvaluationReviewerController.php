@@ -28,7 +28,6 @@ class EvaluationReviewerController extends Controller
      */
     public function index(
         Request $request,
-        string $tenant,
         PerformanceCycleParticipant $participant
     ): AnonymousResourceCollection {
         Gate::authorize('can-manage-organization');
@@ -65,7 +64,6 @@ class EvaluationReviewerController extends Controller
      */
     public function store(
         Request $request,
-        string $tenant,
         PerformanceCycleParticipant $participant
     ): JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -123,7 +121,6 @@ class EvaluationReviewerController extends Controller
      * Display the specified reviewer.
      */
     public function show(
-        string $tenant,
         PerformanceCycleParticipant $participant,
         EvaluationReviewer $reviewer
     ): EvaluationReviewerResource {
@@ -148,7 +145,6 @@ class EvaluationReviewerController extends Controller
      * Remove the specified reviewer.
      */
     public function destroy(
-        string $tenant,
         PerformanceCycleParticipant $participant,
         EvaluationReviewer $reviewer
     ): JsonResponse {

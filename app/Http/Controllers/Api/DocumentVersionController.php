@@ -31,7 +31,7 @@ class DocumentVersionController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function store(NewVersionUploadRequest $request, string $tenant, Document $document): JsonResponse
+    public function store(NewVersionUploadRequest $request, Document $document): JsonResponse
     {
         // Check authorization based on document type
         if ($document->is_company_document) {
@@ -89,7 +89,7 @@ class DocumentVersionController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function download(string $tenant, Document $document, DocumentVersion $version): StreamedResponse
+    public function download(Document $document, DocumentVersion $version): StreamedResponse
     {
         // Check authorization based on document type
         if ($document->is_company_document) {
@@ -127,7 +127,7 @@ class DocumentVersionController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function preview(string $tenant, Document $document, DocumentVersion $version): StreamedResponse
+    public function preview(Document $document, DocumentVersion $version): StreamedResponse
     {
         // Check authorization based on document type
         if ($document->is_company_document) {

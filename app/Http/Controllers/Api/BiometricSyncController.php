@@ -30,7 +30,7 @@ class BiometricSyncController extends Controller
      *
      * Note: $tenant parameter is captured from subdomain but not used directly.
      */
-    public function deviceSyncStatus(string $tenant, BiometricDevice $device): JsonResponse
+    public function deviceSyncStatus(BiometricDevice $device): JsonResponse
     {
         Gate::authorize('view-biometric-devices');
 
@@ -65,7 +65,6 @@ class BiometricSyncController extends Controller
      */
     public function syncAllToDevice(
         SyncAllToDeviceRequest $request,
-        string $tenant,
         BiometricDevice $device
     ): JsonResponse {
         Gate::authorize('manage-biometric-devices');
@@ -110,7 +109,7 @@ class BiometricSyncController extends Controller
      *
      * Note: $tenant parameter is captured from subdomain but not used directly.
      */
-    public function employeeSyncStatus(string $tenant, Employee $employee): JsonResponse
+    public function employeeSyncStatus(Employee $employee): JsonResponse
     {
         Gate::authorize('can-view-employee-documents', $employee);
 
@@ -141,7 +140,7 @@ class BiometricSyncController extends Controller
      *
      * Note: $tenant parameter is captured from subdomain but not used directly.
      */
-    public function verifyEmployeeDevices(string $tenant, Employee $employee): JsonResponse
+    public function verifyEmployeeDevices(Employee $employee): JsonResponse
     {
         Gate::authorize('can-view-employee-documents', $employee);
 
@@ -159,7 +158,6 @@ class BiometricSyncController extends Controller
      */
     public function syncEmployeeToDevices(
         SyncEmployeeRequest $request,
-        string $tenant,
         Employee $employee
     ): JsonResponse {
         Gate::authorize('can-manage-employee-documents', $employee);
@@ -198,7 +196,6 @@ class BiometricSyncController extends Controller
      */
     public function unsyncEmployeeFromDevice(
         UnsyncEmployeeRequest $request,
-        string $tenant,
         Employee $employee
     ): JsonResponse {
         Gate::authorize('can-manage-employee-documents', $employee);

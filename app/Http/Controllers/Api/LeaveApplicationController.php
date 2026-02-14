@@ -104,7 +104,7 @@ class LeaveApplicationController extends Controller
     /**
      * Display the specified leave application.
      */
-    public function show(string $tenant, LeaveApplication $leaveApplication): LeaveApplicationResource
+    public function show(LeaveApplication $leaveApplication): LeaveApplicationResource
     {
         $leaveApplication->load([
             'employee.department',
@@ -122,7 +122,6 @@ class LeaveApplicationController extends Controller
      */
     public function update(
         UpdateLeaveApplicationRequest $request,
-        string $tenant,
         LeaveApplication $leaveApplication
     ): LeaveApplicationResource {
         $leaveApplication->update($request->validatedWithCalculations());
@@ -137,7 +136,6 @@ class LeaveApplicationController extends Controller
      */
     public function submit(
         Request $request,
-        string $tenant,
         LeaveApplication $leaveApplication
     ): LeaveApplicationResource {
         $application = $this->leaveApplicationService->submit($leaveApplication);
@@ -150,7 +148,6 @@ class LeaveApplicationController extends Controller
      */
     public function cancel(
         Request $request,
-        string $tenant,
         LeaveApplication $leaveApplication
     ): LeaveApplicationResource {
         $reason = $request->input('reason');
@@ -163,7 +160,7 @@ class LeaveApplicationController extends Controller
     /**
      * Remove the specified leave application.
      */
-    public function destroy(string $tenant, LeaveApplication $leaveApplication): JsonResponse
+    public function destroy(LeaveApplication $leaveApplication): JsonResponse
     {
         if ($leaveApplication->status !== LeaveApplicationStatus::Draft) {
             return response()->json([
@@ -183,7 +180,6 @@ class LeaveApplicationController extends Controller
      */
     public function employeeApplications(
         Request $request,
-        string $tenant,
         Employee $employee
     ): AnonymousResourceCollection {
         Gate::authorize('can-manage-organization');

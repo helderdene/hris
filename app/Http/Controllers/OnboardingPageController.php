@@ -93,7 +93,7 @@ class OnboardingPageController extends Controller
     /**
      * Display a specific onboarding checklist for HR review.
      */
-    public function show(string $tenant, OnboardingChecklist $checklist): Response
+    public function show(OnboardingChecklist $checklist): Response
     {
         Gate::authorize('can-manage-organization');
 

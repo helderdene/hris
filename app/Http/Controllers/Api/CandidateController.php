@@ -84,7 +84,7 @@ class CandidateController extends Controller
     /**
      * Display the specified candidate.
      */
-    public function show(string $tenant, Candidate $candidate): CandidateResource
+    public function show(Candidate $candidate): CandidateResource
     {
         $candidate->load(['education', 'workExperiences', 'jobApplications.jobPosting']);
 
@@ -94,7 +94,7 @@ class CandidateController extends Controller
     /**
      * Update the specified candidate.
      */
-    public function update(UpdateCandidateRequest $request, string $tenant, Candidate $candidate): CandidateResource
+    public function update(UpdateCandidateRequest $request, Candidate $candidate): CandidateResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -136,7 +136,7 @@ class CandidateController extends Controller
     /**
      * Remove the specified candidate.
      */
-    public function destroy(string $tenant, Candidate $candidate): JsonResponse
+    public function destroy(Candidate $candidate): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

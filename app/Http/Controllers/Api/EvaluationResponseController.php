@@ -22,7 +22,6 @@ class EvaluationResponseController extends Controller
      * Display the evaluation response for a reviewer.
      */
     public function show(
-        string $tenant,
         EvaluationReviewer $reviewer
     ): JsonResponse {
         // Authorization: Either manage organization OR be the reviewer
@@ -120,7 +119,6 @@ class EvaluationResponseController extends Controller
      */
     public function store(
         StoreEvaluationResponseRequest $request,
-        string $tenant,
         EvaluationReviewer $reviewer
     ): JsonResponse {
         // Authorization: Must be the reviewer
@@ -178,7 +176,6 @@ class EvaluationResponseController extends Controller
      * Submit the evaluation (final).
      */
     public function submit(
-        string $tenant,
         EvaluationReviewer $reviewer
     ): JsonResponse {
         // Authorization: Must be the reviewer
@@ -216,7 +213,6 @@ class EvaluationResponseController extends Controller
      */
     public function decline(
         Request $request,
-        string $tenant,
         EvaluationReviewer $reviewer
     ): JsonResponse {
         // Authorization: Must be the reviewer

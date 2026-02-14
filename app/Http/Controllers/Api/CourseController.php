@@ -122,7 +122,7 @@ class CourseController extends Controller
     /**
      * Display the specified course.
      */
-    public function show(string $tenant, Course $course): CourseResource
+    public function show(Course $course): CourseResource
     {
         // For employees without manage permission, only show published courses
         if (! Gate::allows('can-manage-training') && ! $course->isPublished()) {
@@ -141,7 +141,6 @@ class CourseController extends Controller
      */
     public function update(
         UpdateCourseRequest $request,
-        string $tenant,
         Course $course
     ): CourseResource {
         Gate::authorize('can-manage-training');
@@ -177,7 +176,7 @@ class CourseController extends Controller
     /**
      * Remove the specified course.
      */
-    public function destroy(string $tenant, Course $course): JsonResponse
+    public function destroy(Course $course): JsonResponse
     {
         Gate::authorize('can-manage-training');
 
@@ -200,7 +199,7 @@ class CourseController extends Controller
     /**
      * Publish the specified course.
      */
-    public function publish(string $tenant, Course $course): CourseResource
+    public function publish(Course $course): CourseResource
     {
         Gate::authorize('can-manage-training');
 
@@ -217,7 +216,7 @@ class CourseController extends Controller
     /**
      * Archive the specified course.
      */
-    public function archive(string $tenant, Course $course): CourseResource
+    public function archive(Course $course): CourseResource
     {
         Gate::authorize('can-manage-training');
 
@@ -234,7 +233,7 @@ class CourseController extends Controller
     /**
      * Duplicate the specified course.
      */
-    public function duplicate(Request $request, string $tenant, Course $course): JsonResponse
+    public function duplicate(Request $request, Course $course): JsonResponse
     {
         Gate::authorize('can-manage-training');
 

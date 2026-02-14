@@ -16,7 +16,7 @@ class DocumentRequestAdminController extends Controller
     /**
      * Update a document request's status and admin notes.
      */
-    public function update(UpdateDocumentRequestRequest $request, string $tenant, DocumentRequest $documentRequest): JsonResponse
+    public function update(UpdateDocumentRequestRequest $request, DocumentRequest $documentRequest): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

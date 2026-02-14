@@ -24,7 +24,7 @@ class JobApplicationController extends Controller
     /**
      * Display applications for a job posting.
      */
-    public function index(Request $request, string $tenant, int $jobPostingId): AnonymousResourceCollection
+    public function index(Request $request, int $jobPostingId): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-organization');
 
@@ -58,7 +58,7 @@ class JobApplicationController extends Controller
     /**
      * Display the specified application.
      */
-    public function show(string $tenant, JobApplication $jobApplication): JobApplicationResource
+    public function show(JobApplication $jobApplication): JobApplicationResource
     {
         $jobApplication->load(['candidate', 'jobPosting', 'assignedToEmployee', 'statusHistories']);
 
@@ -70,7 +70,6 @@ class JobApplicationController extends Controller
      */
     public function updateStatus(
         UpdateApplicationStatusRequest $request,
-        string $tenant,
         JobApplication $jobApplication
     ): JobApplicationResource {
         $newStatus = ApplicationStatus::from($request->validated('status'));
@@ -90,7 +89,7 @@ class JobApplicationController extends Controller
     /**
      * Remove the specified application.
      */
-    public function destroy(string $tenant, JobApplication $jobApplication): JsonResponse
+    public function destroy(JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

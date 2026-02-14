@@ -108,7 +108,7 @@ class LeaveApplicationPageController extends Controller
     /**
      * Display a specific leave application.
      */
-    public function show(string $tenant, LeaveApplication $leaveApplication): Response
+    public function show(LeaveApplication $leaveApplication): Response
     {
         $leaveApplication->load([
             'employee.department',

@@ -78,7 +78,7 @@ class HolidayController extends Controller
     /**
      * Display the specified holiday.
      */
-    public function show(string $tenant, Holiday $holiday): HolidayResource
+    public function show(Holiday $holiday): HolidayResource
     {
         $holiday->load('workLocation');
 
@@ -90,7 +90,7 @@ class HolidayController extends Controller
      *
      * Only HR Manager and HR Staff can update holidays.
      */
-    public function update(UpdateHolidayRequest $request, string $tenant, Holiday $holiday): HolidayResource
+    public function update(UpdateHolidayRequest $request, Holiday $holiday): HolidayResource
     {
         Gate::authorize('can-manage-holidays');
 
@@ -112,7 +112,7 @@ class HolidayController extends Controller
      *
      * Only HR Manager and HR Staff can delete holidays.
      */
-    public function destroy(string $tenant, Holiday $holiday): JsonResponse
+    public function destroy(Holiday $holiday): JsonResponse
     {
         Gate::authorize('can-manage-holidays');
 

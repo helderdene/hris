@@ -77,7 +77,7 @@ class TrainingController extends Controller
     /**
      * Display the admin course detail page.
      */
-    public function coursesShow(string $tenant, Course $course): Response
+    public function coursesShow(Course $course): Response
     {
         Gate::authorize('can-manage-training');
 

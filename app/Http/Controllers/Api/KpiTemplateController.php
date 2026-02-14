@@ -69,7 +69,7 @@ class KpiTemplateController extends Controller
     /**
      * Display the specified KPI template.
      */
-    public function show(string $tenant, KpiTemplate $kpiTemplate): KpiTemplateResource
+    public function show(KpiTemplate $kpiTemplate): KpiTemplateResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -83,7 +83,6 @@ class KpiTemplateController extends Controller
      */
     public function update(
         UpdateKpiTemplateRequest $request,
-        string $tenant,
         KpiTemplate $kpiTemplate
     ): KpiTemplateResource {
         Gate::authorize('can-manage-organization');
@@ -102,7 +101,7 @@ class KpiTemplateController extends Controller
      *
      * Cannot delete if there are active assignments using this template.
      */
-    public function destroy(string $tenant, KpiTemplate $kpiTemplate): JsonResponse
+    public function destroy(KpiTemplate $kpiTemplate): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

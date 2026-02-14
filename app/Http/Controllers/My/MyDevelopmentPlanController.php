@@ -140,7 +140,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Display a specific development plan.
      */
-    public function show(Request $request, string $tenant, DevelopmentPlan $developmentPlan): Response
+    public function show(Request $request, DevelopmentPlan $developmentPlan): Response
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -172,7 +172,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Update a development plan.
      */
-    public function update(UpdateDevelopmentPlanRequest $request, string $tenant, DevelopmentPlan $developmentPlan): JsonResponse
+    public function update(UpdateDevelopmentPlanRequest $request, DevelopmentPlan $developmentPlan): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -196,7 +196,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Submit the plan for approval.
      */
-    public function submit(Request $request, string $tenant, DevelopmentPlan $developmentPlan): JsonResponse
+    public function submit(Request $request, DevelopmentPlan $developmentPlan): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -219,7 +219,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Add an item to the development plan.
      */
-    public function addItem(StoreDevelopmentPlanItemRequest $request, string $tenant, DevelopmentPlan $developmentPlan): JsonResponse
+    public function addItem(StoreDevelopmentPlanItemRequest $request, DevelopmentPlan $developmentPlan): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -239,7 +239,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Update a development plan item.
      */
-    public function updateItem(StoreDevelopmentPlanItemRequest $request, string $tenant, DevelopmentPlan $developmentPlan, DevelopmentPlanItem $item): JsonResponse
+    public function updateItem(StoreDevelopmentPlanItemRequest $request, DevelopmentPlan $developmentPlan, DevelopmentPlanItem $item): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -263,7 +263,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Add an activity to a development plan item.
      */
-    public function addActivity(StoreDevelopmentActivityRequest $request, string $tenant, DevelopmentPlan $developmentPlan, DevelopmentPlanItem $item): JsonResponse
+    public function addActivity(StoreDevelopmentActivityRequest $request, DevelopmentPlan $developmentPlan, DevelopmentPlanItem $item): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -286,7 +286,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Update an activity.
      */
-    public function updateActivity(StoreDevelopmentActivityRequest $request, string $tenant, DevelopmentActivity $activity): JsonResponse
+    public function updateActivity(StoreDevelopmentActivityRequest $request, DevelopmentActivity $activity): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
         $plan = $activity->developmentPlanItem->developmentPlan;
@@ -306,7 +306,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Complete an activity.
      */
-    public function completeActivity(Request $request, string $tenant, DevelopmentActivity $activity): JsonResponse
+    public function completeActivity(Request $request, DevelopmentActivity $activity): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
         $plan = $activity->developmentPlanItem->developmentPlan;
@@ -327,7 +327,7 @@ class MyDevelopmentPlanController extends Controller
     /**
      * Add a check-in to the development plan.
      */
-    public function addCheckIn(StoreDevelopmentPlanCheckInRequest $request, string $tenant, DevelopmentPlan $developmentPlan): JsonResponse
+    public function addCheckIn(StoreDevelopmentPlanCheckInRequest $request, DevelopmentPlan $developmentPlan): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
 

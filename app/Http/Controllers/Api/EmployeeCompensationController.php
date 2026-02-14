@@ -21,7 +21,7 @@ class EmployeeCompensationController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function index(string $tenant, Employee $employee): JsonResponse
+    public function index(Employee $employee): JsonResponse
     {
         Gate::authorize('can-manage-employees');
 
@@ -47,7 +47,7 @@ class EmployeeCompensationController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function store(StoreEmployeeCompensationRequest $request, string $tenant, Employee $employee): JsonResponse
+    public function store(StoreEmployeeCompensationRequest $request, Employee $employee): JsonResponse
     {
         Gate::authorize('can-manage-employees');
 

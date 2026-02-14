@@ -59,7 +59,7 @@ class CandidatePageController extends Controller
     /**
      * Display a specific candidate.
      */
-    public function show(string $tenant, Candidate $candidate): Response
+    public function show(Candidate $candidate): Response
     {
         $candidate->load([
             'education',
@@ -132,7 +132,7 @@ class CandidatePageController extends Controller
     /**
      * Display the edit candidate page.
      */
-    public function edit(string $tenant, Candidate $candidate): Response
+    public function edit(Candidate $candidate): Response
     {
         $candidate->load(['education', 'workExperiences']);
 

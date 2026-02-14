@@ -17,7 +17,7 @@ class PublicApplicationController extends Controller
     /**
      * Handle a public career page application.
      */
-    public function store(StorePublicApplicationRequest $request, string $tenant, string $slug): RedirectResponse
+    public function store(StorePublicApplicationRequest $request, string $slug): RedirectResponse
     {
         $posting = JobPosting::query()
             ->publiclyVisible()

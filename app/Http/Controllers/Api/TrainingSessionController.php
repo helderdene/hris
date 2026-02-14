@@ -86,7 +86,7 @@ class TrainingSessionController extends Controller
     /**
      * Display the specified training session.
      */
-    public function show(string $tenant, TrainingSession $session): TrainingSessionResource
+    public function show(TrainingSession $session): TrainingSessionResource
     {
         // For employees without manage permission, only show visible sessions
         if (! Gate::allows('can-manage-training') && ! $session->status->isVisibleToEmployees()) {
@@ -113,7 +113,6 @@ class TrainingSessionController extends Controller
      */
     public function update(
         UpdateTrainingSessionRequest $request,
-        string $tenant,
         TrainingSession $session
     ): TrainingSessionResource {
         Gate::authorize('can-manage-training');
@@ -128,7 +127,7 @@ class TrainingSessionController extends Controller
     /**
      * Remove the specified training session.
      */
-    public function destroy(string $tenant, TrainingSession $session): JsonResponse
+    public function destroy(TrainingSession $session): JsonResponse
     {
         Gate::authorize('can-manage-training');
 
@@ -149,7 +148,7 @@ class TrainingSessionController extends Controller
     /**
      * Publish the session (make it available for enrollment).
      */
-    public function publish(string $tenant, TrainingSession $session): TrainingSessionResource
+    public function publish(TrainingSession $session): TrainingSessionResource
     {
         Gate::authorize('can-manage-training');
 
@@ -166,7 +165,7 @@ class TrainingSessionController extends Controller
     /**
      * Cancel the session and notify enrolled employees.
      */
-    public function cancel(Request $request, string $tenant, TrainingSession $session): TrainingSessionResource
+    public function cancel(Request $request, TrainingSession $session): TrainingSessionResource
     {
         Gate::authorize('can-manage-training');
 
@@ -187,7 +186,7 @@ class TrainingSessionController extends Controller
     /**
      * Get sessions for a specific course.
      */
-    public function forCourse(string $tenant, Course $course): AnonymousResourceCollection
+    public function forCourse(Course $course): AnonymousResourceCollection
     {
         Gate::authorize('can-view-training');
 

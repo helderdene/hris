@@ -42,7 +42,7 @@ class OfferTemplatePageController extends Controller
     /**
      * Show the form for editing an offer template.
      */
-    public function edit(string $tenant, OfferTemplate $offerTemplate): Response
+    public function edit(OfferTemplate $offerTemplate): Response
     {
         return Inertia::render('Recruitment/OfferTemplates/Edit', [
             'template' => [

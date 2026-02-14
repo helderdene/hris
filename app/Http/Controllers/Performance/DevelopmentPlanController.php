@@ -62,7 +62,7 @@ class DevelopmentPlanController extends Controller
     /**
      * Display a specific development plan (HR/Manager view).
      */
-    public function show(Request $request, string $tenant, DevelopmentPlan $developmentPlan): Response
+    public function show(Request $request, DevelopmentPlan $developmentPlan): Response
     {
         $developmentPlan->load([
             'items.activities',
@@ -85,7 +85,7 @@ class DevelopmentPlanController extends Controller
     /**
      * Approve a development plan.
      */
-    public function approve(ApproveDevelopmentPlanRequest $request, string $tenant, DevelopmentPlan $developmentPlan): JsonResponse
+    public function approve(ApproveDevelopmentPlanRequest $request, DevelopmentPlan $developmentPlan): JsonResponse
     {
         if ($developmentPlan->status !== DevelopmentPlanStatus::PendingApproval) {
             abort(422, 'This plan is not pending approval.');
@@ -102,7 +102,7 @@ class DevelopmentPlanController extends Controller
     /**
      * Reject a development plan.
      */
-    public function reject(ApproveDevelopmentPlanRequest $request, string $tenant, DevelopmentPlan $developmentPlan): JsonResponse
+    public function reject(ApproveDevelopmentPlanRequest $request, DevelopmentPlan $developmentPlan): JsonResponse
     {
         if ($developmentPlan->status !== DevelopmentPlanStatus::PendingApproval) {
             abort(422, 'This plan is not pending approval.');

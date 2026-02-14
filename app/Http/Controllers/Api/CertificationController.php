@@ -63,7 +63,7 @@ class CertificationController extends Controller
     /**
      * Display the specified certification.
      */
-    public function show(string $tenant, Certification $certification): CertificationResource
+    public function show(Certification $certification): CertificationResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -75,7 +75,7 @@ class CertificationController extends Controller
     /**
      * Approve a certification.
      */
-    public function approve(string $tenant, Certification $certification): JsonResponse
+    public function approve(Certification $certification): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -103,7 +103,7 @@ class CertificationController extends Controller
     /**
      * Reject a certification.
      */
-    public function reject(Request $request, string $tenant, Certification $certification): JsonResponse
+    public function reject(Request $request, Certification $certification): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -135,7 +135,7 @@ class CertificationController extends Controller
     /**
      * Revoke an active certification.
      */
-    public function revoke(Request $request, string $tenant, Certification $certification): JsonResponse
+    public function revoke(Request $request, Certification $certification): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

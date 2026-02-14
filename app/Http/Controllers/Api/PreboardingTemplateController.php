@@ -42,7 +42,7 @@ class PreboardingTemplateController extends Controller
     /**
      * Show a preboarding template with items.
      */
-    public function show(string $tenant, PreboardingTemplate $preboardingTemplate): JsonResponse
+    public function show(PreboardingTemplate $preboardingTemplate): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -111,7 +111,7 @@ class PreboardingTemplateController extends Controller
     /**
      * Update a preboarding template.
      */
-    public function update(StorePreboardingTemplateRequest $request, string $tenant, PreboardingTemplate $preboardingTemplate): JsonResponse
+    public function update(StorePreboardingTemplateRequest $request, PreboardingTemplate $preboardingTemplate): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -147,7 +147,7 @@ class PreboardingTemplateController extends Controller
     /**
      * Delete a preboarding template.
      */
-    public function destroy(string $tenant, PreboardingTemplate $preboardingTemplate): JsonResponse
+    public function destroy(PreboardingTemplate $preboardingTemplate): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

@@ -55,7 +55,7 @@ class OnboardingTemplatePageController extends Controller
     /**
      * Show the form for editing a template.
      */
-    public function edit(string $tenant, OnboardingTemplate $template): Response
+    public function edit(OnboardingTemplate $template): Response
     {
         Gate::authorize('can-manage-organization');
 

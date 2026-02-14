@@ -17,7 +17,7 @@ class InterviewPageController extends Controller
     /**
      * Display all interviews across applications.
      */
-    public function index(Request $request, string $tenant): Response
+    public function index(Request $request): Response
     {
         $status = $request->input('status');
 
@@ -57,7 +57,7 @@ class InterviewPageController extends Controller
     /**
      * Display interviews for a job application.
      */
-    public function forApplication(string $tenant, JobApplication $jobApplication): Response
+    public function forApplication(JobApplication $jobApplication): Response
     {
         $jobApplication->load(['candidate', 'jobPosting']);
 
@@ -96,7 +96,7 @@ class InterviewPageController extends Controller
     /**
      * Display a specific interview.
      */
-    public function show(string $tenant, Interview $interview): Response
+    public function show(Interview $interview): Response
     {
         $interview->load([
             'jobApplication.candidate',

@@ -66,7 +66,7 @@ class ComplianceController extends Controller
     /**
      * Display the compliance course detail page.
      */
-    public function coursesShow(string $tenant, ComplianceCourse $complianceCourse): Response
+    public function coursesShow(ComplianceCourse $complianceCourse): Response
     {
         Gate::authorize('can-manage-compliance');
 

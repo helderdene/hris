@@ -142,7 +142,7 @@ class EvaluationController extends Controller
     /**
      * Display a participant's evaluation detail page.
      */
-    public function show(string $tenant, PerformanceCycleParticipant $participant): Response
+    public function show(PerformanceCycleParticipant $participant): Response
     {
         Gate::authorize('can-manage-organization');
 

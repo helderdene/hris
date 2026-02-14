@@ -22,7 +22,7 @@ class OnboardingController extends Controller
     /**
      * Mark an onboarding item as complete.
      */
-    public function completeItem(CompleteOnboardingItemRequest $request, string $tenant, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
+    public function completeItem(CompleteOnboardingItemRequest $request, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
     {
         $data = $request->validated();
 
@@ -55,7 +55,7 @@ class OnboardingController extends Controller
     /**
      * Skip an optional onboarding item.
      */
-    public function skipItem(SkipOnboardingItemRequest $request, string $tenant, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
+    public function skipItem(SkipOnboardingItemRequest $request, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
     {
         // Only non-required items can be skipped
         if ($item->is_required) {
@@ -94,7 +94,7 @@ class OnboardingController extends Controller
     /**
      * Assign an onboarding item to a specific user.
      */
-    public function assignItem(AssignOnboardingItemRequest $request, string $tenant, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
+    public function assignItem(AssignOnboardingItemRequest $request, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
     {
         $assignee = User::findOrFail($request->validated('assigned_to'));
 
@@ -119,7 +119,7 @@ class OnboardingController extends Controller
     /**
      * Mark an onboarding item as in progress.
      */
-    public function startItem(Request $request, string $tenant, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
+    public function startItem(Request $request, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
     {
         $item = $this->onboardingService->startItem($item);
 

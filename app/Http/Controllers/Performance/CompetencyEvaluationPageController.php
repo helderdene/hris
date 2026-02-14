@@ -86,7 +86,7 @@ class CompetencyEvaluationPageController extends Controller
     /**
      * Display a participant's competency evaluation form.
      */
-    public function show(string $tenant, PerformanceCycleParticipant $participant): Response
+    public function show(PerformanceCycleParticipant $participant): Response
     {
         Gate::authorize('can-manage-organization');
 

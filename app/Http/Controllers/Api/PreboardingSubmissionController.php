@@ -17,7 +17,7 @@ class PreboardingSubmissionController extends Controller
     /**
      * Submit a preboarding checklist item.
      */
-    public function store(SubmitPreboardingItemRequest $request, string $tenant, PreboardingChecklistItem $item): JsonResponse
+    public function store(SubmitPreboardingItemRequest $request, PreboardingChecklistItem $item): JsonResponse
     {
         $data = $request->validated();
 

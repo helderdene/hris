@@ -23,7 +23,7 @@ class InterviewController extends Controller
     /**
      * List interviews for a job application.
      */
-    public function index(string $tenant, JobApplication $jobApplication): JsonResponse
+    public function index(JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -38,7 +38,7 @@ class InterviewController extends Controller
     /**
      * Store a new interview.
      */
-    public function store(StoreInterviewRequest $request, string $tenant, JobApplication $jobApplication): JsonResponse
+    public function store(StoreInterviewRequest $request, JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -50,7 +50,7 @@ class InterviewController extends Controller
     /**
      * Update an interview.
      */
-    public function update(UpdateInterviewRequest $request, string $tenant, Interview $interview): JsonResponse
+    public function update(UpdateInterviewRequest $request, Interview $interview): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -62,7 +62,7 @@ class InterviewController extends Controller
     /**
      * Cancel an interview.
      */
-    public function cancel(CancelInterviewRequest $request, string $tenant, Interview $interview): JsonResponse
+    public function cancel(CancelInterviewRequest $request, Interview $interview): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -81,7 +81,7 @@ class InterviewController extends Controller
     /**
      * Send invitation emails to panelists and candidate.
      */
-    public function sendInvitations(string $tenant, Interview $interview): JsonResponse
+    public function sendInvitations(Interview $interview): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

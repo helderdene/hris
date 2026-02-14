@@ -61,7 +61,7 @@ class HelpCategoryController extends Controller
     /**
      * Display the specified help category.
      */
-    public function show(string $tenant, HelpCategory $category): HelpCategoryResource
+    public function show(HelpCategory $category): HelpCategoryResource
     {
         Gate::authorize('is-super-admin');
 
@@ -71,7 +71,7 @@ class HelpCategoryController extends Controller
     /**
      * Update the specified help category.
      */
-    public function update(UpdateHelpCategoryRequest $request, string $tenant, HelpCategory $category): HelpCategoryResource
+    public function update(UpdateHelpCategoryRequest $request, HelpCategory $category): HelpCategoryResource
     {
         $category->update($request->validated());
 
@@ -81,7 +81,7 @@ class HelpCategoryController extends Controller
     /**
      * Remove the specified help category.
      */
-    public function destroy(string $tenant, HelpCategory $category): JsonResponse
+    public function destroy(HelpCategory $category): JsonResponse
     {
         Gate::authorize('is-super-admin');
 

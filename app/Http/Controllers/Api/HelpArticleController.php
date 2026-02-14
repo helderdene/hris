@@ -72,7 +72,7 @@ class HelpArticleController extends Controller
     /**
      * Display the specified help article.
      */
-    public function show(string $tenant, HelpArticle $article): HelpArticleResource
+    public function show(HelpArticle $article): HelpArticleResource
     {
         Gate::authorize('is-super-admin');
 
@@ -82,7 +82,7 @@ class HelpArticleController extends Controller
     /**
      * Update the specified help article.
      */
-    public function update(UpdateHelpArticleRequest $request, string $tenant, HelpArticle $article): HelpArticleResource
+    public function update(UpdateHelpArticleRequest $request, HelpArticle $article): HelpArticleResource
     {
         $article->update($request->validated());
 
@@ -92,7 +92,7 @@ class HelpArticleController extends Controller
     /**
      * Remove the specified help article.
      */
-    public function destroy(string $tenant, HelpArticle $article): JsonResponse
+    public function destroy(HelpArticle $article): JsonResponse
     {
         Gate::authorize('is-super-admin');
 

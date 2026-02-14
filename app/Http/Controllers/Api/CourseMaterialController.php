@@ -26,7 +26,7 @@ class CourseMaterialController extends Controller
     /**
      * Display a listing of materials for a course.
      */
-    public function index(string $tenant, Course $course): AnonymousResourceCollection
+    public function index(Course $course): AnonymousResourceCollection
     {
         // For employees without manage permission, only show materials from published courses
         if (! Gate::allows('can-manage-training') && ! $course->isPublished()) {
@@ -48,7 +48,6 @@ class CourseMaterialController extends Controller
      */
     public function store(
         StoreCourseMaterialRequest $request,
-        string $tenant,
         Course $course
     ): JsonResponse {
         Gate::authorize('can-manage-training');
@@ -94,7 +93,6 @@ class CourseMaterialController extends Controller
      */
     public function update(
         Request $request,
-        string $tenant,
         Course $course,
         CourseMaterial $material
     ): CourseMaterialResource {
@@ -118,7 +116,6 @@ class CourseMaterialController extends Controller
      * Remove the specified material.
      */
     public function destroy(
-        string $tenant,
         Course $course,
         CourseMaterial $material
     ): JsonResponse {
@@ -143,7 +140,6 @@ class CourseMaterialController extends Controller
      */
     public function reorder(
         Request $request,
-        string $tenant,
         Course $course
     ): JsonResponse {
         Gate::authorize('can-manage-training');
@@ -178,7 +174,7 @@ class CourseMaterialController extends Controller
     /**
      * Download a material file.
      */
-    public function download(string $tenant, CourseMaterial $material): StreamedResponse|JsonResponse
+    public function download(CourseMaterial $material): StreamedResponse|JsonResponse
     {
         // For employees without manage permission, only allow download from published courses
         if (! Gate::allows('can-manage-training') && ! $material->course->isPublished()) {

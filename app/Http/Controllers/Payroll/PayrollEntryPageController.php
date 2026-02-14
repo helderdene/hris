@@ -20,7 +20,7 @@ class PayrollEntryPageController extends Controller
     /**
      * Display the payroll entries list for a period.
      */
-    public function index(Request $request, string $tenant, PayrollPeriod $period): Response
+    public function index(Request $request, PayrollPeriod $period): Response
     {
         Gate::authorize('can-manage-organization');
 
@@ -85,7 +85,7 @@ class PayrollEntryPageController extends Controller
     /**
      * Display a single payroll entry (payslip).
      */
-    public function show(string $tenant, PayrollEntry $entry): Response
+    public function show(PayrollEntry $entry): Response
     {
         Gate::authorize('can-manage-organization');
 

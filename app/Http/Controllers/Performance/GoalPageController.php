@@ -131,7 +131,7 @@ class GoalPageController extends Controller
     /**
      * Display a single goal.
      */
-    public function show(string $tenant, Goal $goal): Response
+    public function show(Goal $goal): Response
     {
         Gate::authorize('can-manage-organization');
 

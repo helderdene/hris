@@ -21,7 +21,7 @@ class ReferenceCheckController extends Controller
     /**
      * List reference checks for a job application.
      */
-    public function index(string $tenant, JobApplication $jobApplication): JsonResponse
+    public function index(JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -35,7 +35,7 @@ class ReferenceCheckController extends Controller
     /**
      * Store a new reference check.
      */
-    public function store(StoreReferenceCheckRequest $request, string $tenant, JobApplication $jobApplication): JsonResponse
+    public function store(StoreReferenceCheckRequest $request, JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -47,7 +47,7 @@ class ReferenceCheckController extends Controller
     /**
      * Update a reference check.
      */
-    public function update(UpdateReferenceCheckRequest $request, string $tenant, ReferenceCheck $referenceCheck): JsonResponse
+    public function update(UpdateReferenceCheckRequest $request, ReferenceCheck $referenceCheck): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -59,7 +59,7 @@ class ReferenceCheckController extends Controller
     /**
      * Delete a reference check.
      */
-    public function destroy(string $tenant, ReferenceCheck $referenceCheck): JsonResponse
+    public function destroy(ReferenceCheck $referenceCheck): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -71,7 +71,7 @@ class ReferenceCheckController extends Controller
     /**
      * Mark a reference check as contacted.
      */
-    public function markContacted(string $tenant, ReferenceCheck $referenceCheck): JsonResponse
+    public function markContacted(ReferenceCheck $referenceCheck): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

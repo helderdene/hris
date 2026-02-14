@@ -110,7 +110,7 @@ class JobRequisitionPageController extends Controller
     /**
      * Display a specific job requisition.
      */
-    public function show(string $tenant, JobRequisition $jobRequisition): Response
+    public function show(JobRequisition $jobRequisition): Response
     {
         $jobRequisition->load([
             'position',

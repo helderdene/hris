@@ -19,7 +19,7 @@ class DocumentCategoryController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function index(string $tenant): JsonResponse
+    public function index(): JsonResponse
     {
         $categories = DocumentCategory::query()
             ->orderBy('is_predefined', 'desc')
@@ -37,7 +37,7 @@ class DocumentCategoryController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function store(StoreCategoryRequest $request, string $tenant): JsonResponse
+    public function store(StoreCategoryRequest $request): JsonResponse
     {
         Gate::authorize('can-manage-employees');
 
@@ -62,7 +62,7 @@ class DocumentCategoryController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function destroy(string $tenant, DocumentCategory $category): JsonResponse
+    public function destroy(DocumentCategory $category): JsonResponse
     {
         Gate::authorize('can-manage-employees');
 

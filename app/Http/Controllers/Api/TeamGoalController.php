@@ -77,7 +77,7 @@ class TeamGoalController extends Controller
     /**
      * Approve a team member's goal.
      */
-    public function approve(ApproveGoalRequest $request, string $tenant, Goal $goal): GoalResource
+    public function approve(ApproveGoalRequest $request, Goal $goal): GoalResource
     {
         $manager = $this->getCurrentManager($request);
 
@@ -101,7 +101,7 @@ class TeamGoalController extends Controller
     /**
      * Reject a team member's goal.
      */
-    public function reject(RejectGoalRequest $request, string $tenant, Goal $goal): GoalResource
+    public function reject(RejectGoalRequest $request, Goal $goal): GoalResource
     {
         $manager = $this->getCurrentManager($request);
 

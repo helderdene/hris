@@ -74,7 +74,7 @@ class CompetencyEvaluationController extends Controller
     /**
      * Display the specified competency evaluation.
      */
-    public function show(string $tenant, CompetencyEvaluation $competencyEvaluation): CompetencyEvaluationResource
+    public function show(CompetencyEvaluation $competencyEvaluation): CompetencyEvaluationResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -92,7 +92,6 @@ class CompetencyEvaluationController extends Controller
      */
     public function update(
         UpdateCompetencyEvaluationRequest $request,
-        string $tenant,
         CompetencyEvaluation $competencyEvaluation
     ): CompetencyEvaluationResource {
         Gate::authorize('can-manage-organization');
@@ -117,7 +116,7 @@ class CompetencyEvaluationController extends Controller
     /**
      * Remove the specified competency evaluation.
      */
-    public function destroy(string $tenant, CompetencyEvaluation $competencyEvaluation): JsonResponse
+    public function destroy(CompetencyEvaluation $competencyEvaluation): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -132,7 +131,6 @@ class CompetencyEvaluationController extends Controller
      * Get competency evaluations for a specific participant.
      */
     public function participantEvaluations(
-        string $tenant,
         PerformanceCycleParticipant $participant
     ): AnonymousResourceCollection {
         Gate::authorize('can-manage-organization');
@@ -152,7 +150,6 @@ class CompetencyEvaluationController extends Controller
      */
     public function submitSelfRating(
         Request $request,
-        string $tenant,
         CompetencyEvaluation $competencyEvaluation
     ): CompetencyEvaluationResource {
         // Allow the employee to submit their own self-rating
@@ -179,7 +176,6 @@ class CompetencyEvaluationController extends Controller
      */
     public function submitManagerRating(
         Request $request,
-        string $tenant,
         CompetencyEvaluation $competencyEvaluation
     ): CompetencyEvaluationResource {
         Gate::authorize('can-manage-organization');

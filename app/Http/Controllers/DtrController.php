@@ -117,7 +117,7 @@ class DtrController extends Controller
     /**
      * Display DTR for a specific employee.
      */
-    public function show(Request $request, string $tenant, Employee $employee): Response
+    public function show(Request $request, Employee $employee): Response
     {
         Gate::authorize('can-manage-employees');
 

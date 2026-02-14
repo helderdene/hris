@@ -32,7 +32,7 @@ class EmployeeDocumentController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function index(string $tenant, Employee $employee): JsonResponse
+    public function index(Employee $employee): JsonResponse
     {
         Gate::authorize('can-view-employee-documents', $employee);
 
@@ -69,7 +69,7 @@ class EmployeeDocumentController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function store(DocumentUploadRequest $request, string $tenant, Employee $employee): JsonResponse
+    public function store(DocumentUploadRequest $request, Employee $employee): JsonResponse
     {
         Gate::authorize('can-manage-employee-documents', $employee);
 
@@ -141,7 +141,7 @@ class EmployeeDocumentController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function show(string $tenant, Employee $employee, Document $document): JsonResponse
+    public function show(Employee $employee, Document $document): JsonResponse
     {
         Gate::authorize('can-view-employee-documents', $employee);
 
@@ -163,7 +163,7 @@ class EmployeeDocumentController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function destroy(string $tenant, Employee $employee, Document $document): JsonResponse
+    public function destroy(Employee $employee, Document $document): JsonResponse
     {
         Gate::authorize('can-manage-employee-documents', $employee);
 

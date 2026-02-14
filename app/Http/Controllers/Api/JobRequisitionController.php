@@ -96,7 +96,7 @@ class JobRequisitionController extends Controller
     /**
      * Display the specified job requisition.
      */
-    public function show(string $tenant, JobRequisition $jobRequisition): JobRequisitionResource
+    public function show(JobRequisition $jobRequisition): JobRequisitionResource
     {
         $jobRequisition->load([
             'position',
@@ -114,7 +114,6 @@ class JobRequisitionController extends Controller
      */
     public function update(
         UpdateJobRequisitionRequest $request,
-        string $tenant,
         JobRequisition $jobRequisition
     ): JobRequisitionResource {
         $jobRequisition->update($request->validated());
@@ -129,7 +128,6 @@ class JobRequisitionController extends Controller
      */
     public function submit(
         Request $request,
-        string $tenant,
         JobRequisition $jobRequisition
     ): JobRequisitionResource {
         $requisition = $this->jobRequisitionService->submit($jobRequisition);
@@ -142,7 +140,6 @@ class JobRequisitionController extends Controller
      */
     public function cancel(
         Request $request,
-        string $tenant,
         JobRequisition $jobRequisition
     ): JobRequisitionResource {
         $reason = $request->input('reason');
@@ -155,7 +152,7 @@ class JobRequisitionController extends Controller
     /**
      * Remove the specified job requisition.
      */
-    public function destroy(string $tenant, JobRequisition $jobRequisition): JsonResponse
+    public function destroy(JobRequisition $jobRequisition): JsonResponse
     {
         if ($jobRequisition->status !== JobRequisitionStatus::Draft) {
             return response()->json([

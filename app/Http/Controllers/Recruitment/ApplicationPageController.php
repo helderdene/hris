@@ -22,7 +22,7 @@ class ApplicationPageController extends Controller
     /**
      * Display applications for a job posting.
      */
-    public function index(Request $request, string $tenant, JobPosting $jobPosting): Response
+    public function index(Request $request, JobPosting $jobPosting): Response
     {
         $status = $request->input('status');
 
@@ -70,7 +70,7 @@ class ApplicationPageController extends Controller
     /**
      * Display a specific application.
      */
-    public function show(string $tenant, JobApplication $jobApplication): Response
+    public function show(JobApplication $jobApplication): Response
     {
         $jobApplication->load([
             'candidate.education',

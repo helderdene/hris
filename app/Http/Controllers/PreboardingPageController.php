@@ -78,7 +78,7 @@ class PreboardingPageController extends Controller
     /**
      * Display a specific preboarding checklist for HR review.
      */
-    public function show(string $tenant, PreboardingChecklist $checklist): Response
+    public function show(PreboardingChecklist $checklist): Response
     {
         Gate::authorize('can-manage-organization');
 

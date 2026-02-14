@@ -146,7 +146,7 @@ class ComplianceAssignmentController extends Controller
     /**
      * Display the specified assignment.
      */
-    public function show(string $tenant, ComplianceAssignment $complianceAssignment): ComplianceAssignmentResource
+    public function show(ComplianceAssignment $complianceAssignment): ComplianceAssignmentResource
     {
         Gate::authorize('can-view-training');
 
@@ -167,7 +167,6 @@ class ComplianceAssignmentController extends Controller
      */
     public function extend(
         Request $request,
-        string $tenant,
         ComplianceAssignment $complianceAssignment
     ): ComplianceAssignmentResource {
         Gate::authorize('can-manage-training');
@@ -206,7 +205,6 @@ class ComplianceAssignmentController extends Controller
      */
     public function exempt(
         Request $request,
-        string $tenant,
         ComplianceAssignment $complianceAssignment
     ): ComplianceAssignmentResource {
         Gate::authorize('can-manage-training');
@@ -240,7 +238,6 @@ class ComplianceAssignmentController extends Controller
      */
     public function revokeExemption(
         Request $request,
-        string $tenant,
         ComplianceAssignment $complianceAssignment
     ): ComplianceAssignmentResource {
         Gate::authorize('can-manage-training');
@@ -266,7 +263,7 @@ class ComplianceAssignmentController extends Controller
     /**
      * Remove the specified assignment.
      */
-    public function destroy(string $tenant, ComplianceAssignment $complianceAssignment): JsonResponse
+    public function destroy(ComplianceAssignment $complianceAssignment): JsonResponse
     {
         Gate::authorize('can-manage-training');
 
@@ -289,7 +286,6 @@ class ComplianceAssignmentController extends Controller
      */
     public function reassign(
         Request $request,
-        string $tenant,
         ComplianceAssignment $complianceAssignment
     ): JsonResponse {
         Gate::authorize('can-manage-training');

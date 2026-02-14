@@ -20,7 +20,7 @@ class EmployeeAssignmentController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function index(string $tenant, Employee $employee): AnonymousResourceCollection
+    public function index(Employee $employee): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-employees');
 
@@ -37,7 +37,7 @@ class EmployeeAssignmentController extends Controller
      * Note: $tenant parameter is captured from subdomain but not used directly.
      * Tenant context is resolved via middleware and bound to the app container.
      */
-    public function store(StoreEmployeeAssignmentRequest $request, string $tenant, Employee $employee): JsonResponse
+    public function store(StoreEmployeeAssignmentRequest $request, Employee $employee): JsonResponse
     {
         Gate::authorize('can-manage-employees');
 

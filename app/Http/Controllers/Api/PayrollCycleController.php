@@ -71,7 +71,7 @@ class PayrollCycleController extends Controller
     /**
      * Display the specified payroll cycle.
      */
-    public function show(string $tenant, PayrollCycle $payrollCycle): PayrollCycleResource
+    public function show(PayrollCycle $payrollCycle): PayrollCycleResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -85,7 +85,6 @@ class PayrollCycleController extends Controller
      */
     public function update(
         UpdatePayrollCycleRequest $request,
-        string $tenant,
         PayrollCycle $payrollCycle
     ): PayrollCycleResource {
         Gate::authorize('can-manage-organization');
@@ -109,7 +108,7 @@ class PayrollCycleController extends Controller
      *
      * Cannot delete if there are associated periods that are not in draft status.
      */
-    public function destroy(string $tenant, PayrollCycle $payrollCycle): JsonResponse
+    public function destroy(PayrollCycle $payrollCycle): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

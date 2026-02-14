@@ -20,7 +20,7 @@ class TrainingWaitlistController extends Controller
     /**
      * Display a listing of waitlist entries for a session.
      */
-    public function index(string $tenant, TrainingSession $session): AnonymousResourceCollection
+    public function index(TrainingSession $session): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-training');
 
@@ -35,7 +35,7 @@ class TrainingWaitlistController extends Controller
     /**
      * Display the specified waitlist entry.
      */
-    public function show(string $tenant, TrainingWaitlist $waitlist): TrainingWaitlistResource
+    public function show(TrainingWaitlist $waitlist): TrainingWaitlistResource
     {
         Gate::authorize('can-view-training');
 
@@ -53,7 +53,7 @@ class TrainingWaitlistController extends Controller
     /**
      * Remove a waitlist entry.
      */
-    public function destroy(string $tenant, TrainingWaitlist $waitlist): JsonResponse
+    public function destroy(TrainingWaitlist $waitlist): JsonResponse
     {
         // Allow employees to remove themselves from waitlist
         $employee = auth()->user()->employee;

@@ -64,7 +64,7 @@ class GoalController extends Controller
     /**
      * Display the specified goal.
      */
-    public function show(string $tenant, Goal $goal): GoalResource
+    public function show(Goal $goal): GoalResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -86,7 +86,7 @@ class GoalController extends Controller
     /**
      * Update the specified goal.
      */
-    public function update(UpdateGoalRequest $request, string $tenant, Goal $goal): GoalResource
+    public function update(UpdateGoalRequest $request, Goal $goal): GoalResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -100,7 +100,7 @@ class GoalController extends Controller
     /**
      * Remove the specified goal.
      */
-    public function destroy(string $tenant, Goal $goal): JsonResponse
+    public function destroy(Goal $goal): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -118,7 +118,7 @@ class GoalController extends Controller
     /**
      * Record progress for a goal.
      */
-    public function updateProgress(RecordProgressRequest $request, string $tenant, Goal $goal): JsonResponse
+    public function updateProgress(RecordProgressRequest $request, Goal $goal): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -153,7 +153,7 @@ class GoalController extends Controller
     /**
      * Mark a goal as completed.
      */
-    public function complete(string $tenant, Goal $goal): GoalResource
+    public function complete(Goal $goal): GoalResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -167,7 +167,7 @@ class GoalController extends Controller
     /**
      * Submit a goal for approval.
      */
-    public function submitForApproval(string $tenant, Goal $goal): GoalResource
+    public function submitForApproval(Goal $goal): GoalResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -179,7 +179,7 @@ class GoalController extends Controller
     /**
      * Approve a goal.
      */
-    public function approve(ApproveGoalRequest $request, string $tenant, Goal $goal): GoalResource
+    public function approve(ApproveGoalRequest $request, Goal $goal): GoalResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -197,7 +197,7 @@ class GoalController extends Controller
     /**
      * Reject a goal.
      */
-    public function reject(RejectGoalRequest $request, string $tenant, Goal $goal): GoalResource
+    public function reject(RejectGoalRequest $request, Goal $goal): GoalResource
     {
         Gate::authorize('can-manage-organization');
 

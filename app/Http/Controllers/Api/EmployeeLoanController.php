@@ -82,7 +82,7 @@ class EmployeeLoanController extends Controller
     /**
      * Display the specified employee loan.
      */
-    public function show(string $tenant, EmployeeLoan $loan): EmployeeLoanResource
+    public function show(EmployeeLoan $loan): EmployeeLoanResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -100,7 +100,6 @@ class EmployeeLoanController extends Controller
      */
     public function update(
         UpdateEmployeeLoanRequest $request,
-        string $tenant,
         EmployeeLoan $loan
     ): EmployeeLoanResource {
         Gate::authorize('can-manage-organization');
@@ -119,7 +118,7 @@ class EmployeeLoanController extends Controller
     /**
      * Remove the specified employee loan.
      */
-    public function destroy(string $tenant, EmployeeLoan $loan): JsonResponse
+    public function destroy(EmployeeLoan $loan): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -141,7 +140,6 @@ class EmployeeLoanController extends Controller
      */
     public function updateStatus(
         UpdateLoanStatusRequest $request,
-        string $tenant,
         EmployeeLoan $loan
     ): EmployeeLoanResource {
         Gate::authorize('can-manage-organization');
@@ -166,7 +164,6 @@ class EmployeeLoanController extends Controller
      */
     public function recordPayment(
         RecordLoanPaymentRequest $request,
-        string $tenant,
         EmployeeLoan $loan
     ): JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -205,7 +202,6 @@ class EmployeeLoanController extends Controller
      */
     public function employeeLoans(
         Request $request,
-        string $tenant,
         Employee $employee
     ): AnonymousResourceCollection {
         Gate::authorize('can-manage-organization');

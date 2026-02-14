@@ -65,7 +65,7 @@ class JobPostingController extends Controller
     /**
      * Display the specified job posting.
      */
-    public function show(string $tenant, JobPosting $jobPosting): JobPostingResource
+    public function show(JobPosting $jobPosting): JobPostingResource
     {
         $jobPosting->load(['department', 'position', 'createdByEmployee', 'jobRequisition']);
 
@@ -77,7 +77,6 @@ class JobPostingController extends Controller
      */
     public function update(
         UpdateJobPostingRequest $request,
-        string $tenant,
         JobPosting $jobPosting
     ): JobPostingResource {
         if (! $jobPosting->can_be_edited) {
@@ -96,7 +95,6 @@ class JobPostingController extends Controller
      */
     public function publish(
         Request $request,
-        string $tenant,
         JobPosting $jobPosting
     ): JobPostingResource {
         $posting = $this->jobPostingService->publish($jobPosting);
@@ -109,7 +107,6 @@ class JobPostingController extends Controller
      */
     public function close(
         Request $request,
-        string $tenant,
         JobPosting $jobPosting
     ): JobPostingResource {
         $posting = $this->jobPostingService->close($jobPosting);
@@ -122,7 +119,6 @@ class JobPostingController extends Controller
      */
     public function archive(
         Request $request,
-        string $tenant,
         JobPosting $jobPosting
     ): JobPostingResource {
         $posting = $this->jobPostingService->archive($jobPosting);
@@ -133,7 +129,7 @@ class JobPostingController extends Controller
     /**
      * Remove the specified job posting.
      */
-    public function destroy(string $tenant, JobPosting $jobPosting): JsonResponse
+    public function destroy(JobPosting $jobPosting): JsonResponse
     {
         if ($jobPosting->status !== JobPostingStatus::Draft) {
             return response()->json([

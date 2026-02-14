@@ -75,7 +75,7 @@ class MyTrainingController extends Controller
     /**
      * Display the employee course detail page.
      */
-    public function show(string $tenant, Course $course): Response
+    public function show(Course $course): Response
     {
         Gate::authorize('can-view-training');
 

@@ -27,7 +27,7 @@ class ProficiencyLevelController extends Controller
     /**
      * Display the specified proficiency level.
      */
-    public function show(string $tenant, ProficiencyLevel $proficiencyLevel): ProficiencyLevelResource
+    public function show(ProficiencyLevel $proficiencyLevel): ProficiencyLevelResource
     {
         Gate::authorize('can-manage-organization');
 

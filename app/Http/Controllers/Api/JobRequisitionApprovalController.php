@@ -148,7 +148,6 @@ class JobRequisitionApprovalController extends Controller
      */
     public function approve(
         ApproveJobRequisitionRequest $request,
-        string $tenant,
         JobRequisition $jobRequisition
     ): JobRequisitionResource {
         $user = $request->user();
@@ -168,7 +167,6 @@ class JobRequisitionApprovalController extends Controller
      */
     public function reject(
         RejectJobRequisitionRequest $request,
-        string $tenant,
         JobRequisition $jobRequisition
     ): JobRequisitionResource {
         $user = $request->user();

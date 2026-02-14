@@ -110,7 +110,7 @@ class LoanApplicationController extends Controller
     /**
      * Display the specified loan application.
      */
-    public function show(string $tenant, LoanApplication $loanApplication): LoanApplicationResource
+    public function show(LoanApplication $loanApplication): LoanApplicationResource
     {
         $loanApplication->load(['employee.department', 'employee.position', 'reviewer', 'employeeLoan']);
 
@@ -120,7 +120,7 @@ class LoanApplicationController extends Controller
     /**
      * Update a draft loan application.
      */
-    public function update(UpdateLoanApplicationRequest $request, string $tenant, LoanApplication $loanApplication): LoanApplicationResource
+    public function update(UpdateLoanApplicationRequest $request, LoanApplication $loanApplication): LoanApplicationResource
     {
         $validated = $request->validated();
 
@@ -148,7 +148,7 @@ class LoanApplicationController extends Controller
     /**
      * Delete a draft loan application.
      */
-    public function destroy(string $tenant, LoanApplication $loanApplication): JsonResponse
+    public function destroy(LoanApplication $loanApplication): JsonResponse
     {
         if (! $loanApplication->status->canBeEdited()) {
             return response()->json(['message' => 'Only draft applications can be deleted.'], 422);
@@ -171,7 +171,7 @@ class LoanApplicationController extends Controller
     /**
      * Submit a draft loan application for review.
      */
-    public function submit(string $tenant, LoanApplication $loanApplication): LoanApplicationResource
+    public function submit(LoanApplication $loanApplication): LoanApplicationResource
     {
         $application = $this->loanApplicationService->submit($loanApplication);
 
@@ -181,7 +181,7 @@ class LoanApplicationController extends Controller
     /**
      * Cancel a loan application.
      */
-    public function cancel(Request $request, string $tenant, LoanApplication $loanApplication): LoanApplicationResource
+    public function cancel(Request $request, LoanApplication $loanApplication): LoanApplicationResource
     {
         $application = $this->loanApplicationService->cancel(
             $loanApplication,

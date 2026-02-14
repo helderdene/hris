@@ -73,7 +73,7 @@ class MyComplianceController extends Controller
     /**
      * Get a specific assignment details.
      */
-    public function show(string $tenant, ComplianceAssignment $complianceAssignment): ComplianceAssignmentResource
+    public function show(ComplianceAssignment $complianceAssignment): ComplianceAssignmentResource
     {
         $employee = auth()->user()->employee;
 
@@ -96,7 +96,6 @@ class MyComplianceController extends Controller
      * Start a module.
      */
     public function startModule(
-        string $tenant,
         ComplianceAssignment $complianceAssignment,
         ComplianceModule $complianceModule
     ): ComplianceProgressResource {
@@ -127,7 +126,6 @@ class MyComplianceController extends Controller
      */
     public function updateProgress(
         Request $request,
-        string $tenant,
         ComplianceAssignment $complianceAssignment,
         ComplianceModule $complianceModule
     ): ComplianceProgressResource {
@@ -160,7 +158,6 @@ class MyComplianceController extends Controller
      * Complete a non-assessment module.
      */
     public function completeModule(
-        string $tenant,
         ComplianceAssignment $complianceAssignment,
         ComplianceModule $complianceModule
     ): ComplianceProgressResource {
@@ -186,7 +183,6 @@ class MyComplianceController extends Controller
      * Acknowledge training (if required).
      */
     public function acknowledge(
-        string $tenant,
         ComplianceAssignment $complianceAssignment
     ): ComplianceAssignmentResource {
         $employee = auth()->user()->employee;
@@ -238,7 +234,6 @@ class MyComplianceController extends Controller
      * Download a certificate.
      */
     public function downloadCertificate(
-        string $tenant,
         ComplianceAssignment $complianceAssignment
     ): \Symfony\Component\HttpFoundation\StreamedResponse {
         $employee = auth()->user()->employee;
@@ -294,7 +289,6 @@ class MyComplianceController extends Controller
      * Get the next module to complete.
      */
     public function nextModule(
-        string $tenant,
         ComplianceAssignment $complianceAssignment
     ): JsonResponse {
         $employee = auth()->user()->employee;

@@ -24,7 +24,6 @@ class PerformanceCycleParticipantController extends Controller
      */
     public function index(
         Request $request,
-        string $tenant,
         PerformanceCycleInstance $performanceCycleInstance
     ): AnonymousResourceCollection {
         Gate::authorize('can-manage-organization');
@@ -61,7 +60,6 @@ class PerformanceCycleParticipantController extends Controller
      */
     public function assign(
         AssignPerformanceCycleParticipantsRequest $request,
-        string $tenant,
         PerformanceCycleInstance $performanceCycleInstance
     ): JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -100,7 +98,6 @@ class PerformanceCycleParticipantController extends Controller
      */
     public function update(
         Request $request,
-        string $tenant,
         PerformanceCycleInstance $performanceCycleInstance,
         PerformanceCycleParticipant $participant
     ): PerformanceCycleParticipantResource {
@@ -138,7 +135,6 @@ class PerformanceCycleParticipantController extends Controller
      * Remove a participant.
      */
     public function destroy(
-        string $tenant,
         PerformanceCycleInstance $performanceCycleInstance,
         PerformanceCycleParticipant $participant
     ): JsonResponse {

@@ -115,7 +115,6 @@ class LeaveApprovalController extends Controller
      */
     public function approve(
         ApproveLeaveApplicationRequest $request,
-        string $tenant,
         LeaveApplication $leaveApplication
     ): LeaveApplicationResource {
         $user = $request->user();
@@ -135,7 +134,6 @@ class LeaveApprovalController extends Controller
      */
     public function reject(
         RejectLeaveApplicationRequest $request,
-        string $tenant,
         LeaveApplication $leaveApplication
     ): LeaveApplicationResource {
         $user = $request->user();

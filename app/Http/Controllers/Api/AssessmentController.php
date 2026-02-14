@@ -21,7 +21,7 @@ class AssessmentController extends Controller
     /**
      * List assessments for a job application.
      */
-    public function index(string $tenant, JobApplication $jobApplication): JsonResponse
+    public function index(JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -35,7 +35,7 @@ class AssessmentController extends Controller
     /**
      * Store a new assessment.
      */
-    public function store(StoreAssessmentRequest $request, string $tenant, JobApplication $jobApplication): JsonResponse
+    public function store(StoreAssessmentRequest $request, JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -47,7 +47,7 @@ class AssessmentController extends Controller
     /**
      * Update an assessment.
      */
-    public function update(UpdateAssessmentRequest $request, string $tenant, Assessment $assessment): JsonResponse
+    public function update(UpdateAssessmentRequest $request, Assessment $assessment): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -59,7 +59,7 @@ class AssessmentController extends Controller
     /**
      * Delete an assessment.
      */
-    public function destroy(string $tenant, Assessment $assessment): JsonResponse
+    public function destroy(Assessment $assessment): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

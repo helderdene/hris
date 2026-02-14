@@ -92,7 +92,7 @@ class MyGoalController extends Controller
     /**
      * Display a specific goal.
      */
-    public function show(Request $request, string $tenant, Goal $goal): Response
+    public function show(Request $request, Goal $goal): Response
     {
         $employee = $this->getCurrentEmployee($request);
 

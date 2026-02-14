@@ -69,7 +69,7 @@ class TrainingHistoryController extends Controller
     /**
      * Display training history for a specific employee.
      */
-    public function employeeHistory(string $tenant, Employee $employee, Request $request): Response
+    public function employeeHistory(Employee $employee, Request $request): Response
     {
         Gate::authorize('can-manage-training');
 

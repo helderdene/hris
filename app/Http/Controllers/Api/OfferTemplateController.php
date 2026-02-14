@@ -49,7 +49,7 @@ class OfferTemplateController extends Controller
     /**
      * Display the specified offer template.
      */
-    public function show(string $tenant, OfferTemplate $offerTemplate): OfferTemplateResource
+    public function show(OfferTemplate $offerTemplate): OfferTemplateResource
     {
         return new OfferTemplateResource($offerTemplate);
     }
@@ -57,7 +57,7 @@ class OfferTemplateController extends Controller
     /**
      * Update the specified offer template.
      */
-    public function update(UpdateOfferTemplateRequest $request, string $tenant, OfferTemplate $offerTemplate): RedirectResponse
+    public function update(UpdateOfferTemplateRequest $request, OfferTemplate $offerTemplate): RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -69,7 +69,7 @@ class OfferTemplateController extends Controller
     /**
      * Remove the specified offer template.
      */
-    public function destroy(string $tenant, OfferTemplate $offerTemplate): RedirectResponse
+    public function destroy(OfferTemplate $offerTemplate): RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 

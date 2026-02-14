@@ -56,7 +56,7 @@ class OfferPageController extends Controller
     /**
      * Show the form for creating a new offer.
      */
-    public function create(Request $request, string $tenant): Response
+    public function create(Request $request): Response
     {
         $jobApplication = null;
 
@@ -114,7 +114,7 @@ class OfferPageController extends Controller
     /**
      * Display the specified offer.
      */
-    public function show(string $tenant, Offer $offer): Response
+    public function show(Offer $offer): Response
     {
         $offer->load([
             'jobApplication.candidate',

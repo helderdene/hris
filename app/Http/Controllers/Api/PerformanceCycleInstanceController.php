@@ -114,7 +114,7 @@ class PerformanceCycleInstanceController extends Controller
     /**
      * Display the specified performance cycle instance.
      */
-    public function show(string $tenant, PerformanceCycleInstance $performanceCycleInstance): PerformanceCycleInstanceResource
+    public function show(PerformanceCycleInstance $performanceCycleInstance): PerformanceCycleInstanceResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -126,7 +126,6 @@ class PerformanceCycleInstanceController extends Controller
      */
     public function update(
         UpdatePerformanceCycleInstanceRequest $request,
-        string $tenant,
         PerformanceCycleInstance $performanceCycleInstance
     ): PerformanceCycleInstanceResource {
         Gate::authorize('can-manage-organization');
@@ -147,7 +146,6 @@ class PerformanceCycleInstanceController extends Controller
      */
     public function updateStatus(
         UpdatePerformanceCycleInstanceStatusRequest $request,
-        string $tenant,
         PerformanceCycleInstance $performanceCycleInstance
     ): PerformanceCycleInstanceResource {
         Gate::authorize('can-manage-organization');
@@ -166,7 +164,7 @@ class PerformanceCycleInstanceController extends Controller
     /**
      * Remove the specified performance cycle instance.
      */
-    public function destroy(string $tenant, PerformanceCycleInstance $performanceCycleInstance): JsonResponse
+    public function destroy(PerformanceCycleInstance $performanceCycleInstance): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

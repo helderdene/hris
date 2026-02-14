@@ -21,7 +21,7 @@ class PreboardingReviewController extends Controller
     /**
      * Approve a preboarding checklist item.
      */
-    public function approve(string $tenant, PreboardingChecklistItem $item): JsonResponse
+    public function approve(PreboardingChecklistItem $item): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -41,7 +41,7 @@ class PreboardingReviewController extends Controller
     /**
      * Reject a preboarding checklist item.
      */
-    public function reject(RejectPreboardingItemRequest $request, string $tenant, PreboardingChecklistItem $item): JsonResponse
+    public function reject(RejectPreboardingItemRequest $request, PreboardingChecklistItem $item): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -62,7 +62,7 @@ class PreboardingReviewController extends Controller
     /**
      * Convert a completed preboarding checklist to an employee record.
      */
-    public function convertToEmployee(string $tenant, PreboardingChecklist $checklist): \Illuminate\Http\RedirectResponse
+    public function convertToEmployee(PreboardingChecklist $checklist): \Illuminate\Http\RedirectResponse
     {
         Gate::authorize('can-manage-employees');
 

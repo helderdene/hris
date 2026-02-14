@@ -86,7 +86,7 @@ class MyLoanApplicationController extends Controller
     /**
      * Display a specific loan application.
      */
-    public function show(Request $request, string $tenant, LoanApplication $loanApplication): Response
+    public function show(Request $request, LoanApplication $loanApplication): Response
     {
         $user = $request->user();
         $employee = Employee::where('user_id', $user->id)->first();

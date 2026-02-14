@@ -65,7 +65,7 @@ class CourseCategoryController extends Controller
     /**
      * Display the specified course category.
      */
-    public function show(string $tenant, CourseCategory $category): CourseCategoryResource
+    public function show(CourseCategory $category): CourseCategoryResource
     {
         Gate::authorize('can-view-training');
 
@@ -80,7 +80,6 @@ class CourseCategoryController extends Controller
      */
     public function update(
         UpdateCourseCategoryRequest $request,
-        string $tenant,
         CourseCategory $category
     ): CourseCategoryResource {
         Gate::authorize('can-manage-training');
@@ -98,7 +97,7 @@ class CourseCategoryController extends Controller
      *
      * Cannot delete if there are courses in this category.
      */
-    public function destroy(string $tenant, CourseCategory $category): JsonResponse
+    public function destroy(CourseCategory $category): JsonResponse
     {
         Gate::authorize('can-manage-training');
 

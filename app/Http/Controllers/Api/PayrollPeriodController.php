@@ -84,7 +84,7 @@ class PayrollPeriodController extends Controller
     /**
      * Display the specified payroll period.
      */
-    public function show(string $tenant, PayrollPeriod $payrollPeriod): PayrollPeriodResource
+    public function show(PayrollPeriod $payrollPeriod): PayrollPeriodResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -100,7 +100,6 @@ class PayrollPeriodController extends Controller
      */
     public function update(
         UpdatePayrollPeriodRequest $request,
-        string $tenant,
         PayrollPeriod $payrollPeriod
     ): PayrollPeriodResource|JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -122,7 +121,7 @@ class PayrollPeriodController extends Controller
      *
      * Only periods in draft status can be deleted.
      */
-    public function destroy(string $tenant, PayrollPeriod $payrollPeriod): JsonResponse
+    public function destroy(PayrollPeriod $payrollPeriod): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -176,7 +175,6 @@ class PayrollPeriodController extends Controller
      */
     public function updateStatus(
         UpdatePayrollPeriodStatusRequest $request,
-        string $tenant,
         PayrollPeriod $payrollPeriod
     ): PayrollPeriodResource|JsonResponse {
         Gate::authorize('can-manage-organization');

@@ -17,7 +17,7 @@ class InterviewFeedbackController extends Controller
     /**
      * Get feedback for an interview.
      */
-    public function index(string $tenant, Interview $interview): JsonResponse
+    public function index(Interview $interview): JsonResponse
     {
         $interview->load(['panelists.employee']);
 
@@ -39,7 +39,7 @@ class InterviewFeedbackController extends Controller
     /**
      * Submit feedback for a panelist.
      */
-    public function store(StoreInterviewFeedbackRequest $request, string $tenant, Interview $interview): JsonResponse
+    public function store(StoreInterviewFeedbackRequest $request, Interview $interview): JsonResponse
     {
         $user = auth()->user();
         $panelist = $interview->panelists()

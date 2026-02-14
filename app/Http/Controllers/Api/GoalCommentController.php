@@ -16,7 +16,7 @@ class GoalCommentController extends Controller
     /**
      * Display a listing of comments for a goal.
      */
-    public function index(string $tenant, Goal $goal): AnonymousResourceCollection
+    public function index(Goal $goal): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-organization');
 
@@ -31,7 +31,7 @@ class GoalCommentController extends Controller
     /**
      * Store a newly created comment.
      */
-    public function store(Request $request, string $tenant, Goal $goal): JsonResponse
+    public function store(Request $request, Goal $goal): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -56,7 +56,7 @@ class GoalCommentController extends Controller
     /**
      * Display the specified comment.
      */
-    public function show(string $tenant, Goal $goal, GoalComment $comment): GoalCommentResource
+    public function show(Goal $goal, GoalComment $comment): GoalCommentResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -68,7 +68,7 @@ class GoalCommentController extends Controller
     /**
      * Update the specified comment.
      */
-    public function update(Request $request, string $tenant, Goal $goal, GoalComment $comment): GoalCommentResource
+    public function update(Request $request, Goal $goal, GoalComment $comment): GoalCommentResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -95,7 +95,7 @@ class GoalCommentController extends Controller
     /**
      * Remove the specified comment.
      */
-    public function destroy(Request $request, string $tenant, Goal $goal, GoalComment $comment): JsonResponse
+    public function destroy(Request $request, Goal $goal, GoalComment $comment): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

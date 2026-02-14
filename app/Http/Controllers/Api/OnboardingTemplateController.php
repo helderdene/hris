@@ -43,7 +43,7 @@ class OnboardingTemplateController extends Controller
     /**
      * Show an onboarding template with items.
      */
-    public function show(string $tenant, OnboardingTemplate $onboardingTemplate): JsonResponse
+    public function show(OnboardingTemplate $onboardingTemplate): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -118,7 +118,7 @@ class OnboardingTemplateController extends Controller
     /**
      * Update an onboarding template.
      */
-    public function update(StoreOnboardingTemplateRequest $request, string $tenant, OnboardingTemplate $onboardingTemplate): JsonResponse|RedirectResponse
+    public function update(StoreOnboardingTemplateRequest $request, OnboardingTemplate $onboardingTemplate): JsonResponse|RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -158,7 +158,7 @@ class OnboardingTemplateController extends Controller
     /**
      * Delete an onboarding template.
      */
-    public function destroy(Request $request, string $tenant, OnboardingTemplate $onboardingTemplate): JsonResponse|RedirectResponse
+    public function destroy(Request $request, OnboardingTemplate $onboardingTemplate): JsonResponse|RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -174,7 +174,7 @@ class OnboardingTemplateController extends Controller
     /**
      * Toggle the active status of an onboarding template.
      */
-    public function toggleActive(Request $request, string $tenant, OnboardingTemplate $onboardingTemplate): JsonResponse|RedirectResponse
+    public function toggleActive(Request $request, OnboardingTemplate $onboardingTemplate): JsonResponse|RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 

@@ -79,7 +79,7 @@ class SessionPageController extends Controller
     /**
      * Display the training session detail page.
      */
-    public function show(string $tenant, TrainingSession $session): Response
+    public function show(TrainingSession $session): Response
     {
         Gate::authorize('can-manage-training');
 

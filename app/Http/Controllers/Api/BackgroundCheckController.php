@@ -24,7 +24,7 @@ class BackgroundCheckController extends Controller
     /**
      * List background checks for a job application.
      */
-    public function index(string $tenant, JobApplication $jobApplication): JsonResponse
+    public function index(JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -39,7 +39,7 @@ class BackgroundCheckController extends Controller
     /**
      * Store a new background check.
      */
-    public function store(StoreBackgroundCheckRequest $request, string $tenant, JobApplication $jobApplication): JsonResponse
+    public function store(StoreBackgroundCheckRequest $request, JobApplication $jobApplication): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -51,7 +51,7 @@ class BackgroundCheckController extends Controller
     /**
      * Update a background check.
      */
-    public function update(UpdateBackgroundCheckRequest $request, string $tenant, BackgroundCheck $backgroundCheck): JsonResponse
+    public function update(UpdateBackgroundCheckRequest $request, BackgroundCheck $backgroundCheck): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -63,7 +63,7 @@ class BackgroundCheckController extends Controller
     /**
      * Delete a background check.
      */
-    public function destroy(string $tenant, BackgroundCheck $backgroundCheck): JsonResponse
+    public function destroy(BackgroundCheck $backgroundCheck): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -75,7 +75,7 @@ class BackgroundCheckController extends Controller
     /**
      * Upload a document for a background check.
      */
-    public function uploadDocument(Request $request, string $tenant, BackgroundCheck $backgroundCheck): JsonResponse
+    public function uploadDocument(Request $request, BackgroundCheck $backgroundCheck): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -91,7 +91,7 @@ class BackgroundCheckController extends Controller
     /**
      * Delete a background check document.
      */
-    public function deleteDocument(string $tenant, BackgroundCheckDocument $backgroundCheckDocument): JsonResponse
+    public function deleteDocument(BackgroundCheckDocument $backgroundCheckDocument): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

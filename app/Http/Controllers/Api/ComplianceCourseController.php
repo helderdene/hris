@@ -77,7 +77,7 @@ class ComplianceCourseController extends Controller
     /**
      * Display the specified compliance course.
      */
-    public function show(string $tenant, ComplianceCourse $complianceCourse): ComplianceCourseResource
+    public function show(ComplianceCourse $complianceCourse): ComplianceCourseResource
     {
         Gate::authorize('can-view-training');
 
@@ -96,7 +96,6 @@ class ComplianceCourseController extends Controller
      */
     public function update(
         UpdateComplianceCourseRequest $request,
-        string $tenant,
         ComplianceCourse $complianceCourse
     ): ComplianceCourseResource {
         Gate::authorize('can-manage-training');
@@ -117,7 +116,7 @@ class ComplianceCourseController extends Controller
     /**
      * Remove compliance settings from a course.
      */
-    public function destroy(string $tenant, ComplianceCourse $complianceCourse): JsonResponse
+    public function destroy(ComplianceCourse $complianceCourse): JsonResponse
     {
         Gate::authorize('can-manage-training');
 
@@ -146,7 +145,7 @@ class ComplianceCourseController extends Controller
     /**
      * Get statistics for a compliance course.
      */
-    public function statistics(string $tenant, ComplianceCourse $complianceCourse): JsonResponse
+    public function statistics(ComplianceCourse $complianceCourse): JsonResponse
     {
         Gate::authorize('can-manage-training');
 

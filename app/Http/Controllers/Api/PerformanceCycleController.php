@@ -65,7 +65,7 @@ class PerformanceCycleController extends Controller
     /**
      * Display the specified performance cycle.
      */
-    public function show(string $tenant, PerformanceCycle $performanceCycle): PerformanceCycleResource
+    public function show(PerformanceCycle $performanceCycle): PerformanceCycleResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -79,7 +79,6 @@ class PerformanceCycleController extends Controller
      */
     public function update(
         UpdatePerformanceCycleRequest $request,
-        string $tenant,
         PerformanceCycle $performanceCycle
     ): PerformanceCycleResource {
         Gate::authorize('can-manage-organization');
@@ -103,7 +102,7 @@ class PerformanceCycleController extends Controller
      *
      * Cannot delete if there are associated instances that are not in draft status.
      */
-    public function destroy(string $tenant, PerformanceCycle $performanceCycle): JsonResponse
+    public function destroy(PerformanceCycle $performanceCycle): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

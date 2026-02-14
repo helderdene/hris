@@ -121,7 +121,7 @@ class KpiAssignmentController extends Controller
     /**
      * Display the specified KPI assignment.
      */
-    public function show(string $tenant, KpiAssignment $kpiAssignment): KpiAssignmentResource
+    public function show(KpiAssignment $kpiAssignment): KpiAssignmentResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -139,7 +139,6 @@ class KpiAssignmentController extends Controller
      */
     public function update(
         UpdateKpiAssignmentRequest $request,
-        string $tenant,
         KpiAssignment $kpiAssignment
     ): KpiAssignmentResource {
         Gate::authorize('can-manage-organization');
@@ -164,7 +163,7 @@ class KpiAssignmentController extends Controller
     /**
      * Remove the specified KPI assignment.
      */
-    public function destroy(string $tenant, KpiAssignment $kpiAssignment): JsonResponse
+    public function destroy(KpiAssignment $kpiAssignment): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -183,7 +182,6 @@ class KpiAssignmentController extends Controller
      */
     public function recordProgress(
         RecordKpiProgressRequest $request,
-        string $tenant,
         KpiAssignment $kpiAssignment
     ): JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -212,7 +210,7 @@ class KpiAssignmentController extends Controller
     /**
      * Mark a KPI assignment as completed.
      */
-    public function complete(string $tenant, KpiAssignment $kpiAssignment): KpiAssignmentResource
+    public function complete(KpiAssignment $kpiAssignment): KpiAssignmentResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -230,7 +228,7 @@ class KpiAssignmentController extends Controller
     /**
      * Get progress history for a KPI assignment.
      */
-    public function progressHistory(string $tenant, KpiAssignment $kpiAssignment): AnonymousResourceCollection
+    public function progressHistory(KpiAssignment $kpiAssignment): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-organization');
 

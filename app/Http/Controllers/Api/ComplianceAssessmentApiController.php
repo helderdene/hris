@@ -23,7 +23,6 @@ class ComplianceAssessmentApiController extends Controller
      * Get assessment questions for a module.
      */
     public function questions(
-        string $tenant,
         ComplianceAssignment $complianceAssignment,
         ComplianceModule $complianceModule
     ): JsonResponse {
@@ -59,7 +58,6 @@ class ComplianceAssessmentApiController extends Controller
      */
     public function start(
         Request $request,
-        string $tenant,
         ComplianceAssignment $complianceAssignment,
         ComplianceModule $complianceModule
     ): JsonResponse {
@@ -94,7 +92,6 @@ class ComplianceAssessmentApiController extends Controller
      */
     public function submit(
         SubmitAssessmentRequest $request,
-        string $tenant,
         ComplianceAssignment $complianceAssignment,
         ComplianceModule $complianceModule,
         ComplianceAssessmentAttempt $attempt
@@ -138,7 +135,6 @@ class ComplianceAssessmentApiController extends Controller
      * Get attempt history for an assessment.
      */
     public function attempts(
-        string $tenant,
         ComplianceAssignment $complianceAssignment,
         ComplianceModule $complianceModule
     ): JsonResponse {
@@ -176,7 +172,6 @@ class ComplianceAssessmentApiController extends Controller
      * Get results for a specific attempt.
      */
     public function attemptResults(
-        string $tenant,
         ComplianceAssignment $complianceAssignment,
         ComplianceModule $complianceModule,
         ComplianceAssessmentAttempt $attempt

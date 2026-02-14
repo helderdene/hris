@@ -18,7 +18,7 @@ class GoalMilestoneController extends Controller
     /**
      * Display a listing of milestones for a goal.
      */
-    public function index(string $tenant, Goal $goal): AnonymousResourceCollection
+    public function index(Goal $goal): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-organization');
 
@@ -33,7 +33,7 @@ class GoalMilestoneController extends Controller
     /**
      * Store a newly created milestone.
      */
-    public function store(StoreMilestoneRequest $request, string $tenant, Goal $goal): JsonResponse
+    public function store(StoreMilestoneRequest $request, Goal $goal): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -56,7 +56,7 @@ class GoalMilestoneController extends Controller
     /**
      * Display the specified milestone.
      */
-    public function show(string $tenant, Goal $goal, GoalMilestone $milestone): GoalMilestoneResource
+    public function show(Goal $goal, GoalMilestone $milestone): GoalMilestoneResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -68,7 +68,7 @@ class GoalMilestoneController extends Controller
     /**
      * Update the specified milestone.
      */
-    public function update(UpdateMilestoneRequest $request, string $tenant, Goal $goal, GoalMilestone $milestone): GoalMilestoneResource
+    public function update(UpdateMilestoneRequest $request, Goal $goal, GoalMilestone $milestone): GoalMilestoneResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -80,7 +80,7 @@ class GoalMilestoneController extends Controller
     /**
      * Remove the specified milestone.
      */
-    public function destroy(string $tenant, Goal $goal, GoalMilestone $milestone): JsonResponse
+    public function destroy(Goal $goal, GoalMilestone $milestone): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -97,7 +97,7 @@ class GoalMilestoneController extends Controller
     /**
      * Toggle milestone completion status.
      */
-    public function toggleComplete(Request $request, string $tenant, Goal $goal, GoalMilestone $milestone): JsonResponse
+    public function toggleComplete(Request $request, Goal $goal, GoalMilestone $milestone): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

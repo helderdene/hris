@@ -50,7 +50,7 @@ class CertificationTypeController extends Controller
     /**
      * Display the specified certification type.
      */
-    public function show(string $tenant, CertificationType $certificationType): CertificationTypeResource
+    public function show(CertificationType $certificationType): CertificationTypeResource
     {
         return new CertificationTypeResource($certificationType);
     }
@@ -60,7 +60,6 @@ class CertificationTypeController extends Controller
      */
     public function update(
         UpdateCertificationTypeRequest $request,
-        string $tenant,
         CertificationType $certificationType
     ): CertificationTypeResource {
         Gate::authorize('can-manage-organization');
@@ -73,7 +72,7 @@ class CertificationTypeController extends Controller
     /**
      * Remove the specified certification type (soft delete).
      */
-    public function destroy(string $tenant, CertificationType $certificationType): JsonResponse
+    public function destroy(CertificationType $certificationType): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

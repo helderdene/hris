@@ -38,7 +38,7 @@ class LoanApprovalController extends Controller
     /**
      * Approve a loan application.
      */
-    public function approve(ApproveLoanApplicationRequest $request, string $tenant, LoanApplication $loanApplication): LoanApplicationResource
+    public function approve(ApproveLoanApplicationRequest $request, LoanApplication $loanApplication): LoanApplicationResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -57,7 +57,7 @@ class LoanApprovalController extends Controller
     /**
      * Reject a loan application.
      */
-    public function reject(RejectLoanApplicationRequest $request, string $tenant, LoanApplication $loanApplication): LoanApplicationResource
+    public function reject(RejectLoanApplicationRequest $request, LoanApplication $loanApplication): LoanApplicationResource
     {
         Gate::authorize('can-manage-organization');
 

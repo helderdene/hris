@@ -67,7 +67,7 @@ class EmployeeGoalController extends Controller
     /**
      * Display the specified goal (owned by current employee).
      */
-    public function show(Request $request, string $tenant, Goal $goal): GoalResource
+    public function show(Request $request, Goal $goal): GoalResource
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -92,7 +92,7 @@ class EmployeeGoalController extends Controller
     /**
      * Update the specified goal (owned by current employee).
      */
-    public function update(UpdateGoalRequest $request, string $tenant, Goal $goal): GoalResource
+    public function update(UpdateGoalRequest $request, Goal $goal): GoalResource
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -111,7 +111,7 @@ class EmployeeGoalController extends Controller
     /**
      * Record progress for the current employee's goal.
      */
-    public function updateProgress(RecordProgressRequest $request, string $tenant, Goal $goal): JsonResponse
+    public function updateProgress(RecordProgressRequest $request, Goal $goal): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -163,7 +163,7 @@ class EmployeeGoalController extends Controller
     /**
      * Submit a goal for approval.
      */
-    public function submitForApproval(Request $request, string $tenant, Goal $goal): GoalResource
+    public function submitForApproval(Request $request, Goal $goal): GoalResource
     {
         $employee = $this->getCurrentEmployee($request);
 
@@ -180,7 +180,7 @@ class EmployeeGoalController extends Controller
     /**
      * Delete the specified goal (owned by current employee).
      */
-    public function destroy(Request $request, string $tenant, Goal $goal): JsonResponse
+    public function destroy(Request $request, Goal $goal): JsonResponse
     {
         $employee = $this->getCurrentEmployee($request);
 

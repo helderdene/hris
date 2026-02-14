@@ -24,7 +24,7 @@ class PayrollEntryController extends Controller
     /**
      * Display a listing of payroll entries for a period.
      */
-    public function index(Request $request, string $tenant, PayrollPeriod $payrollPeriod): AnonymousResourceCollection
+    public function index(Request $request, PayrollPeriod $payrollPeriod): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-organization');
 
@@ -57,7 +57,7 @@ class PayrollEntryController extends Controller
     /**
      * Display the specified payroll entry with full details.
      */
-    public function show(string $tenant, PayrollEntry $payrollEntry): PayrollEntryResource
+    public function show(PayrollEntry $payrollEntry): PayrollEntryResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -77,7 +77,6 @@ class PayrollEntryController extends Controller
      */
     public function updateStatus(
         UpdatePayrollEntryStatusRequest $request,
-        string $tenant,
         PayrollEntry $payrollEntry
     ): PayrollEntryResource|JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -112,7 +111,6 @@ class PayrollEntryController extends Controller
      */
     public function bulkUpdateStatus(
         BulkUpdatePayrollStatusRequest $request,
-        string $tenant,
         PayrollPeriod $payrollPeriod
     ): JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -157,7 +155,7 @@ class PayrollEntryController extends Controller
     /**
      * Get payslip data for an entry.
      */
-    public function payslip(string $tenant, PayrollEntry $payrollEntry): JsonResponse
+    public function payslip(PayrollEntry $payrollEntry): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -209,7 +207,7 @@ class PayrollEntryController extends Controller
     /**
      * Get summary statistics for a period's entries.
      */
-    public function summary(string $tenant, PayrollPeriod $payrollPeriod): JsonResponse
+    public function summary(PayrollPeriod $payrollPeriod): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -248,7 +246,6 @@ class PayrollEntryController extends Controller
      * Download a single payslip as PDF.
      */
     public function downloadPdf(
-        string $tenant,
         PayrollEntry $payrollEntry,
         PayslipPdfService $pdfService
     ): Response {
@@ -276,7 +273,6 @@ class PayrollEntryController extends Controller
      */
     public function downloadBulkPdf(
         DownloadBulkPayslipRequest $request,
-        string $tenant,
         PayrollPeriod $payrollPeriod,
         PayslipPdfService $pdfService
     ): Response|JsonResponse {

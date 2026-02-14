@@ -64,7 +64,7 @@ class LeaveTypeController extends Controller
     /**
      * Display the specified leave type.
      */
-    public function show(string $tenant, LeaveType $leaveType): LeaveTypeResource
+    public function show(LeaveType $leaveType): LeaveTypeResource
     {
         return new LeaveTypeResource($leaveType);
     }
@@ -74,7 +74,7 @@ class LeaveTypeController extends Controller
      *
      * Only users with organization management access can update leave types.
      */
-    public function update(UpdateLeaveTypeRequest $request, string $tenant, LeaveType $leaveType): LeaveTypeResource
+    public function update(UpdateLeaveTypeRequest $request, LeaveType $leaveType): LeaveTypeResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -88,7 +88,7 @@ class LeaveTypeController extends Controller
      *
      * Only users with organization management access can delete leave types.
      */
-    public function destroy(string $tenant, LeaveType $leaveType): JsonResponse
+    public function destroy(LeaveType $leaveType): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

@@ -55,7 +55,7 @@ class MyLoanController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $tenant, EmployeeLoan $loan): Response
+    public function show(Request $request, EmployeeLoan $loan): Response
     {
         $user = $request->user();
         $employee = Employee::where('user_id', $user->id)->first();

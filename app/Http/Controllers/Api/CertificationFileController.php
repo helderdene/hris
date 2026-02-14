@@ -25,7 +25,6 @@ class CertificationFileController extends Controller
      */
     public function store(
         UploadCertificationFileRequest $request,
-        string $tenant,
         Certification $certification
     ): JsonResponse {
         // Verify the user owns this certification or is HR
@@ -74,7 +73,6 @@ class CertificationFileController extends Controller
      * Download a certification file.
      */
     public function download(
-        string $tenant,
         Certification $certification,
         CertificationFile $file
     ): StreamedResponse|JsonResponse {
@@ -107,7 +105,6 @@ class CertificationFileController extends Controller
      * Preview a certification file (inline display).
      */
     public function preview(
-        string $tenant,
         Certification $certification,
         CertificationFile $file
     ): StreamedResponse|JsonResponse {
@@ -147,7 +144,6 @@ class CertificationFileController extends Controller
      * Delete a certification file.
      */
     public function destroy(
-        string $tenant,
         Certification $certification,
         CertificationFile $file
     ): JsonResponse {

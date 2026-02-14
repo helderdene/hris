@@ -80,7 +80,7 @@ class EmployeeAdjustmentController extends Controller
     /**
      * Display the specified employee adjustment.
      */
-    public function show(string $tenant, EmployeeAdjustment $adjustment): EmployeeAdjustmentResource
+    public function show(EmployeeAdjustment $adjustment): EmployeeAdjustmentResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -99,7 +99,6 @@ class EmployeeAdjustmentController extends Controller
      */
     public function update(
         UpdateEmployeeAdjustmentRequest $request,
-        string $tenant,
         EmployeeAdjustment $adjustment
     ): EmployeeAdjustmentResource {
         Gate::authorize('can-manage-organization');
@@ -118,7 +117,7 @@ class EmployeeAdjustmentController extends Controller
     /**
      * Remove the specified employee adjustment.
      */
-    public function destroy(string $tenant, EmployeeAdjustment $adjustment): JsonResponse
+    public function destroy(EmployeeAdjustment $adjustment): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -140,7 +139,6 @@ class EmployeeAdjustmentController extends Controller
      */
     public function updateStatus(
         UpdateAdjustmentStatusRequest $request,
-        string $tenant,
         EmployeeAdjustment $adjustment
     ): EmployeeAdjustmentResource {
         Gate::authorize('can-manage-organization');
@@ -169,7 +167,6 @@ class EmployeeAdjustmentController extends Controller
      */
     public function employeeAdjustments(
         Request $request,
-        string $tenant,
         Employee $employee
     ): AnonymousResourceCollection {
         Gate::authorize('can-manage-organization');
@@ -197,7 +194,6 @@ class EmployeeAdjustmentController extends Controller
      */
     public function periodAdjustments(
         Request $request,
-        string $tenant,
         PayrollPeriod $payrollPeriod
     ): AnonymousResourceCollection {
         Gate::authorize('can-manage-organization');

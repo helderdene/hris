@@ -28,7 +28,6 @@ class ComplianceRuleController extends Controller
      */
     public function index(
         Request $request,
-        string $tenant,
         ComplianceCourse $complianceCourse
     ): AnonymousResourceCollection {
         Gate::authorize('can-manage-training');
@@ -51,7 +50,6 @@ class ComplianceRuleController extends Controller
      */
     public function store(
         StoreComplianceRuleRequest $request,
-        string $tenant,
         ComplianceCourse $complianceCourse
     ): JsonResponse {
         Gate::authorize('can-manage-training');
@@ -83,7 +81,6 @@ class ComplianceRuleController extends Controller
      * Display the specified rule.
      */
     public function show(
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceAssignmentRule $rule
     ): ComplianceRuleResource {
@@ -106,7 +103,6 @@ class ComplianceRuleController extends Controller
      */
     public function update(
         UpdateComplianceRuleRequest $request,
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceAssignmentRule $rule
     ): ComplianceRuleResource {
@@ -129,7 +125,6 @@ class ComplianceRuleController extends Controller
      * Remove the specified rule.
      */
     public function destroy(
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceAssignmentRule $rule
     ): JsonResponse {
@@ -152,7 +147,6 @@ class ComplianceRuleController extends Controller
      */
     public function preview(
         Request $request,
-        string $tenant,
         ComplianceCourse $complianceCourse
     ): JsonResponse {
         Gate::authorize('can-manage-training');
@@ -185,7 +179,6 @@ class ComplianceRuleController extends Controller
      * Apply a rule to existing employees now.
      */
     public function apply(
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceAssignmentRule $rule
     ): JsonResponse {
@@ -208,7 +201,6 @@ class ComplianceRuleController extends Controller
      * Toggle rule active status.
      */
     public function toggle(
-        string $tenant,
         ComplianceCourse $complianceCourse,
         ComplianceAssignmentRule $rule
     ): ComplianceRuleResource {

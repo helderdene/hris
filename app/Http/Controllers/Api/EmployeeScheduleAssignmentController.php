@@ -17,7 +17,7 @@ class EmployeeScheduleAssignmentController extends Controller
     /**
      * Display a listing of assignments for a work schedule.
      */
-    public function index(string $tenant, WorkSchedule $workSchedule): AnonymousResourceCollection
+    public function index(WorkSchedule $workSchedule): AnonymousResourceCollection
     {
         Gate::authorize('can-manage-organization');
 
@@ -32,7 +32,7 @@ class EmployeeScheduleAssignmentController extends Controller
     /**
      * Store a newly created assignment.
      */
-    public function store(StoreEmployeeScheduleAssignmentRequest $request, string $tenant, WorkSchedule $workSchedule): JsonResponse
+    public function store(StoreEmployeeScheduleAssignmentRequest $request, WorkSchedule $workSchedule): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -52,7 +52,6 @@ class EmployeeScheduleAssignmentController extends Controller
      */
     public function update(
         UpdateEmployeeScheduleAssignmentRequest $request,
-        string $tenant,
         WorkSchedule $workSchedule,
         EmployeeScheduleAssignment $assignment
     ): EmployeeScheduleAssignmentResource {
@@ -68,7 +67,7 @@ class EmployeeScheduleAssignmentController extends Controller
     /**
      * Remove the specified assignment.
      */
-    public function destroy(string $tenant, WorkSchedule $workSchedule, EmployeeScheduleAssignment $assignment): JsonResponse
+    public function destroy(WorkSchedule $workSchedule, EmployeeScheduleAssignment $assignment): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

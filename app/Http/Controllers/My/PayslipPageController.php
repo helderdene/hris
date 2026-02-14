@@ -59,7 +59,7 @@ class PayslipPageController extends Controller
     /**
      * Display an individual payslip detail.
      */
-    public function show(Request $request, string $tenant, PayrollEntry $entry): InertiaResponse|SymfonyResponse
+    public function show(Request $request, PayrollEntry $entry): InertiaResponse|SymfonyResponse
     {
         $user = $request->user();
         $employee = $user ? Employee::where('user_id', $user->id)->first() : null;
@@ -119,7 +119,7 @@ class PayslipPageController extends Controller
     /**
      * Download a payslip as PDF.
      */
-    public function downloadPdf(Request $request, string $tenant, PayrollEntry $entry): Response
+    public function downloadPdf(Request $request, PayrollEntry $entry): Response
     {
         $user = $request->user();
         $employee = $user ? Employee::where('user_id', $user->id)->first() : null;

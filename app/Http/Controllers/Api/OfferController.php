@@ -61,7 +61,7 @@ class OfferController extends Controller
     /**
      * Display the specified offer.
      */
-    public function show(string $tenant, Offer $offer): OfferResource
+    public function show(Offer $offer): OfferResource
     {
         $offer->load(['jobApplication.candidate', 'jobApplication.jobPosting', 'offerTemplate', 'signatures']);
 
@@ -71,7 +71,7 @@ class OfferController extends Controller
     /**
      * Update the specified offer.
      */
-    public function update(UpdateOfferRequest $request, string $tenant, Offer $offer): OfferResource
+    public function update(UpdateOfferRequest $request, Offer $offer): OfferResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -83,7 +83,7 @@ class OfferController extends Controller
     /**
      * Remove the specified offer.
      */
-    public function destroy(string $tenant, Offer $offer): JsonResponse
+    public function destroy(Offer $offer): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -95,7 +95,7 @@ class OfferController extends Controller
     /**
      * Send the offer to the candidate.
      */
-    public function send(string $tenant, Offer $offer): RedirectResponse
+    public function send(Offer $offer): RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -107,7 +107,7 @@ class OfferController extends Controller
     /**
      * Accept the offer (public, via signed URL).
      */
-    public function accept(AcceptOfferRequest $request, string $tenant, Offer $offer): RedirectResponse
+    public function accept(AcceptOfferRequest $request, Offer $offer): RedirectResponse
     {
         $this->offerService->acceptOffer($offer, array_merge(
             $request->validated(),
@@ -123,7 +123,7 @@ class OfferController extends Controller
     /**
      * Decline the offer (public, via signed URL).
      */
-    public function decline(DeclineOfferRequest $request, string $tenant, Offer $offer): RedirectResponse
+    public function decline(DeclineOfferRequest $request, Offer $offer): RedirectResponse
     {
         $this->offerService->declineOffer($offer, $request->validated('reason'));
 
@@ -133,7 +133,7 @@ class OfferController extends Controller
     /**
      * Revoke the offer.
      */
-    public function revoke(RevokeOfferRequest $request, string $tenant, Offer $offer): RedirectResponse
+    public function revoke(RevokeOfferRequest $request, Offer $offer): RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 
@@ -145,7 +145,7 @@ class OfferController extends Controller
     /**
      * Download the offer PDF.
      */
-    public function downloadPdf(string $tenant, Offer $offer): JsonResponse|\Symfony\Component\HttpFoundation\StreamedResponse
+    public function downloadPdf(Offer $offer): JsonResponse|\Symfony\Component\HttpFoundation\StreamedResponse
     {
         if (! $offer->pdf_path || ! Storage::disk('local')->exists($offer->pdf_path)) {
             $this->offerService->generatePdf($offer);
@@ -161,7 +161,7 @@ class OfferController extends Controller
     /**
      * Preview the resolved offer content.
      */
-    public function preview(Request $request, string $tenant, Offer $offer): JsonResponse
+    public function preview(Request $request, Offer $offer): JsonResponse
     {
         return response()->json([
             'content' => $offer->content,

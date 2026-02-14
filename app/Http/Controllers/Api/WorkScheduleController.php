@@ -62,7 +62,7 @@ class WorkScheduleController extends Controller
     /**
      * Display the specified work schedule.
      */
-    public function show(string $tenant, WorkSchedule $workSchedule): WorkScheduleResource
+    public function show(WorkSchedule $workSchedule): WorkScheduleResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -74,7 +74,7 @@ class WorkScheduleController extends Controller
     /**
      * Update the specified work schedule.
      */
-    public function update(UpdateWorkScheduleRequest $request, string $tenant, WorkSchedule $workSchedule): WorkScheduleResource
+    public function update(UpdateWorkScheduleRequest $request, WorkSchedule $workSchedule): WorkScheduleResource
     {
         Gate::authorize('can-manage-organization');
 
@@ -88,7 +88,7 @@ class WorkScheduleController extends Controller
     /**
      * Remove the specified work schedule.
      */
-    public function destroy(string $tenant, WorkSchedule $workSchedule): JsonResponse
+    public function destroy(WorkSchedule $workSchedule): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

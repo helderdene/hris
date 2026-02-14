@@ -74,7 +74,7 @@ class MyTrainingSessionsController extends Controller
     /**
      * Display session details with enrollment options.
      */
-    public function show(string $tenant, TrainingSession $session): InertiaResponse
+    public function show(TrainingSession $session): InertiaResponse
     {
         Gate::authorize('can-view-training');
 
@@ -119,7 +119,7 @@ class MyTrainingSessionsController extends Controller
     /**
      * Enroll the current employee in a session.
      */
-    public function enroll(string $tenant, TrainingSession $session): JsonResponse
+    public function enroll(TrainingSession $session): JsonResponse
     {
         Gate::authorize('can-view-training');
 
@@ -148,7 +148,7 @@ class MyTrainingSessionsController extends Controller
     /**
      * Cancel the current employee's enrollment.
      */
-    public function cancelEnrollment(string $tenant, TrainingEnrollment $enrollment): JsonResponse
+    public function cancelEnrollment(TrainingEnrollment $enrollment): JsonResponse
     {
         Gate::authorize('can-view-training');
 
@@ -168,7 +168,7 @@ class MyTrainingSessionsController extends Controller
     /**
      * Submit an enrollment request for approval.
      */
-    public function requestEnrollment(Request $request, string $tenant, TrainingSession $session): JsonResponse
+    public function requestEnrollment(Request $request, TrainingSession $session): JsonResponse
     {
         Gate::authorize('can-view-training');
 
@@ -197,7 +197,7 @@ class MyTrainingSessionsController extends Controller
     /**
      * Cancel a pending enrollment request.
      */
-    public function cancelEnrollmentRequest(Request $request, string $tenant, TrainingEnrollment $enrollment): JsonResponse
+    public function cancelEnrollmentRequest(Request $request, TrainingEnrollment $enrollment): JsonResponse
     {
         Gate::authorize('can-view-training');
 

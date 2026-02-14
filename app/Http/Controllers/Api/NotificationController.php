@@ -34,7 +34,7 @@ class NotificationController extends Controller
     /**
      * Mark a specific notification as read.
      */
-    public function markAsRead(Request $request, string $tenant, DatabaseNotification $notification): JsonResponse
+    public function markAsRead(Request $request, DatabaseNotification $notification): JsonResponse
     {
         // Ensure the notification belongs to the authenticated user
         if ($notification->notifiable_id !== $request->user()->id) {
@@ -64,7 +64,7 @@ class NotificationController extends Controller
     /**
      * Download a file associated with a notification (e.g., bulk payslip PDF).
      */
-    public function download(Request $request, string $tenant, DatabaseNotification $notification): mixed
+    public function download(Request $request, DatabaseNotification $notification): mixed
     {
         // Ensure the notification belongs to the authenticated user
         if ($notification->notifiable_id !== $request->user()->id) {

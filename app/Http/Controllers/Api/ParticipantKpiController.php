@@ -18,7 +18,7 @@ class ParticipantKpiController extends Controller
     /**
      * Get all KPIs for a specific participant with summary.
      */
-    public function index(string $tenant, PerformanceCycleParticipant $participant): JsonResponse
+    public function index(PerformanceCycleParticipant $participant): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 

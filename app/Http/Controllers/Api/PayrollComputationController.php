@@ -24,7 +24,6 @@ class PayrollComputationController extends Controller
      */
     public function compute(
         ComputePayrollRequest $request,
-        string $tenant,
         PayrollPeriod $payrollPeriod
     ): JsonResponse {
         Gate::authorize('can-manage-organization');
@@ -56,7 +55,6 @@ class PayrollComputationController extends Controller
      * Preview payroll computation for an employee without saving.
      */
     public function preview(
-        string $tenant,
         PayrollPeriod $payrollPeriod,
         Employee $employee
     ): JsonResponse {
@@ -78,7 +76,6 @@ class PayrollComputationController extends Controller
      */
     public function recompute(
         ComputePayrollRequest $request,
-        string $tenant,
         PayrollPeriod $payrollPeriod
     ): JsonResponse {
         Gate::authorize('can-manage-organization');

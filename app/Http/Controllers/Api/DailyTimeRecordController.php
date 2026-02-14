@@ -81,7 +81,7 @@ class DailyTimeRecordController extends Controller
     /**
      * Display the specified DTR record.
      */
-    public function show(string $tenant, DailyTimeRecord $dailyTimeRecord): DailyTimeRecordResource
+    public function show(DailyTimeRecord $dailyTimeRecord): DailyTimeRecordResource
     {
         $dailyTimeRecord->load(['employee', 'workSchedule', 'punches.attendanceLog']);
 
@@ -91,7 +91,7 @@ class DailyTimeRecordController extends Controller
     /**
      * Get DTR records for a specific employee.
      */
-    public function employeeDtr(DtrFilterRequest $request, string $tenant, Employee $employee): AnonymousResourceCollection
+    public function employeeDtr(DtrFilterRequest $request, Employee $employee): AnonymousResourceCollection
     {
         $query = DailyTimeRecord::query()
             ->where('employee_id', $employee->id)
@@ -112,7 +112,7 @@ class DailyTimeRecordController extends Controller
     /**
      * Get period summary for an employee.
      */
-    public function summary(Request $request, string $tenant, Employee $employee): DtrPeriodSummaryResource
+    public function summary(Request $request, Employee $employee): DtrPeriodSummaryResource
     {
         $startDate = $request->filled('date_from')
             ? Carbon::parse($request->input('date_from'))
@@ -139,7 +139,7 @@ class DailyTimeRecordController extends Controller
     /**
      * Calculate/recalculate DTR for an employee on a specific date.
      */
-    public function calculate(CalculateDtrRequest $request, string $tenant, Employee $employee): DailyTimeRecordResource
+    public function calculate(CalculateDtrRequest $request, Employee $employee): DailyTimeRecordResource
     {
         $date = Carbon::parse($request->validated('date'));
         $dtr = $this->calculationService->calculateForDate($employee, $date);
@@ -150,7 +150,7 @@ class DailyTimeRecordController extends Controller
     /**
      * Calculate/recalculate DTR for an employee over a date range.
      */
-    public function calculateRange(CalculateDtrRangeRequest $request, string $tenant, Employee $employee): AnonymousResourceCollection
+    public function calculateRange(CalculateDtrRangeRequest $request, Employee $employee): AnonymousResourceCollection
     {
         $validated = $request->validated();
         $startDate = Carbon::parse($validated['date_from']);
@@ -164,7 +164,7 @@ class DailyTimeRecordController extends Controller
     /**
      * Approve overtime for a specific DTR record.
      */
-    public function approveOvertime(string $tenant, DailyTimeRecord $dailyTimeRecord): JsonResponse
+    public function approveOvertime(DailyTimeRecord $dailyTimeRecord): JsonResponse
     {
         if ($dailyTimeRecord->overtime_minutes === 0) {
             return response()->json([
@@ -185,7 +185,7 @@ class DailyTimeRecordController extends Controller
     /**
      * Resolve review flag for a DTR record.
      */
-    public function resolveReview(ResolveDtrReviewRequest $request, string $tenant, DailyTimeRecord $dailyTimeRecord): JsonResponse
+    public function resolveReview(ResolveDtrReviewRequest $request, DailyTimeRecord $dailyTimeRecord): JsonResponse
     {
 
         if (! $dailyTimeRecord->needs_review) {

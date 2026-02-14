@@ -81,7 +81,6 @@ class TrainingEnrollmentApprovalController extends Controller
      */
     public function approve(
         ApproveTrainingEnrollmentRequest $request,
-        string $tenant,
         TrainingEnrollment $enrollment
     ): TrainingEnrollmentRequestResource {
         $user = $request->user();
@@ -101,7 +100,6 @@ class TrainingEnrollmentApprovalController extends Controller
      */
     public function reject(
         RejectTrainingEnrollmentRequest $request,
-        string $tenant,
         TrainingEnrollment $enrollment
     ): TrainingEnrollmentRequestResource {
         $user = $request->user();
