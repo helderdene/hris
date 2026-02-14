@@ -116,12 +116,32 @@ class ScheduleResolver
 
         // Fixed schedule
         if (isset($config['end_time'])) {
-            return $this->parseTimeOnDate($config['end_time'], $date);
+            $endTime = $this->parseTimeOnDate($config['end_time'], $date);
+
+            // Handle cross-midnight schedules (e.g., 17:00-00:00)
+            if (isset($config['start_time'])) {
+                $startTime = $this->parseTimeOnDate($config['start_time'], $date);
+                if ($endTime->lte($startTime)) {
+                    $endTime->addDay();
+                }
+            }
+
+            return $endTime;
         }
 
         // Flexible schedule - use core hours end
         if (isset($config['core_hours']['end_time'])) {
-            return $this->parseTimeOnDate($config['core_hours']['end_time'], $date);
+            $endTime = $this->parseTimeOnDate($config['core_hours']['end_time'], $date);
+
+            // Handle cross-midnight core hours
+            if (isset($config['core_hours']['start_time'])) {
+                $startTime = $this->parseTimeOnDate($config['core_hours']['start_time'], $date);
+                if ($endTime->lte($startTime)) {
+                    $endTime->addDay();
+                }
+            }
+
+            return $endTime;
         }
 
         // Shifting schedule - find the matching shift

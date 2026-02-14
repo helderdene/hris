@@ -374,7 +374,7 @@ class DtrCalculationService
 
         if ($droppedPunchCount > 0) {
             $needsReview = true;
-            $reviewReason = $droppedPunchCount.' unmatched attendance scan(s) excluded';
+            $reviewReason = $droppedPunchCount.' attendance scan(s) could not be matched to schedule';
         } elseif ($unpairedIn !== null) {
             $needsReview = true;
             $reviewReason = 'Missing time-out';

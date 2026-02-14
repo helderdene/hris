@@ -237,11 +237,18 @@ class PunchPairProcessor
     }
 
     /**
-     * Match null-direction punches to expected schedule events by proximity.
+     * Match null-direction punches to expected schedule events.
      *
-     * Each punch is assigned the direction of the nearest unconsumed schedule
-     * event within the tolerance window. Punches that don't match any event
-     * are removed from the collection and counted as dropped.
+     * When all punches lack direction (typical FR devices), uses boundary-first
+     * matching: the first punch is assigned shift-IN, the last punch shift-OUT,
+     * then remaining events are matched by proximity. This ensures the first
+     * and last scans are always treated as clock-in/clock-out regardless of
+     * how late or early the employee arrives.
+     *
+     * When some punches have explicit directions, uses proximity matching only.
+     *
+     * Any unmatched null-direction punches are assigned directions via
+     * alternating inference rather than being dropped.
      *
      * @param  Collection<int, AttendanceLog>  $logs
      * @param  array<int, array{time: Carbon, direction: PunchType}>  $scheduleEvents
@@ -253,18 +260,31 @@ class PunchPairProcessor
         $matchedIds = [];
         $consumedEventIndexes = [];
 
-        // For each event, find the closest unmatched null-direction punch
+        // Check if all punches are null-direction (FR device scenario)
+        $nullDirLogs = $sortedLogs->filter(
+            fn (AttendanceLog $log) => $this->normalizeDirection($log->direction) === null
+        );
+        $allNullDirection = $nullDirLogs->count() === $sortedLogs->count();
+
+        if ($allNullDirection && $nullDirLogs->isNotEmpty()) {
+            // Boundary-first: first punch = clock-in, last punch = clock-out
+            $this->matchBoundaryEvents($sortedLogs, $scheduleEvents, $matchedIds, $consumedEventIndexes);
+        }
+
+        // Match remaining events by proximity
         foreach ($scheduleEvents as $eventIndex => $event) {
+            if (in_array($eventIndex, $consumedEventIndexes)) {
+                continue;
+            }
+
             $bestLog = null;
             $bestDistance = $toleranceMinutes + 1;
 
             foreach ($sortedLogs as $log) {
-                // Skip logs with explicit direction (they're always kept as-is)
                 if ($this->normalizeDirection($log->direction) !== null) {
                     continue;
                 }
 
-                // Skip already matched logs
                 if (in_array($log->id, $matchedIds)) {
                     continue;
                 }
@@ -284,26 +304,78 @@ class PunchPairProcessor
             }
         }
 
-        // Keep: logs with explicit direction + matched logs. Drop: unmatched null-direction logs.
-        $droppedCount = 0;
-        $filteredLogs = $logs->filter(function (AttendanceLog $log) use ($matchedIds, &$droppedCount) {
-            if ($this->normalizeDirection($log->direction) !== null) {
-                return true;
+        // Infer direction for remaining unmatched null-direction punches via alternating
+        $unmatchedCount = 0;
+        $expectingIn = true;
+
+        foreach ($sortedLogs as $log) {
+            $direction = $this->normalizeDirection($log->direction);
+
+            if ($direction !== null) {
+                $expectingIn = $direction->isOutType();
+
+                continue;
             }
 
-            if (in_array($log->id, $matchedIds)) {
-                return true;
-            }
-
-            $droppedCount++;
-
-            return false;
-        })->values();
+            $log->direction = $expectingIn ? PunchType::In->value : PunchType::Out->value;
+            $expectingIn = ! $expectingIn;
+            $unmatchedCount++;
+        }
 
         return [
-            'logs' => $filteredLogs,
-            'droppedCount' => $droppedCount,
+            'logs' => $logs,
+            'droppedCount' => $unmatchedCount,
         ];
+    }
+
+    /**
+     * Match boundary schedule events (shift IN/OUT) to first/last null-direction punches.
+     *
+     * @param  Collection<int, AttendanceLog>  $sortedLogs
+     * @param  array<int, array{time: Carbon, direction: PunchType}>  $scheduleEvents
+     * @param  array<int>  $matchedIds
+     * @param  array<int>  $consumedEventIndexes
+     */
+    protected function matchBoundaryEvents(
+        Collection $sortedLogs,
+        array $scheduleEvents,
+        array &$matchedIds,
+        array &$consumedEventIndexes
+    ): void {
+        $firstInEventIndex = null;
+        $lastOutEventIndex = null;
+
+        foreach ($scheduleEvents as $index => $event) {
+            if ($event['direction'] === PunchType::In && $firstInEventIndex === null) {
+                $firstInEventIndex = $index;
+            }
+
+            if ($event['direction'] === PunchType::Out) {
+                $lastOutEventIndex = $index;
+            }
+        }
+
+        $nullDirLogs = $sortedLogs->filter(
+            fn (AttendanceLog $log) => $this->normalizeDirection($log->direction) === null
+        )->values();
+
+        // First null-direction punch → shift IN
+        if ($firstInEventIndex !== null && $nullDirLogs->isNotEmpty()) {
+            $firstPunch = $nullDirLogs->first();
+            $firstPunch->direction = PunchType::In->value;
+            $matchedIds[] = $firstPunch->id;
+            $consumedEventIndexes[] = $firstInEventIndex;
+        }
+
+        // Last null-direction punch → shift OUT (must be different from first)
+        if ($lastOutEventIndex !== null && $nullDirLogs->count() > 1) {
+            $lastPunch = $nullDirLogs->last();
+            if (! in_array($lastPunch->id, $matchedIds)) {
+                $lastPunch->direction = PunchType::Out->value;
+                $matchedIds[] = $lastPunch->id;
+                $consumedEventIndexes[] = $lastOutEventIndex;
+            }
+        }
     }
 
     /**
