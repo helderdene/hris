@@ -15,6 +15,7 @@ use App\Models\SalaryStep;
 use App\Models\Tenant;
 use App\Models\WorkLocation;
 use App\Services\Tenant\TenantDatabaseManager;
+use Database\Seeders\GovernmentContributionSeeder;
 use Database\Seeders\PhilippineHolidaySeeder;
 use Illuminate\Console\Command;
 
@@ -64,6 +65,7 @@ class SeedTenantSampleData extends Command
         $this->seedPositions();
         $this->seedEmployees();
         $this->seedPhilippineHolidays();
+        $this->seedGovernmentContributions();
         $this->seedProficiencyLevels();
 
         $this->info('Sample data seeded successfully!');
@@ -576,6 +578,12 @@ class SeedTenantSampleData extends Command
     {
         $this->info('Creating Philippine national holidays...');
         $this->call(PhilippineHolidaySeeder::class);
+    }
+
+    protected function seedGovernmentContributions(): void
+    {
+        $this->info('Creating government contribution tables...');
+        $this->call(GovernmentContributionSeeder::class);
     }
 
     protected function seedProficiencyLevels(): void

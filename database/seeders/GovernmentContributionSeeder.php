@@ -3,8 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\PagibigContributionTable;
+use App\Models\PagibigContributionTier;
 use App\Models\PhilhealthContributionTable;
+use App\Models\SssContributionBracket;
 use App\Models\SssContributionTable;
+use App\Models\WithholdingTaxBracket;
+use App\Models\WithholdingTaxTable;
 use Illuminate\Database\Seeder;
 
 class GovernmentContributionSeeder extends Seeder
@@ -14,9 +18,21 @@ class GovernmentContributionSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->seedSssContributionTable();
-        $this->seedPhilhealthContributionTable();
-        $this->seedPagibigContributionTable();
+        if (SssContributionTable::query()->doesntExist()) {
+            $this->seedSssContributionTable();
+        }
+
+        if (PhilhealthContributionTable::query()->doesntExist()) {
+            $this->seedPhilhealthContributionTable();
+        }
+
+        if (PagibigContributionTable::query()->doesntExist()) {
+            $this->seedPagibigContributionTable();
+        }
+
+        if (WithholdingTaxTable::query()->doesntExist()) {
+            $this->seedWithholdingTaxTables();
+        }
     }
 
     /**
@@ -24,13 +40,13 @@ class GovernmentContributionSeeder extends Seeder
      */
     protected function seedSssContributionTable(): void
     {
-        $table = SssContributionTable::create([
+        $table = SssContributionTable::withoutEvents(fn () => SssContributionTable::create([
             'effective_from' => '2025-01-01',
             'description' => '2025 SSS Contribution Table (as of January 2025)',
             'employee_rate' => 0.0450,
             'employer_rate' => 0.0950,
             'is_active' => true,
-        ]);
+        ]));
 
         // Official 2025 SSS contribution brackets
         $brackets = [
@@ -89,9 +105,11 @@ class GovernmentContributionSeeder extends Seeder
             ['min_salary' => 29750, 'max_salary' => null, 'monthly_salary_credit' => 30000, 'employee_contribution' => 1350, 'employer_contribution' => 2850, 'total_contribution' => 4200, 'ec_contribution' => 30],
         ];
 
-        foreach ($brackets as $bracket) {
-            $table->brackets()->create($bracket);
-        }
+        SssContributionBracket::withoutEvents(function () use ($table, $brackets) {
+            foreach ($brackets as $bracket) {
+                $table->brackets()->create($bracket);
+            }
+        });
     }
 
     /**
@@ -99,7 +117,7 @@ class GovernmentContributionSeeder extends Seeder
      */
     protected function seedPhilhealthContributionTable(): void
     {
-        PhilhealthContributionTable::create([
+        PhilhealthContributionTable::withoutEvents(fn () => PhilhealthContributionTable::create([
             'effective_from' => '2025-01-01',
             'description' => '2025 PhilHealth Contribution Table (5% premium rate)',
             'contribution_rate' => 0.0500,
@@ -110,7 +128,7 @@ class GovernmentContributionSeeder extends Seeder
             'min_contribution' => 500.00,
             'max_contribution' => 5000.00,
             'is_active' => true,
-        ]);
+        ]));
     }
 
     /**
@@ -118,12 +136,12 @@ class GovernmentContributionSeeder extends Seeder
      */
     protected function seedPagibigContributionTable(): void
     {
-        $table = PagibigContributionTable::create([
+        $table = PagibigContributionTable::withoutEvents(fn () => PagibigContributionTable::create([
             'effective_from' => '2025-01-01',
             'description' => '2025 Pag-IBIG Contribution Table',
             'max_monthly_compensation' => 5000.00,
             'is_active' => true,
-        ]);
+        ]));
 
         // Official Pag-IBIG tiers
         $tiers = [
@@ -141,8 +159,81 @@ class GovernmentContributionSeeder extends Seeder
             ],
         ];
 
-        foreach ($tiers as $tier) {
-            $table->tiers()->create($tier);
+        PagibigContributionTier::withoutEvents(function () use ($table, $tiers) {
+            foreach ($tiers as $tier) {
+                $table->tiers()->create($tier);
+            }
+        });
+    }
+
+    /**
+     * Seed the BIR Withholding Tax tables (TRAIN Law, RA 10963, effective 2023).
+     *
+     * Brackets per pay period derived from annual tax table:
+     *   Annual ÷ 12 (monthly), ÷ 24 (semi-monthly), ÷ 52 (weekly), ÷ 313 (daily)
+     */
+    protected function seedWithholdingTaxTables(): void
+    {
+        $payPeriods = [
+            'daily' => [
+                'description' => 'BIR Withholding Tax Table - Daily (TRAIN Law)',
+                'brackets' => [
+                    ['min_compensation' => 0, 'max_compensation' => 685, 'base_tax' => 0, 'excess_rate' => 0],
+                    ['min_compensation' => 685, 'max_compensation' => 1096, 'base_tax' => 0, 'excess_rate' => 0.15],
+                    ['min_compensation' => 1096, 'max_compensation' => 2192, 'base_tax' => 61.65, 'excess_rate' => 0.20],
+                    ['min_compensation' => 2192, 'max_compensation' => 5479, 'base_tax' => 280.85, 'excess_rate' => 0.25],
+                    ['min_compensation' => 5479, 'max_compensation' => 21918, 'base_tax' => 1102.60, 'excess_rate' => 0.30],
+                    ['min_compensation' => 21918, 'max_compensation' => null, 'base_tax' => 6034.30, 'excess_rate' => 0.35],
+                ],
+            ],
+            'weekly' => [
+                'description' => 'BIR Withholding Tax Table - Weekly (TRAIN Law)',
+                'brackets' => [
+                    ['min_compensation' => 0, 'max_compensation' => 4808, 'base_tax' => 0, 'excess_rate' => 0],
+                    ['min_compensation' => 4808, 'max_compensation' => 7692, 'base_tax' => 0, 'excess_rate' => 0.15],
+                    ['min_compensation' => 7692, 'max_compensation' => 15385, 'base_tax' => 432.69, 'excess_rate' => 0.20],
+                    ['min_compensation' => 15385, 'max_compensation' => 38462, 'base_tax' => 1971.15, 'excess_rate' => 0.25],
+                    ['min_compensation' => 38462, 'max_compensation' => 153846, 'base_tax' => 7740.38, 'excess_rate' => 0.30],
+                    ['min_compensation' => 153846, 'max_compensation' => null, 'base_tax' => 42355.77, 'excess_rate' => 0.35],
+                ],
+            ],
+            'semi_monthly' => [
+                'description' => 'BIR Withholding Tax Table - Semi-Monthly (TRAIN Law)',
+                'brackets' => [
+                    ['min_compensation' => 0, 'max_compensation' => 10417, 'base_tax' => 0, 'excess_rate' => 0],
+                    ['min_compensation' => 10417, 'max_compensation' => 16667, 'base_tax' => 0, 'excess_rate' => 0.15],
+                    ['min_compensation' => 16667, 'max_compensation' => 33333, 'base_tax' => 937.50, 'excess_rate' => 0.20],
+                    ['min_compensation' => 33333, 'max_compensation' => 83333, 'base_tax' => 4270.83, 'excess_rate' => 0.25],
+                    ['min_compensation' => 83333, 'max_compensation' => 333333, 'base_tax' => 16770.83, 'excess_rate' => 0.30],
+                    ['min_compensation' => 333333, 'max_compensation' => null, 'base_tax' => 91770.83, 'excess_rate' => 0.35],
+                ],
+            ],
+            'monthly' => [
+                'description' => 'BIR Withholding Tax Table - Monthly (TRAIN Law)',
+                'brackets' => [
+                    ['min_compensation' => 0, 'max_compensation' => 20833, 'base_tax' => 0, 'excess_rate' => 0],
+                    ['min_compensation' => 20833, 'max_compensation' => 33333, 'base_tax' => 0, 'excess_rate' => 0.15],
+                    ['min_compensation' => 33333, 'max_compensation' => 66667, 'base_tax' => 1875.00, 'excess_rate' => 0.20],
+                    ['min_compensation' => 66667, 'max_compensation' => 166667, 'base_tax' => 8541.67, 'excess_rate' => 0.25],
+                    ['min_compensation' => 166667, 'max_compensation' => 666667, 'base_tax' => 33541.67, 'excess_rate' => 0.30],
+                    ['min_compensation' => 666667, 'max_compensation' => null, 'base_tax' => 183541.67, 'excess_rate' => 0.35],
+                ],
+            ],
+        ];
+
+        foreach ($payPeriods as $payPeriod => $config) {
+            $table = WithholdingTaxTable::withoutEvents(fn () => WithholdingTaxTable::create([
+                'pay_period' => $payPeriod,
+                'effective_from' => '2023-01-01',
+                'description' => $config['description'],
+                'is_active' => true,
+            ]));
+
+            WithholdingTaxBracket::withoutEvents(function () use ($table, $config) {
+                foreach ($config['brackets'] as $bracket) {
+                    $table->brackets()->create($bracket);
+                }
+            });
         }
     }
 }

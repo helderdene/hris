@@ -54,6 +54,7 @@ class TenantSampleDataSeeder extends Seeder
         $this->seedPositions();
         $this->seedEmployees();
         $this->seedPhilippineHolidays();
+        $this->seedGovernmentContributions();
 
         $this->command->info('Sample data seeded successfully!');
     }
@@ -612,6 +613,15 @@ class TenantSampleDataSeeder extends Seeder
     {
         $this->command->info('Creating Philippine national holidays...');
         $this->call(PhilippineHolidaySeeder::class);
+    }
+
+    /**
+     * Seed government contribution tables (SSS, PhilHealth, Pag-IBIG).
+     */
+    protected function seedGovernmentContributions(): void
+    {
+        $this->command->info('Creating government contribution tables...');
+        $this->call(GovernmentContributionSeeder::class);
     }
 
     /**
