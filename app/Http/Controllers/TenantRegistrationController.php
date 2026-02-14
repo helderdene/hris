@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use App\Models\TenantRedirectToken;
 use App\Services\Tenant\TenantDatabaseManager;
 use Database\Seeders\DocumentCategorySeeder;
+use Database\Seeders\GovernmentContributionSeeder;
 use Database\Seeders\HelpContentSeeder;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -52,6 +53,7 @@ class TenantRegistrationController extends Controller
         // Seed initial data for the tenant
         (new HelpContentSeeder)->run();
         (new DocumentCategorySeeder)->run();
+        (new GovernmentContributionSeeder)->run();
 
         // Add current user as tenant admin
         $tenant->users()->attach($user->id, ['role' => 'admin']);
