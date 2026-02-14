@@ -57,6 +57,12 @@ Schedule::job(new CheckOverduePreboardingJob)
     ->withoutOverlapping()
     ->name('check-overdue-preboarding');
 
+// DTR daily calculation - daily at 02:30 (after attendance sync completes)
+Schedule::command('dtr:calculate-daily')
+    ->dailyAt('02:30')
+    ->withoutOverlapping()
+    ->name('dtr-calculate-daily');
+
 // Certification expiry reminders - daily at 07:00
 Schedule::command('certifications:send-reminders')
     ->dailyAt('07:00')
