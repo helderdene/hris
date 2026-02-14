@@ -143,7 +143,7 @@ class CalculateDailyDtrCommand extends Command
     protected function switchToTenantDatabase(Tenant $tenant): void
     {
         config([
-            'database.connections.tenant.database' => $tenant->database_name,
+            'database.connections.tenant.database' => $tenant->getDatabaseName(),
         ]);
 
         DB::reconnect('tenant');
