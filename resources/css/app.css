@@ -127,39 +127,51 @@
 }
 
 .dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
+    --background: hsl(222 14% 5%);
+    --foreground: hsl(210 20% 96%);
+    --card: hsl(222 12% 7%);
+    --card-foreground: hsl(210 20% 96%);
+    --popover: hsl(222 12% 7%);
+    --popover-foreground: hsl(210 20% 96%);
+    --primary: hsl(210 20% 96%);
+    --primary-foreground: hsl(222 14% 8%);
+    --secondary: hsl(222 10% 16%);
+    --secondary-foreground: hsl(210 20% 96%);
+    --muted: hsl(222 10% 17%);
+    --muted-foreground: hsl(215 14% 60%);
+    --accent: hsl(222 10% 16%);
+    --accent-foreground: hsl(210 20% 96%);
     --destructive: hsl(0 84% 60%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
+    --destructive-foreground: hsl(210 20% 96%);
+    --border: hsl(222 10% 16%);
+    --input: hsl(222 10% 16%);
+    --ring: hsl(215 20% 75%);
     --chart-1: hsl(220 70% 50%);
     --chart-2: hsl(160 60% 45%);
     --chart-3: hsl(30 80% 55%);
     --chart-4: hsl(280 65% 60%);
     --chart-5: hsl(340 75% 55%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
+    --sidebar-background: hsl(222 14% 7%);
+    --sidebar-foreground: hsl(210 20% 94%);
     --sidebar-primary: hsl(360, 100%, 100%);
     --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
+    --sidebar-accent: hsl(222 10% 17%);
+    --sidebar-accent-foreground: hsl(210 15% 94%);
+    --sidebar-border: hsl(222 10% 17%);
     --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
+    --sidebar: hsl(222 12% 10%);
+}
+
+@layer utilities {
+    .dark-glow-sm {
+        box-shadow: 0 0 15px -3px rgba(100, 140, 200, 0.08), 0 0 6px -4px rgba(100, 140, 200, 0.05);
+    }
+    .dark-glow-md {
+        box-shadow: 0 0 25px -5px rgba(100, 140, 200, 0.1), 0 0 10px -6px rgba(100, 140, 200, 0.06);
+    }
+    .dark-elevated {
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 20px -5px rgba(100, 140, 200, 0.04);
+    }
 }
 
 @layer base {

@@ -40,12 +40,12 @@ const showAvatar = computed(() => user?.avatar && user.avatar !== '');
 
 <template>
     <header
-        class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 lg:px-6"
+        class="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 bg-white px-4 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 dark:border-slate-700/50 dark:bg-card/80 dark:backdrop-blur-xl lg:px-6"
     >
         <!-- Left: Sidebar trigger + Page Title -->
         <div class="flex items-center gap-3">
             <SidebarTrigger class="-ml-1 lg:hidden" />
-            <h1 v-if="pageTitle" class="text-xl font-semibold text-slate-900">
+            <h1 v-if="pageTitle" class="text-xl font-semibold text-slate-900 dark:text-slate-100">
                 {{ pageTitle }}
             </h1>
         </div>
@@ -57,7 +57,7 @@ const showAvatar = computed(() => user?.avatar && user.avatar !== '');
                 <DropdownMenuTrigger as-child>
                     <button
                         type="button"
-                        class="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-slate-100"
+                        class="flex items-center gap-3 rounded-lg px-3 py-2 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/60"
                     >
                         <!-- Avatar -->
                         <Avatar class="h-8 w-8 overflow-hidden rounded-full">
@@ -75,13 +75,13 @@ const showAvatar = computed(() => user?.avatar && user.avatar !== '');
 
                         <!-- Name -->
                         <span
-                            class="hidden text-sm font-medium text-slate-900 sm:block"
+                            class="hidden text-sm font-medium text-slate-900 sm:block dark:text-slate-200"
                         >
                             {{ user.name }}
                         </span>
 
                         <!-- Chevron -->
-                        <ChevronDown class="h-4 w-4 text-slate-400" />
+                        <ChevronDown class="h-4 w-4 text-slate-400 dark:text-slate-500" />
                     </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent

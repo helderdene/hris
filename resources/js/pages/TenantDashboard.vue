@@ -288,7 +288,7 @@ const connectionStatusText = computed(() => {
 
             <!-- Welcome Banner with tenant branding and connection status -->
             <div
-                class="relative overflow-hidden rounded-xl p-6 text-white"
+                class="relative overflow-hidden rounded-xl p-6 text-white shadow-sm dark:shadow-lg dark:shadow-black/30 dark:ring-1 dark:ring-white/10"
                 :style="{ backgroundColor: primaryColor }"
             >
                 <div class="relative z-10 flex items-start justify-between">

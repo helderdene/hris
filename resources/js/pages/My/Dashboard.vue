@@ -95,9 +95,8 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'My Dashboard', href: '/my/dashboard' },
 ];
 
-const totalLeaveCredits = props.leaveBalances.reduce(
-    (sum, b) => sum + (b.available ?? 0),
-    0,
+const totalLeaveCredits = parseFloat(
+    props.leaveBalances.reduce((sum, b) => sum + (b.available ?? 0), 0).toFixed(2),
 );
 
 const latestPayslip = props.recentPayslips[0] ?? null;
@@ -153,11 +152,11 @@ function badgeClasses(color: string): string {
                 <!-- Payslips Card -->
                 <Link href="/my/payslips" class="block">
                     <Card
-                        class="transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+                        class="transition-shadow hover:shadow-md"
                     >
                         <CardHeader class="flex flex-row items-center gap-3">
                             <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400"
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600 dark:bg-emerald-900/40 dark:text-emerald-400 dark:shadow-lg dark:shadow-emerald-500/10"
                             >
                                 <Banknote class="h-5 w-5" />
                             </div>
@@ -201,11 +200,11 @@ function badgeClasses(color: string): string {
                 <!-- DTR Card -->
                 <Link href="/my/dtr" class="block">
                     <Card
-                        class="transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+                        class="transition-shadow hover:shadow-md"
                     >
                         <CardHeader class="flex flex-row items-center gap-3">
                             <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400"
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-400 dark:shadow-lg dark:shadow-blue-500/10"
                             >
                                 <Clock class="h-5 w-5" />
                             </div>
@@ -258,11 +257,11 @@ function badgeClasses(color: string): string {
                 <!-- Leave Balance Card (compact) -->
                 <Link href="/my/leave" class="block">
                     <Card
-                        class="transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+                        class="transition-shadow hover:shadow-md"
                     >
                         <CardHeader class="flex flex-row items-center gap-3">
                             <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400"
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-400 dark:shadow-lg dark:shadow-amber-500/10"
                             >
                                 <Calendar class="h-5 w-5" />
                             </div>
@@ -307,11 +306,11 @@ function badgeClasses(color: string): string {
                 <!-- Document Requests Card -->
                 <Link href="/my/document-requests" class="block">
                     <Card
-                        class="transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+                        class="transition-shadow hover:shadow-md"
                     >
                         <CardHeader class="flex flex-row items-center gap-3">
                             <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400"
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-400 dark:shadow-lg dark:shadow-indigo-500/10"
                             >
                                 <ScrollText class="h-5 w-5" />
                             </div>
@@ -348,11 +347,11 @@ function badgeClasses(color: string): string {
                 <!-- Loans Card -->
                 <Link href="/my/loans" class="block">
                     <Card
-                        class="transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+                        class="transition-shadow hover:shadow-md"
                     >
                         <CardHeader class="flex flex-row items-center gap-3">
                             <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400"
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-rose-100 text-rose-600 dark:bg-rose-900/40 dark:text-rose-400 dark:shadow-lg dark:shadow-rose-500/10"
                             >
                                 <CreditCard class="h-5 w-5" />
                             </div>
@@ -394,11 +393,11 @@ function badgeClasses(color: string): string {
                 <!-- Announcements Card -->
                 <Link href="/my/announcements" class="block">
                     <Card
-                        class="transition-shadow hover:shadow-md dark:border-slate-700 dark:bg-slate-800"
+                        class="transition-shadow hover:shadow-md"
                     >
                         <CardHeader class="flex flex-row items-center gap-3">
                             <div
-                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400"
+                                class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-400 dark:shadow-lg dark:shadow-purple-500/10"
                             >
                                 <Megaphone class="h-5 w-5" />
                             </div>
