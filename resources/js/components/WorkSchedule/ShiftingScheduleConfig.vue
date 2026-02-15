@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { computed } from 'vue';
@@ -222,10 +221,12 @@ function toggleShiftBreak(index: number, value: boolean) {
                 <!-- Break Configuration -->
                 <div class="rounded-md bg-slate-50 p-3 dark:bg-slate-800/50">
                     <div class="mb-2 flex items-center gap-3">
-                        <Checkbox
+                        <input
                             :id="`shift_include_break_${index}`"
+                            type="checkbox"
                             :checked="hasBreak(index)"
-                            @update:checked="toggleShiftBreak(index, $event)"
+                            @change="toggleShiftBreak(index, ($event.target as HTMLInputElement).checked)"
+                            class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800"
                         />
                         <Label
                             :for="`shift_include_break_${index}`"

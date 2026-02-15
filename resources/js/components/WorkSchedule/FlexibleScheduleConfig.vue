@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { computed } from 'vue';
@@ -226,10 +225,12 @@ function updateBreakField(field: keyof BreakConfig, value: any) {
             class="rounded-lg border border-slate-200 p-4 dark:border-slate-700"
         >
             <div class="mb-4 flex items-center gap-3">
-                <Checkbox
+                <input
                     id="include_break"
+                    type="checkbox"
                     :checked="includeBreak"
-                    @update:checked="includeBreak = $event"
+                    @change="includeBreak = ($event.target as HTMLInputElement).checked"
+                    class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800"
                 />
                 <Label
                     for="include_break"
