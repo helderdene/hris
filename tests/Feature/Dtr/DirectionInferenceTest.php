@@ -490,3 +490,175 @@ describe('DtrCalculationService integration', function () {
             ->and($dtr->needs_review)->toBeFalse();
     });
 });
+
+describe('Cross-midnight schedule punch handling', function () {
+    it('includes next-day punch-out in cross-midnight schedule DTR', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'testco']);
+        bindTenantForDirectionTest($tenant);
+
+        $user = createDirectionTestUser($tenant);
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+
+        // Schedule: 17:00 - 00:00 (crosses midnight)
+        $schedule = WorkSchedule::factory()->create([
+            'time_configuration' => [
+                'start_time' => '17:00',
+                'end_time' => '00:00',
+                'work_days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                'break' => [
+                    'start_time' => null,
+                    'duration_minutes' => 0,
+                ],
+            ],
+        ]);
+
+        $workDate = Carbon::parse('2025-02-13'); // Thursday
+        EmployeeScheduleAssignment::factory()->create([
+            'employee_id' => $employee->id,
+            'work_schedule_id' => $schedule->id,
+            'effective_date' => $workDate->copy()->subMonth()->toDateString(),
+        ]);
+
+        $device = \App\Models\BiometricDevice::factory()->create();
+
+        // Punch IN at 17:02 on Feb 13
+        AttendanceLog::factory()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'logged_at' => '2025-02-13 17:02:00',
+            'direction' => null,
+        ]);
+        // Punch OUT at 01:04 on Feb 14 (next calendar day)
+        AttendanceLog::factory()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'logged_at' => '2025-02-14 01:04:00',
+            'direction' => null,
+        ]);
+
+        $service = app(DtrCalculationService::class);
+        $dtr = $service->calculateForDate($employee, $workDate);
+
+        expect($dtr->status)->toBe(DtrStatus::Present)
+            ->and($dtr->first_in)->not->toBeNull()
+            ->and($dtr->last_out)->not->toBeNull()
+            ->and(Carbon::parse($dtr->first_in)->format('Y-m-d H:i'))->toBe('2025-02-13 17:02')
+            ->and(Carbon::parse($dtr->last_out)->format('Y-m-d H:i'))->toBe('2025-02-14 01:04')
+            ->and($dtr->punches)->toHaveCount(2)
+            ->and($dtr->total_work_minutes)->toBeGreaterThan(0);
+    });
+
+    it('does not double-count next-day punch that belongs to previous cross-midnight schedule', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'testco']);
+        bindTenantForDirectionTest($tenant);
+
+        $user = createDirectionTestUser($tenant);
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+
+        // Schedule: 17:00 - 00:00 (crosses midnight)
+        $schedule = WorkSchedule::factory()->create([
+            'time_configuration' => [
+                'start_time' => '17:00',
+                'end_time' => '00:00',
+                'work_days' => ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+                'break' => [
+                    'start_time' => null,
+                    'duration_minutes' => 0,
+                ],
+            ],
+        ]);
+
+        $workDate = Carbon::parse('2025-02-13'); // Thursday
+        $nextDate = Carbon::parse('2025-02-14'); // Friday
+        EmployeeScheduleAssignment::factory()->create([
+            'employee_id' => $employee->id,
+            'work_schedule_id' => $schedule->id,
+            'effective_date' => $workDate->copy()->subMonth()->toDateString(),
+        ]);
+
+        $device = \App\Models\BiometricDevice::factory()->create();
+
+        // Feb 13 punches: IN at 17:02, OUT at 01:04 next day
+        AttendanceLog::factory()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'logged_at' => '2025-02-13 17:02:00',
+            'direction' => null,
+        ]);
+        AttendanceLog::factory()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'logged_at' => '2025-02-14 01:04:00',
+            'direction' => null,
+        ]);
+
+        // Feb 14 punches: IN at 17:00, OUT at 23:50
+        AttendanceLog::factory()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'logged_at' => '2025-02-14 17:00:00',
+            'direction' => null,
+        ]);
+        AttendanceLog::factory()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'logged_at' => '2025-02-14 23:50:00',
+            'direction' => null,
+        ]);
+
+        $service = app(DtrCalculationService::class);
+
+        // Feb 14's DTR should NOT claim the 01:04 AM punch
+        $dtr14 = $service->calculateForDate($employee, $nextDate);
+
+        expect($dtr14->status)->toBe(DtrStatus::Present)
+            ->and(Carbon::parse($dtr14->first_in)->format('H:i'))->toBe('17:00')
+            ->and($dtr14->punches)->toHaveCount(2);
+    });
+
+    it('handles cross-midnight with punches both before and after midnight', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'testco']);
+        bindTenantForDirectionTest($tenant);
+
+        $user = createDirectionTestUser($tenant);
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+
+        // Shifting schedule with Night Shift 22:00 - 06:00
+        $schedule = WorkSchedule::factory()->shifting()->create();
+
+        $workDate = Carbon::parse('2025-02-13'); // Thursday
+        EmployeeScheduleAssignment::factory()->create([
+            'employee_id' => $employee->id,
+            'work_schedule_id' => $schedule->id,
+            'effective_date' => $workDate->copy()->subMonth()->toDateString(),
+            'shift_name' => 'Night Shift',
+        ]);
+
+        $device = \App\Models\BiometricDevice::factory()->create();
+
+        // Punch IN at 21:55 on Feb 13
+        AttendanceLog::factory()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'logged_at' => '2025-02-13 21:55:00',
+            'direction' => null,
+        ]);
+        // Punch OUT at 06:05 on Feb 14 (next calendar day)
+        AttendanceLog::factory()->create([
+            'employee_id' => $employee->id,
+            'biometric_device_id' => $device->id,
+            'logged_at' => '2025-02-14 06:05:00',
+            'direction' => null,
+        ]);
+
+        $service = app(DtrCalculationService::class);
+        $dtr = $service->calculateForDate($employee, $workDate);
+
+        expect($dtr->status)->toBe(DtrStatus::Present)
+            ->and($dtr->first_in)->not->toBeNull()
+            ->and($dtr->last_out)->not->toBeNull()
+            ->and(Carbon::parse($dtr->first_in)->format('Y-m-d H:i'))->toBe('2025-02-13 21:55')
+            ->and(Carbon::parse($dtr->last_out)->format('Y-m-d H:i'))->toBe('2025-02-14 06:05')
+            ->and($dtr->total_work_minutes)->toBeGreaterThan(0);
+    });
+});

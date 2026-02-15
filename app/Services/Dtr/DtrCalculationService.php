@@ -9,6 +9,7 @@ use App\Models\DailyTimeRecord;
 use App\Models\Employee;
 use App\Models\Holiday;
 use App\Models\TimeRecordPunch;
+use App\Models\WorkSchedule;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -41,7 +42,7 @@ class DtrCalculationService
         $shiftName = $scheduleData['shift_name'];
 
         // Get attendance logs and run inference once (collapse duplicates + match to schedule)
-        $logs = $this->getAttendanceLogsForDate($employee, $date);
+        $logs = $this->getAttendanceLogsForDate($employee, $date, $schedule, $shiftName);
         $droppedPunchCount = 0;
 
         if ($logs->isNotEmpty()) {
@@ -408,15 +409,68 @@ class DtrCalculationService
     /**
      * Get attendance logs for an employee on a specific date.
      *
+     * For cross-midnight schedules, extends the query window into the next
+     * calendar day (up to schedule end + 2hr grace) to capture late punch-outs.
+     * Also excludes early-morning punches that belong to the previous day's
+     * cross-midnight schedule.
+     *
      * @return Collection<int, AttendanceLog>
      */
-    protected function getAttendanceLogsForDate(Employee $employee, Carbon $date): Collection
-    {
-        return AttendanceLog::query()
+    protected function getAttendanceLogsForDate(
+        Employee $employee,
+        Carbon $date,
+        ?WorkSchedule $schedule = null,
+        ?string $shiftName = null
+    ): Collection {
+        $query = AttendanceLog::query()
             ->where('employee_id', $employee->id)
-            ->whereDate('logged_at', $date->toDateString())
-            ->orderBy('logged_at')
+            ->orderBy('logged_at');
+
+        // Determine query start: exclude early-morning punches claimed by the previous day's cross-midnight schedule
+        $queryStart = $this->getQueryStartExcludingPreviousDayOverflow($employee, $date);
+
+        if ($schedule !== null) {
+            $startTime = $this->scheduleResolver->getScheduledStartTime($schedule, $date, $shiftName);
+            $endTime = $this->scheduleResolver->getScheduledEndTime($schedule, $date, $shiftName);
+
+            if ($startTime && $endTime && $endTime->gt($date->copy()->endOfDay())) {
+                // Cross-midnight: fetch from query start through end + 2hr grace
+                $graceEnd = $endTime->copy()->addHours(2);
+
+                return $query
+                    ->where('logged_at', '>=', $queryStart)
+                    ->where('logged_at', '<=', $graceEnd)
+                    ->get();
+            }
+        }
+
+        return $query
+            ->where('logged_at', '>=', $queryStart)
+            ->where('logged_at', '<=', $date->copy()->endOfDay())
             ->get();
+    }
+
+    /**
+     * Determine the earliest timestamp to include for a given date by checking
+     * whether the previous day had a cross-midnight schedule whose grace window
+     * extends into this date.
+     */
+    protected function getQueryStartExcludingPreviousDayOverflow(Employee $employee, Carbon $date): Carbon
+    {
+        $prevDate = $date->copy()->subDay();
+        $prevScheduleData = $this->scheduleResolver->resolve($employee, $prevDate);
+        $prevSchedule = $prevScheduleData['schedule'];
+        $prevShiftName = $prevScheduleData['shift_name'];
+
+        if ($prevSchedule !== null) {
+            $prevEnd = $this->scheduleResolver->getScheduledEndTime($prevSchedule, $prevDate, $prevShiftName);
+
+            if ($prevEnd !== null && $prevEnd->gte($date->copy()->startOfDay())) {
+                return $prevEnd->copy()->addHours(2);
+            }
+        }
+
+        return $date->copy()->startOfDay();
     }
 
     /**
