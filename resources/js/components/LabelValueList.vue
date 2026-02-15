@@ -23,7 +23,7 @@ function formatValue(value: string | number | null | undefined): string {
         <div
             v-for="(item, index) in items"
             :key="index"
-            class="flex items-baseline justify-between py-3 first:pt-0 last:pb-0"
+            class="flex flex-col gap-0.5 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-baseline sm:justify-between"
         >
             <span class="text-sm text-slate-500 dark:text-slate-400">
                 {{ item.label }}

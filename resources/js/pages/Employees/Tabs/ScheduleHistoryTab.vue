@@ -133,32 +133,32 @@ function statusClasses(assignment: ScheduleAssignment): string {
                     <thead class="bg-slate-50 dark:bg-slate-800/50">
                         <tr>
                             <th
-                                class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 Schedule
                             </th>
                             <th
-                                class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                class="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 sm:table-cell sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 Type
                             </th>
                             <th
-                                class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                class="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 sm:table-cell sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 Shift
                             </th>
                             <th
-                                class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 Effective Date
                             </th>
                             <th
-                                class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                class="hidden px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 md:table-cell sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 End Date
                             </th>
                             <th
-                                class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400"
+                                class="px-3 py-2.5 text-left text-xs font-medium uppercase tracking-wider text-slate-500 sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 Status
                             </th>
@@ -171,31 +171,31 @@ function statusClasses(assignment: ScheduleAssignment): string {
                             class="hover:bg-slate-50 dark:hover:bg-slate-800/50"
                         >
                             <td
-                                class="whitespace-nowrap px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-100"
+                                class="px-3 py-2.5 text-sm font-medium text-slate-900 sm:px-4 sm:py-3 dark:text-slate-100"
                             >
                                 {{ assignment.schedule_name || '-' }}
                             </td>
                             <td
-                                class="whitespace-nowrap px-4 py-3 text-sm text-slate-500 dark:text-slate-400"
+                                class="hidden whitespace-nowrap px-3 py-2.5 text-sm text-slate-500 sm:table-cell sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 {{ assignment.schedule_type || '-' }}
                             </td>
                             <td
-                                class="whitespace-nowrap px-4 py-3 text-sm text-slate-500 dark:text-slate-400"
+                                class="hidden whitespace-nowrap px-3 py-2.5 text-sm text-slate-500 sm:table-cell sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 {{ assignment.shift_name || '-' }}
                             </td>
                             <td
-                                class="whitespace-nowrap px-4 py-3 text-sm text-slate-500 dark:text-slate-400"
+                                class="whitespace-nowrap px-3 py-2.5 text-sm text-slate-500 sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 {{ formatDate(assignment.effective_date) }}
                             </td>
                             <td
-                                class="whitespace-nowrap px-4 py-3 text-sm text-slate-500 dark:text-slate-400"
+                                class="hidden whitespace-nowrap px-3 py-2.5 text-sm text-slate-500 md:table-cell sm:px-4 sm:py-3 dark:text-slate-400"
                             >
                                 {{ formatDate(assignment.end_date) }}
                             </td>
-                            <td class="whitespace-nowrap px-4 py-3 text-sm">
+                            <td class="whitespace-nowrap px-3 py-2.5 text-sm sm:px-4 sm:py-3">
                                 <span
                                     :class="[
                                         'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1 ring-inset',

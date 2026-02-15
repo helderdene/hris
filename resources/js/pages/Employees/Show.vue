@@ -217,7 +217,7 @@ function handleSyncComplete() {
     <TenantLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6">
             <!-- Back Navigation -->
-            <div class="flex items-center justify-between">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <button
                     @click="goBack"
                     class="flex items-center gap-2 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
@@ -238,7 +238,7 @@ function handleSyncComplete() {
                     </svg>
                     Back to Employees
                 </button>
-                <div class="flex items-center gap-3">
+                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
                     <EmployeeSyncButton
                         v-if="syncStatuses && syncStatuses.length > 0"
                         :employee-id="employee.id"
@@ -251,7 +251,7 @@ function handleSyncComplete() {
                         class="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
                     >
                         <svg
-                            class="mr-2 h-4 w-4"
+                            class="h-4 w-4 sm:mr-2"
                             xmlns="http://www.w3.org/2000/svg"
                             fill="none"
                             viewBox="0 0 24 24"
@@ -264,12 +264,12 @@ function handleSyncComplete() {
                                 d="M22 10.5h-6m-2.25-4.125a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0ZM4 19.235v-.11a6.375 6.375 0 0 1 12.75 0v.109A12.318 12.318 0 0 1 10.374 21c-2.331 0-4.512-.645-6.374-1.766Z"
                             />
                         </svg>
-                        Separate
+                        <span class="hidden sm:inline">Separate</span>
                     </Button>
                     <Button as-child :style="{ backgroundColor: primaryColor }">
                         <Link :href="`/employees/${employee.id}/edit`">
                             <svg
-                                class="mr-2 h-4 w-4"
+                                class="h-4 w-4 sm:mr-2"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -282,7 +282,7 @@ function handleSyncComplete() {
                                     d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"
                                 />
                             </svg>
-                            Edit
+                            <span class="hidden sm:inline">Edit</span>
                         </Link>
                     </Button>
                 </div>
@@ -294,7 +294,7 @@ function handleSyncComplete() {
             >
                 <!-- Profile Header -->
                 <div
-                    class="border-b border-slate-200 p-6 dark:border-slate-700"
+                    class="border-b border-slate-200 p-4 sm:p-6 dark:border-slate-700"
                 >
                     <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
                         <EmployeeAvatar
@@ -321,7 +321,7 @@ function handleSyncComplete() {
                                 {{ employee.department?.name || '-' }}
                             </p>
                             <div
-                                class="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-slate-500 dark:text-slate-400"
+                                class="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-slate-500 sm:gap-x-6 dark:text-slate-400"
                             >
                                 <span class="flex items-center gap-1.5">
                                     <svg
@@ -408,15 +408,16 @@ function handleSyncComplete() {
                 <!-- Tab Navigation -->
                 <div class="border-b border-slate-200 dark:border-slate-700">
                     <nav
-                        class="-mb-px flex overflow-x-auto px-6"
+                        class="-mb-px flex overflow-x-auto px-4 sm:px-6"
                         aria-label="Tabs"
                     >
                         <button
                             v-for="tab in tabs"
                             :key="tab.id"
                             @click="activeTab = tab.id"
+                            :title="tab.label"
                             :class="[
-                                'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors',
+                                'flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors sm:px-4',
                                 activeTab === tab.id
                                     ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
                                     : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300',
@@ -555,13 +556,13 @@ function handleSyncComplete() {
                                     d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                                 />
                             </svg>
-                            {{ tab.label }}
+                            <span class="hidden sm:inline">{{ tab.label }}</span>
                         </button>
                     </nav>
                 </div>
 
                 <!-- Tab Content -->
-                <div class="p-6">
+                <div class="p-4 sm:p-6">
                     <PersonalInfoTab
                         v-if="activeTab === 'personal'"
                         :employee="employee"
