@@ -29,6 +29,7 @@ interface DtrSummary {
     overtime: {
         total_overtime_hours: number;
         approved_overtime_hours: number;
+        denied_overtime_hours: number;
         pending_overtime_hours: number;
         overtime_days: number;
     };
@@ -111,6 +112,9 @@ defineProps<{
                 <div class="flex items-center gap-2 text-xs">
                     <span class="text-green-600 dark:text-green-400">
                         {{ summary.overtime.approved_overtime_hours.toFixed(1) }}h approved
+                    </span>
+                    <span v-if="summary.overtime.denied_overtime_hours > 0" class="text-red-600 dark:text-red-400">
+                        {{ summary.overtime.denied_overtime_hours.toFixed(1) }}h denied
                     </span>
                     <span v-if="summary.overtime.pending_overtime_hours > 0" class="text-amber-600 dark:text-amber-400">
                         {{ summary.overtime.pending_overtime_hours.toFixed(1) }}h pending

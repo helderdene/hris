@@ -50,6 +50,7 @@ class DtrPeriodAggregator
         $totalUndertimeMinutes = $records->sum('undertime_minutes');
         $totalOvertimeMinutes = $records->sum('overtime_minutes');
         $approvedOvertimeMinutes = $records->where('overtime_approved', true)->sum('overtime_minutes');
+        $deniedOvertimeMinutes = $records->where('overtime_denied', true)->sum('overtime_minutes');
         $totalNightDiffMinutes = $records->sum('night_diff_minutes');
 
         $lateDays = $records->where('late_minutes', '>', 0)->count();
@@ -92,8 +93,10 @@ class DtrPeriodAggregator
                 'total_overtime_hours' => round($totalOvertimeMinutes / 60, 2),
                 'approved_overtime_minutes' => $approvedOvertimeMinutes,
                 'approved_overtime_hours' => round($approvedOvertimeMinutes / 60, 2),
-                'pending_overtime_minutes' => $totalOvertimeMinutes - $approvedOvertimeMinutes,
-                'pending_overtime_hours' => round(($totalOvertimeMinutes - $approvedOvertimeMinutes) / 60, 2),
+                'denied_overtime_minutes' => $deniedOvertimeMinutes,
+                'denied_overtime_hours' => round($deniedOvertimeMinutes / 60, 2),
+                'pending_overtime_minutes' => $totalOvertimeMinutes - $approvedOvertimeMinutes - $deniedOvertimeMinutes,
+                'pending_overtime_hours' => round(($totalOvertimeMinutes - $approvedOvertimeMinutes - $deniedOvertimeMinutes) / 60, 2),
                 'overtime_days' => $overtimeDays,
             ],
             'night_differential' => [
