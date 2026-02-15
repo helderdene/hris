@@ -15,7 +15,7 @@ interface TimeConfiguration {
     start_time: string;
     end_time: string;
     saturday_end_time: string | null;
-    break: BreakConfig;
+    break?: BreakConfig | null;
 }
 
 const model = defineModel<TimeConfiguration>({ required: true });
@@ -52,6 +52,20 @@ const halfDaySaturday = computed({
     },
 });
 
+const includeBreak = computed({
+    get: () => model.value?.break != null,
+    set: (value) => {
+        if (model.value) {
+            model.value = {
+                ...model.value,
+                break: value
+                    ? { start_time: '12:00', duration_minutes: 60 }
+                    : null,
+            };
+        }
+    },
+});
+
 function toggleDay(day: string) {
     const currentDays = [...workDays.value];
     const index = currentDays.indexOf(day);
@@ -74,7 +88,7 @@ function updateField(field: keyof TimeConfiguration, value: any) {
 }
 
 function updateBreakField(field: keyof BreakConfig, value: any) {
-    if (model.value) {
+    if (model.value && model.value.break) {
         model.value = {
             ...model.value,
             break: { ...model.value.break, [field]: value },
@@ -167,12 +181,20 @@ function updateBreakField(field: keyof BreakConfig, value: any) {
         <div
             class="rounded-lg border border-slate-200 p-4 dark:border-slate-700"
         >
-            <h4
-                class="mb-4 text-sm font-medium text-slate-900 dark:text-slate-100"
-            >
-                Break Period
-            </h4>
-            <div class="grid gap-4 sm:grid-cols-2">
+            <div class="mb-4 flex items-center gap-3">
+                <Checkbox
+                    id="include_break"
+                    :checked="includeBreak"
+                    @update:checked="includeBreak = $event"
+                />
+                <Label
+                    for="include_break"
+                    class="cursor-pointer text-sm font-medium text-slate-900 dark:text-slate-100"
+                >
+                    Include Break
+                </Label>
+            </div>
+            <div v-if="includeBreak" class="grid gap-4 sm:grid-cols-2">
                 <!-- Break Start Time -->
                 <div class="space-y-2">
                     <Label for="break_start_time">Break Start Time</Label>
@@ -192,7 +214,7 @@ function updateBreakField(field: keyof BreakConfig, value: any) {
                     <Input
                         id="break_duration"
                         type="number"
-                        min="0"
+                        min="1"
                         max="120"
                         :model-value="model?.break?.duration_minutes || 60"
                         @update:model-value="
@@ -204,6 +226,12 @@ function updateBreakField(field: keyof BreakConfig, value: any) {
                     />
                 </div>
             </div>
+            <p
+                v-if="!includeBreak"
+                class="text-xs text-slate-500 dark:text-slate-400"
+            >
+                No break period will be deducted from working hours.
+            </p>
         </div>
     </div>
 </template>

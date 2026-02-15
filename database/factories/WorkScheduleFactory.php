@@ -211,6 +211,21 @@ class WorkScheduleFactory extends Factory
     }
 
     /**
+     * Configure schedule without any break period.
+     */
+    public function withoutBreaks(): static
+    {
+        return $this->state(function (array $attributes) {
+            $timeConfig = $attributes['time_configuration'] ?? [];
+            unset($timeConfig['break']);
+
+            return [
+                'time_configuration' => $timeConfig,
+            ];
+        });
+    }
+
+    /**
      * Configure schedule with half-day Saturday.
      */
     public function withHalfDaySaturday(): static

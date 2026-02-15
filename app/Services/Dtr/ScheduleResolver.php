@@ -232,8 +232,8 @@ class ScheduleResolver
             }
         }
 
-        // Default to 60 minutes
-        return 60;
+        // Default to no break if none configured
+        return 0;
     }
 
     /**

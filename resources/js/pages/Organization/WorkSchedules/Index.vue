@@ -193,9 +193,10 @@ function getTypicalScheduleDisplay(
         return {
             in: formatTime(firstShift.start_time),
             out: formatTime(firstShift.end_time),
-            break: firstShift.break
-                ? `${firstShift.break.duration_minutes} min`
-                : '30 min',
+            break:
+                firstShift.break && firstShift.break.duration_minutes
+                    ? `${firstShift.break.duration_minutes} min`
+                    : 'No break',
         };
     }
 
@@ -203,9 +204,10 @@ function getTypicalScheduleDisplay(
         return {
             in: formatTime(config.start_time),
             out: formatTime(config.end_time),
-            break: config.break
-                ? `${config.break.duration_minutes} min`
-                : '60 min',
+            break:
+                config.break && config.break.duration_minutes
+                    ? `${config.break.duration_minutes} min`
+                    : 'No break',
         };
     }
 
@@ -215,9 +217,10 @@ function getTypicalScheduleDisplay(
             out: formatTime(
                 config.flexible_start_window.latest.replace('10:00', '19:00'),
             ),
-            break: config.break
-                ? `${config.break.duration_minutes} min`
-                : '60 min',
+            break:
+                config.break && config.break.duration_minutes
+                    ? `${config.break.duration_minutes} min`
+                    : 'No break',
         };
     }
 

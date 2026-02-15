@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { computed } from 'vue';
@@ -13,7 +14,7 @@ interface Shift {
     name: string;
     start_time: string;
     end_time: string;
-    break?: BreakConfig;
+    break?: BreakConfig | null;
 }
 
 interface TimeConfiguration {
@@ -78,6 +79,26 @@ function updateShiftBreakField(
                 ...updatedShifts[index].break,
                 [field]: value,
             } as BreakConfig,
+        };
+        model.value = {
+            ...model.value,
+            shifts: updatedShifts,
+        };
+    }
+}
+
+function hasBreak(index: number): boolean {
+    return shifts.value[index]?.break != null;
+}
+
+function toggleShiftBreak(index: number, value: boolean) {
+    if (model.value) {
+        const updatedShifts = [...shifts.value];
+        updatedShifts[index] = {
+            ...updatedShifts[index],
+            break: value
+                ? { start_time: '12:00', duration_minutes: 30 }
+                : null,
         };
         model.value = {
             ...model.value,
@@ -200,10 +221,23 @@ function updateShiftBreakField(
 
                 <!-- Break Configuration -->
                 <div class="rounded-md bg-slate-50 p-3 dark:bg-slate-800/50">
-                    <Label class="mb-2 block text-xs font-medium"
-                        >Break Period</Label
+                    <div class="mb-2 flex items-center gap-3">
+                        <Checkbox
+                            :id="`shift_include_break_${index}`"
+                            :checked="hasBreak(index)"
+                            @update:checked="toggleShiftBreak(index, $event)"
+                        />
+                        <Label
+                            :for="`shift_include_break_${index}`"
+                            class="cursor-pointer text-xs font-medium"
+                        >
+                            Include Break
+                        </Label>
+                    </div>
+                    <div
+                        v-if="hasBreak(index)"
+                        class="grid gap-4 sm:grid-cols-2"
                     >
-                    <div class="grid gap-4 sm:grid-cols-2">
                         <div class="space-y-2">
                             <Label
                                 :for="`shift_break_start_${index}`"
@@ -234,7 +268,7 @@ function updateShiftBreakField(
                             <Input
                                 :id="`shift_break_duration_${index}`"
                                 type="number"
-                                min="0"
+                                min="1"
                                 max="120"
                                 :model-value="
                                     shift.break?.duration_minutes || 30
@@ -249,6 +283,12 @@ function updateShiftBreakField(
                             />
                         </div>
                     </div>
+                    <p
+                        v-if="!hasBreak(index)"
+                        class="text-xs text-slate-500 dark:text-slate-400"
+                    >
+                        No break period for this shift.
+                    </p>
                 </div>
             </div>
         </div>
