@@ -57,8 +57,17 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ];
 
+interface UnlinkedEmployee {
+    id: number;
+    employee_number: string;
+    full_name: string;
+    email: string;
+}
+
 const isInviteModalOpen = ref(false);
 const removingUserId = ref<number | null>(null);
+const unlinkedEmployees = ref<UnlinkedEmployee[]>([]);
+const loadingEmployees = ref(false);
 
 /**
  * Role badge styling configuration.
@@ -106,6 +115,34 @@ function formatDate(dateString: string | null): string {
         month: 'short',
         day: 'numeric',
     });
+}
+
+/**
+ * Fetches employees that are not linked to a user account.
+ */
+async function fetchUnlinkedEmployees() {
+    loadingEmployees.value = true;
+    try {
+        const response = await fetch('/api/employees/unlinked', {
+            headers: { Accept: 'application/json' },
+            credentials: 'same-origin',
+        });
+        if (response.ok) {
+            unlinkedEmployees.value = await response.json();
+        }
+    } catch {
+        unlinkedEmployees.value = [];
+    } finally {
+        loadingEmployees.value = false;
+    }
+}
+
+/**
+ * Opens the invite modal and fetches unlinked employees.
+ */
+function openInviteModal() {
+    isInviteModalOpen.value = true;
+    fetchUnlinkedEmployees();
 }
 
 /**
@@ -184,7 +221,7 @@ async function handleRemoveUser(user: TenantUser) {
                     </p>
                 </div>
                 <Button
-                    @click="isInviteModalOpen = true"
+                    @click="openInviteModal"
                     class="shrink-0"
                     :style="{ backgroundColor: primaryColor }"
                     data-test="invite-user-button"
@@ -536,7 +573,7 @@ async function handleRemoveUser(user: TenantUser) {
                     </p>
                     <div class="mt-6">
                         <Button
-                            @click="isInviteModalOpen = true"
+                            @click="openInviteModal"
                             :style="{ backgroundColor: primaryColor }"
                         >
                             <svg
@@ -564,6 +601,7 @@ async function handleRemoveUser(user: TenantUser) {
         <InviteUserModal
             v-model:open="isInviteModalOpen"
             :roles="roles"
+            :unlinked-employees="unlinkedEmployees"
             @success="handleInviteSuccess"
         />
 

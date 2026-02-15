@@ -13,19 +13,29 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 interface Role {
     value: string;
     label: string;
 }
 
+interface UnlinkedEmployee {
+    id: number;
+    employee_number: string;
+    full_name: string;
+    email: string;
+}
+
 interface Props {
     open: boolean;
     roles: Role[];
+    unlinkedEmployees?: UnlinkedEmployee[];
 }
 
-const props = defineProps<Props>();
+const props = withDefaults(defineProps<Props>(), {
+    unlinkedEmployees: () => [],
+});
 
 const emit = defineEmits<{
     (e: 'update:open', value: boolean): void;
@@ -36,11 +46,46 @@ const form = ref({
     email: '',
     name: '',
     role: 'employee',
+    employee_id: null as number | null,
+});
+
+const employeeSearch = ref('');
+const selectedEmployee = ref<UnlinkedEmployee | null>(null);
+
+const filteredEmployees = computed(() => {
+    if (!employeeSearch.value) {
+        return props.unlinkedEmployees;
+    }
+    const search = employeeSearch.value.toLowerCase();
+    return props.unlinkedEmployees.filter(
+        (emp) =>
+            emp.full_name.toLowerCase().includes(search) ||
+            emp.employee_number.toLowerCase().includes(search) ||
+            emp.email.toLowerCase().includes(search),
+    );
 });
 
 const errors = ref<Record<string, string>>({});
 const processing = ref(false);
 const recentlySuccessful = ref(false);
+
+/**
+ * Handles selecting an employee from the dropdown.
+ */
+const selectEmployee = (employee: UnlinkedEmployee | null) => {
+    selectedEmployee.value = employee;
+    employeeSearch.value = '';
+
+    if (employee) {
+        form.value.employee_id = employee.id;
+        form.value.name = employee.full_name;
+        form.value.email = employee.email;
+    } else {
+        form.value.employee_id = null;
+        form.value.name = '';
+        form.value.email = '';
+    }
+};
 
 /**
  * Handles the invite form submission.
@@ -112,7 +157,10 @@ const resetForm = () => {
         email: '',
         name: '',
         role: 'employee',
+        employee_id: null,
     };
+    selectedEmployee.value = null;
+    employeeSearch.value = '';
     errors.value = {};
 };
 
@@ -159,6 +207,102 @@ watch(
                 </DialogHeader>
 
                 <div class="space-y-4">
+                    <!-- Link to Employee (Optional) -->
+                    <div
+                        v-if="unlinkedEmployees.length > 0"
+                        class="grid gap-2"
+                    >
+                        <Label for="invite-employee">
+                            Link to Employee
+                            <span
+                                class="text-xs font-normal text-muted-foreground"
+                            >
+                                (optional)
+                            </span>
+                        </Label>
+
+                        <!-- Selected employee display -->
+                        <div
+                            v-if="selectedEmployee"
+                            class="flex items-center justify-between rounded-md border border-input bg-muted/50 px-3 py-2 text-sm"
+                            data-test="selected-employee"
+                        >
+                            <div>
+                                <span class="font-medium">{{
+                                    selectedEmployee.full_name
+                                }}</span>
+                                <span class="ml-2 text-muted-foreground">
+                                    ({{ selectedEmployee.employee_number }})
+                                </span>
+                            </div>
+                            <button
+                                type="button"
+                                class="ml-2 text-muted-foreground hover:text-foreground"
+                                @click="selectEmployee(null)"
+                                data-test="clear-employee-button"
+                            >
+                                <svg
+                                    class="h-4 w-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke-width="2"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        d="M6 18 18 6M6 6l12 12"
+                                    />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Search & select dropdown -->
+                        <div v-else class="relative">
+                            <Input
+                                id="invite-employee"
+                                type="text"
+                                v-model="employeeSearch"
+                                placeholder="Search employees by name, number, or email..."
+                                autocomplete="off"
+                                data-test="employee-search-input"
+                            />
+                            <div
+                                v-if="
+                                    employeeSearch ||
+                                    unlinkedEmployees.length <= 10
+                                "
+                                class="absolute top-full right-0 left-0 z-10 mt-1 max-h-48 overflow-y-auto rounded-md border border-input bg-popover shadow-md"
+                                data-test="employee-dropdown"
+                            >
+                                <button
+                                    v-for="emp in filteredEmployees"
+                                    :key="emp.id"
+                                    type="button"
+                                    class="flex w-full flex-col px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                                    @click="selectEmployee(emp)"
+                                    :data-test="`employee-option-${emp.id}`"
+                                >
+                                    <span class="font-medium">{{
+                                        emp.full_name
+                                    }}</span>
+                                    <span class="text-xs text-muted-foreground">
+                                        {{ emp.employee_number }} &middot;
+                                        {{ emp.email }}
+                                    </span>
+                                </button>
+                                <div
+                                    v-if="filteredEmployees.length === 0"
+                                    class="px-3 py-2 text-sm text-muted-foreground"
+                                >
+                                    No matching employees found.
+                                </div>
+                            </div>
+                        </div>
+                        <InputError :message="errors.employee_id" />
+                    </div>
+
                     <!-- Name Field -->
                     <div class="grid gap-2">
                         <Label for="invite-name">Name</Label>
@@ -169,6 +313,10 @@ watch(
                             placeholder="John Doe"
                             autocomplete="name"
                             required
+                            :readonly="!!selectedEmployee"
+                            :class="{
+                                'bg-muted/50': !!selectedEmployee,
+                            }"
                             data-test="invite-name-input"
                         />
                         <InputError :message="errors.name" />
@@ -184,6 +332,10 @@ watch(
                             placeholder="john@example.com"
                             autocomplete="email"
                             required
+                            :readonly="!!selectedEmployee"
+                            :class="{
+                                'bg-muted/50': !!selectedEmployee,
+                            }"
                             data-test="invite-email-input"
                         />
                         <InputError :message="errors.email" />

@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 class UserInvitation extends Notification
 {
@@ -37,15 +38,22 @@ class UserInvitation extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $acceptUrl = $this->getAcceptUrl();
+        $primaryColor = $this->tenant->primary_color ?? '#111827';
+        $logoUrl = $this->tenant->logo_path
+            ? Storage::disk('public')->url($this->tenant->logo_path)
+            : null;
 
         return (new MailMessage)
             ->subject("You've been invited to join {$this->tenant->name}")
-            ->greeting("Hello {$notifiable->name}!")
-            ->line("{$this->inviter->name} has invited you to join {$this->tenant->name} on ".config('app.name').'.')
-            ->line('Click the button below to set your password and activate your account.')
-            ->action('Accept Invitation', $acceptUrl)
-            ->line('This invitation will expire in 7 days.')
-            ->line('If you did not expect this invitation, you can safely ignore this email.');
+            ->view('emails.invitation', [
+                'subject' => "You've been invited to join {$this->tenant->name}",
+                'userName' => $notifiable->name,
+                'inviterName' => $this->inviter->name,
+                'tenantName' => $this->tenant->name,
+                'acceptUrl' => $acceptUrl,
+                'primaryColor' => $primaryColor,
+                'logoUrl' => $logoUrl,
+            ]);
     }
 
     /**

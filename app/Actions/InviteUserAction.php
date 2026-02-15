@@ -3,6 +3,7 @@
 namespace App\Actions;
 
 use App\Enums\TenantUserRole;
+use App\Models\Employee;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Notifications\UserInvitation;
@@ -22,7 +23,8 @@ class InviteUserAction
         string $name,
         TenantUserRole $role,
         int $tenantId,
-        int $inviterId
+        int $inviterId,
+        ?int $employeeId = null,
     ): User {
         // Find or create the user
         $user = User::firstOrCreate(
@@ -56,6 +58,13 @@ class InviteUserAction
         // Get tenant and inviter for notification
         $tenant = Tenant::findOrFail($tenantId);
         $inviter = User::findOrFail($inviterId);
+
+        // Link employee to user if provided
+        if ($employeeId !== null) {
+            Employee::where('id', $employeeId)
+                ->whereNull('user_id')
+                ->update(['user_id' => $user->id]);
+        }
 
         // Send invitation notification
         $user->notify(new UserInvitation($tenant, $inviter, $token));

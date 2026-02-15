@@ -76,6 +76,9 @@ Route::post('/password/confirm', [PasswordConfirmationController::class, 'store'
 Route::get('/users', [TenantUserController::class, 'index'])
     ->name('api.tenant.users.index');
 
+Route::get('/employees/unlinked', [TenantUserController::class, 'unlinkedEmployees'])
+    ->name('api.tenant.employees.unlinked');
+
 Route::post('/users/invite', [TenantUserController::class, 'invite'])
     ->name('api.tenant.users.invite');
 

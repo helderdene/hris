@@ -5,12 +5,14 @@ use App\Enums\TenantUserRole;
 use App\Http\Controllers\Api\TenantUserController;
 use App\Http\Requests\InviteUserRequest;
 use App\Http\Requests\UpdateTenantUserRequest;
+use App\Models\Employee;
 use App\Models\Tenant;
 use App\Models\TenantUser;
 use App\Models\User;
 use App\Notifications\UserInvitation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Validator;
@@ -90,6 +92,12 @@ function createUpdateRequest(array $data, User $user, int $userId): UpdateTenant
 
 beforeEach(function () {
     config(['app.main_domain' => 'kasamahr.test']);
+
+    // Run tenant-specific migrations for employee-related tests
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
 });
 
 describe('Tenant User Management API', function () {
@@ -334,5 +342,118 @@ describe('Tenant User Management API', function () {
 
         expect($validator->fails())->toBeTrue();
         expect($validator->errors()->has('email'))->toBeTrue();
+    });
+
+    it('returns unlinked employees via API', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantToApp($tenant);
+
+        $admin = createUserInTenant($tenant, TenantUserRole::Admin);
+
+        // Create employees: 2 unlinked with email, 1 linked
+        $unlinked1 = Employee::factory()->create(['user_id' => null, 'email' => 'emp1@example.com']);
+        $unlinked2 = Employee::factory()->create(['user_id' => null, 'email' => 'emp2@example.com']);
+        Employee::factory()->withUser()->create(['email' => 'linked@example.com']);
+
+        $this->actingAs($admin);
+
+        $controller = new TenantUserController;
+        $response = $controller->unlinkedEmployees();
+
+        $data = json_decode($response->getContent(), true);
+
+        expect($data)->toHaveCount(2);
+        expect(collect($data)->pluck('id')->toArray())
+            ->toContain($unlinked1->id)
+            ->toContain($unlinked2->id);
+
+        // Verify structure
+        expect($data[0])->toHaveKeys(['id', 'employee_number', 'full_name', 'email']);
+    });
+
+    it('allows inviting with employee_id to link employee', function () {
+        Notification::fake();
+
+        $tenant = Tenant::factory()->create();
+        bindTenantToApp($tenant);
+
+        $admin = createUserInTenant($tenant, TenantUserRole::Admin);
+        $employee = Employee::factory()->create([
+            'user_id' => null,
+            'first_name' => 'Jane',
+            'last_name' => 'Doe',
+            'email' => 'jane@example.com',
+        ]);
+
+        $this->actingAs($admin);
+
+        $action = new InviteUserAction;
+        $user = $action->execute(
+            email: 'jane@example.com',
+            name: 'Jane Doe',
+            role: TenantUserRole::Employee,
+            tenantId: $tenant->id,
+            inviterId: $admin->id,
+            employeeId: $employee->id,
+        );
+
+        expect($user)->toBeInstanceOf(User::class);
+
+        // Verify employee is now linked
+        $employee->refresh();
+        expect($employee->user_id)->toBe($user->id);
+
+        Notification::assertSentTo($user, UserInvitation::class);
+    });
+
+    it('allows inviting without employee_id (existing behavior)', function () {
+        Notification::fake();
+
+        $tenant = Tenant::factory()->create();
+        bindTenantToApp($tenant);
+
+        $admin = createUserInTenant($tenant, TenantUserRole::Admin);
+
+        $this->actingAs($admin);
+
+        $action = new InviteUserAction;
+        $user = $action->execute(
+            email: 'nolink@example.com',
+            name: 'No Link',
+            role: TenantUserRole::Employee,
+            tenantId: $tenant->id,
+            inviterId: $admin->id,
+        );
+
+        expect($user)->toBeInstanceOf(User::class);
+        expect($user->email)->toBe('nolink@example.com');
+
+        // Verify no employees were linked
+        expect(Employee::where('user_id', $user->id)->exists())->toBeFalse();
+
+        Notification::assertSentTo($user, UserInvitation::class);
+    });
+
+    it('validates employee_id rejects already linked employee', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantToApp($tenant);
+
+        $admin = createUserInTenant($tenant, TenantUserRole::Admin);
+        $linkedEmployee = Employee::factory()->withUser()->create();
+
+        $this->actingAs($admin);
+
+        $inviteRequest = new InviteUserRequest;
+        $rules = $inviteRequest->rules();
+
+        $validator = validator([
+            'email' => 'new@example.com',
+            'name' => 'New User',
+            'role' => TenantUserRole::Employee->value,
+            'employee_id' => $linkedEmployee->id,
+        ], $rules);
+
+        expect($validator->fails())->toBeTrue();
+        expect($validator->errors()->has('employee_id'))->toBeTrue();
     });
 });

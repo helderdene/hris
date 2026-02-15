@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\InviteUserRequest;
 use App\Http\Requests\UpdateTenantUserRequest;
 use App\Http\Resources\TenantUserResource;
+use App\Models\Employee;
 use App\Models\TenantUser;
 use App\Models\User;
 use App\Notifications\NewHireAccountSetup;
@@ -36,6 +37,30 @@ class TenantUserController extends Controller
     }
 
     /**
+     * List employees that are not linked to any user account.
+     */
+    public function unlinkedEmployees(): JsonResponse
+    {
+        Gate::authorize('can-manage-users');
+
+        $employees = Employee::query()
+            ->whereNull('user_id')
+            ->whereNotNull('email')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get(['id', 'employee_number', 'first_name', 'middle_name', 'last_name', 'suffix', 'email']);
+
+        $data = $employees->map(fn (Employee $employee) => [
+            'id' => $employee->id,
+            'employee_number' => $employee->employee_number,
+            'full_name' => $employee->full_name,
+            'email' => $employee->email,
+        ]);
+
+        return response()->json($data);
+    }
+
+    /**
      * Invite a new user to the current tenant.
      */
     public function invite(InviteUserRequest $request): JsonResponse
@@ -51,7 +76,8 @@ class TenantUserController extends Controller
             name: $request->validated('name'),
             role: TenantUserRole::from($request->validated('role')),
             tenantId: $tenant->id,
-            inviterId: $inviter->id
+            inviterId: $inviter->id,
+            employeeId: $request->validated('employee_id'),
         );
 
         // Reload user with pivot data for the resource

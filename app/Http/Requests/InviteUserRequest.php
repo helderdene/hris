@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Enums\TenantUserRole;
+use App\Models\Employee;
 use App\Models\TenantUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules\Enum;
@@ -51,6 +52,27 @@ class InviteUserRequest extends FormRequest
             ],
             'name' => ['required', 'string', 'max:255'],
             'role' => ['required', new Enum(TenantUserRole::class)],
+            'employee_id' => [
+                'nullable',
+                'integer',
+                function (string $attribute, mixed $value, \Closure $fail) {
+                    if ($value === null) {
+                        return;
+                    }
+
+                    $employee = Employee::find($value);
+
+                    if ($employee === null) {
+                        $fail('The selected employee is invalid.');
+
+                        return;
+                    }
+
+                    if ($employee->user_id !== null) {
+                        $fail('This employee is already linked to a user account.');
+                    }
+                },
+            ],
         ];
     }
 
