@@ -25,6 +25,7 @@ import DocumentsTab from './Tabs/DocumentsTab.vue';
 import EmploymentTab from './Tabs/EmploymentTab.vue';
 import GovernmentIdsTab from './Tabs/GovernmentIdsTab.vue';
 import PersonalInfoTab from './Tabs/PersonalInfoTab.vue';
+import ScheduleHistoryTab from './Tabs/ScheduleHistoryTab.vue';
 
 interface Position {
     id: number;
@@ -124,6 +125,16 @@ const props = defineProps<{
     workLocations?: WorkLocationOption[];
     supervisorOptions?: SupervisorOption[];
     assignmentHistory?: EmployeeAssignmentHistory[];
+    scheduleHistory?: {
+        id: number;
+        schedule_name: string | null;
+        schedule_type: string | null;
+        shift_name: string | null;
+        effective_date: string;
+        end_date: string | null;
+        is_current: boolean;
+        is_upcoming: boolean;
+    }[];
     syncStatuses?: EmployeeDeviceSync[];
 }>();
 
@@ -145,6 +156,7 @@ type TabId =
     | 'government-ids'
     | 'contact'
     | 'documents'
+    | 'schedule-history'
     | 'assignment-history';
 
 const activeTab = ref<TabId>('personal');
@@ -156,6 +168,11 @@ const tabs = [
     { id: 'government-ids' as TabId, label: 'Government IDs', icon: 'card' },
     { id: 'contact' as TabId, label: 'Contact', icon: 'location' },
     { id: 'documents' as TabId, label: 'Documents', icon: 'file' },
+    {
+        id: 'schedule-history' as TabId,
+        label: 'Schedule History',
+        icon: 'clock',
+    },
     {
         id: 'assignment-history' as TabId,
         label: 'Assignment History',
@@ -506,6 +523,22 @@ function handleSyncComplete() {
                                     d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
                                 />
                             </svg>
+                            <!-- Clock icon -->
+                            <svg
+                                v-if="tab.icon === 'clock'"
+                                class="h-4 w-4"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"
+                                />
+                            </svg>
                             <!-- History icon -->
                             <svg
                                 v-if="tab.icon === 'history'"
@@ -554,6 +587,17 @@ function handleSyncComplete() {
                         v-if="activeTab === 'documents'"
                         :employee="employee"
                     />
+                    <Deferred
+                        v-if="activeTab === 'schedule-history'"
+                        data="scheduleHistory"
+                    >
+                        <template #fallback>
+                            <ScheduleHistoryTab :loading="true" />
+                        </template>
+                        <ScheduleHistoryTab
+                            :history="scheduleHistory"
+                        />
+                    </Deferred>
                     <Deferred
                         v-if="activeTab === 'assignment-history'"
                         data="assignmentHistory"

@@ -67,6 +67,7 @@ import {
     Users,
     UsersRound,
     CalendarCheck,
+    CalendarClock,
 } from 'lucide-vue-next';
 import { computed, ref, watch, type Component, onMounted } from 'vue';
 
@@ -342,6 +343,11 @@ const selfServiceItems = computed(() => {
             title: 'My DTR',
             href: '/my/dtr',
             icon: Clock,
+        },
+        {
+            title: 'My Schedule',
+            href: '/my/schedule',
+            icon: CalendarClock,
         },
         {
             title: 'My Leave',

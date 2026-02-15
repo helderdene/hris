@@ -179,6 +179,39 @@ class EmployeeController extends Controller
 
                 return EmployeeAssignmentHistoryResource::collection($history);
             }),
+            // Deferred prop for schedule history - lazy loaded when accessed
+            'scheduleHistory' => Inertia::defer(function () use ($employeeId) {
+                $employeeModel = Employee::find($employeeId);
+                if (! $employeeModel) {
+                    return [];
+                }
+
+                $today = now()->toDateString();
+
+                return $employeeModel->scheduleAssignments()
+                    ->with('workSchedule')
+                    ->orderBy('effective_date', 'desc')
+                    ->get()
+                    ->map(function ($assignment) use ($today) {
+                        $effectiveDate = $assignment->effective_date->toDateString();
+                        $endDate = $assignment->end_date?->toDateString();
+
+                        $isCurrent = $effectiveDate <= $today
+                            && ($endDate === null || $endDate >= $today);
+                        $isUpcoming = $effectiveDate > $today;
+
+                        return [
+                            'id' => $assignment->id,
+                            'schedule_name' => $assignment->workSchedule?->name,
+                            'schedule_type' => $assignment->workSchedule?->schedule_type?->label(),
+                            'shift_name' => $assignment->shift_name,
+                            'effective_date' => $effectiveDate,
+                            'end_date' => $endDate,
+                            'is_current' => $isCurrent,
+                            'is_upcoming' => $isUpcoming,
+                        ];
+                    });
+            }),
             // Sync statuses for biometric devices
             'syncStatuses' => EmployeeDeviceSyncResource::collection(
                 EmployeeDeviceSync::where('employee_id', $employeeId)

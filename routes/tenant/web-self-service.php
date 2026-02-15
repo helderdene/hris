@@ -6,6 +6,7 @@ use App\Http\Controllers\My\MyCertificationPageController;
 use App\Http\Controllers\My\MyDtrController;
 use App\Http\Controllers\My\MyLoanApplicationController;
 use App\Http\Controllers\My\MyLoanController;
+use App\Http\Controllers\My\MyScheduleController;
 use App\Http\Controllers\My\PayslipPageController;
 use App\Http\Controllers\My\SelfServiceDashboardController;
 use App\Http\Controllers\MyTrainingController;
@@ -28,6 +29,10 @@ Route::prefix('my')->group(function () {
     // DTR
     Route::get('/dtr', MyDtrController::class)
         ->name('my.dtr');
+
+    // Schedule
+    Route::get('/schedule', MyScheduleController::class)
+        ->name('my.schedule');
 
     // Payslips
     Route::get('/payslips', [PayslipPageController::class, 'index'])
