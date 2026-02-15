@@ -183,6 +183,47 @@ class DailyTimeRecordController extends Controller
     }
 
     /**
+     * Deny overtime for a specific DTR record.
+     */
+    public function denyOvertime(DailyTimeRecord $dailyTimeRecord): JsonResponse
+    {
+        if ($dailyTimeRecord->overtime_minutes === 0) {
+            return response()->json([
+                'message' => 'No overtime to deny for this record.',
+            ], 422);
+        }
+
+        $dailyTimeRecord->update([
+            'overtime_approved' => false,
+            'overtime_denied' => true,
+        ]);
+
+        return response()->json([
+            'message' => 'Overtime denied successfully.',
+            'data' => new DailyTimeRecordResource($dailyTimeRecord->fresh()),
+        ]);
+    }
+
+    /**
+     * Update remarks for a specific DTR record.
+     */
+    public function updateRemarks(Request $request, DailyTimeRecord $dailyTimeRecord): JsonResponse
+    {
+        $validated = $request->validate([
+            'remarks' => 'nullable|string|max:1000',
+        ]);
+
+        $dailyTimeRecord->update([
+            'remarks' => $validated['remarks'],
+        ]);
+
+        return response()->json([
+            'message' => 'Remarks updated successfully.',
+            'data' => new DailyTimeRecordResource($dailyTimeRecord->fresh()),
+        ]);
+    }
+
+    /**
      * Resolve review flag for a DTR record.
      */
     public function resolveReview(ResolveDtrReviewRequest $request, DailyTimeRecord $dailyTimeRecord): JsonResponse

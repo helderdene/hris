@@ -44,6 +44,7 @@ class DailyTimeRecordFactory extends Factory
             'undertime_minutes' => 0,
             'overtime_minutes' => 0,
             'overtime_approved' => false,
+            'overtime_denied' => false,
             'night_diff_minutes' => 0,
             'remarks' => null,
             'needs_review' => false,

@@ -14,8 +14,9 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { ArrowLeft, ChevronDown, ChevronUp, Download, FileSpreadsheet, FileText } from 'lucide-vue-next';
-import { ref, watch } from 'vue';
+import { ArrowLeft, Check, ChevronDown, ChevronUp, Download, FileSpreadsheet, FileText, MessageSquare, Pencil, X } from 'lucide-vue-next';
+import { ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface Punch {
     id: number;
@@ -45,6 +46,7 @@ interface DtrRecord {
     overtime_minutes: number;
     overtime_formatted: string;
     overtime_approved: boolean;
+    overtime_denied: boolean;
     night_diff_minutes: number;
     needs_review: boolean;
     review_reason: string | null;
@@ -168,6 +170,103 @@ function exportDtr(format: 'xlsx' | 'pdf') {
         params.set('date_to', dateTo.value);
     }
     window.location.href = `/time-attendance/dtr/${props.employee.id}/export?${params.toString()}`;
+}
+
+// Review action state
+const actionLoading = ref<Record<number, string>>({});
+const editingRemarks = ref<Record<number, boolean>>({});
+const remarksInput = ref<Record<number, string>>({});
+const resolveRemarks = ref<Record<number, string>>({});
+
+function getCsrfToken(): string {
+    return decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
+}
+
+async function apiPost(url: string, body: Record<string, unknown> = {}): Promise<{ success: boolean; message?: string }> {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-XSRF-TOKEN': getCsrfToken(),
+        },
+        body: JSON.stringify(body),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.message || 'An error occurred.');
+    }
+
+    return result;
+}
+
+async function approveOvertime(recordId: number) {
+    actionLoading.value[recordId] = 'approve-ot';
+    try {
+        const result = await apiPost(`/api/time-attendance/dtr/record/${recordId}/approve-overtime`);
+        toast.success(result.message);
+        router.reload({ preserveScroll: true });
+    } catch (error: unknown) {
+        toast.error(error instanceof Error ? error.message : 'Failed to approve overtime.');
+    } finally {
+        delete actionLoading.value[recordId];
+    }
+}
+
+async function denyOvertime(recordId: number) {
+    actionLoading.value[recordId] = 'deny-ot';
+    try {
+        const result = await apiPost(`/api/time-attendance/dtr/record/${recordId}/deny-overtime`);
+        toast.success(result.message);
+        router.reload({ preserveScroll: true });
+    } catch (error: unknown) {
+        toast.error(error instanceof Error ? error.message : 'Failed to deny overtime.');
+    } finally {
+        delete actionLoading.value[recordId];
+    }
+}
+
+function startEditRemarks(record: DtrRecord) {
+    editingRemarks.value[record.id] = true;
+    remarksInput.value[record.id] = record.remarks || '';
+}
+
+function cancelEditRemarks(recordId: number) {
+    editingRemarks.value[recordId] = false;
+    delete remarksInput.value[recordId];
+}
+
+async function saveRemarks(recordId: number) {
+    actionLoading.value[recordId] = 'remarks';
+    try {
+        const result = await apiPost(`/api/time-attendance/dtr/record/${recordId}/remarks`, {
+            remarks: remarksInput.value[recordId] || null,
+        });
+        toast.success(result.message);
+        editingRemarks.value[recordId] = false;
+        router.reload({ preserveScroll: true });
+    } catch (error: unknown) {
+        toast.error(error instanceof Error ? error.message : 'Failed to save remarks.');
+    } finally {
+        delete actionLoading.value[recordId];
+    }
+}
+
+async function resolveReview(recordId: number) {
+    actionLoading.value[recordId] = 'resolve';
+    try {
+        const result = await apiPost(`/api/time-attendance/dtr/record/${recordId}/resolve-review`, {
+            remarks: resolveRemarks.value[recordId] || null,
+        });
+        toast.success(result.message);
+        delete resolveRemarks.value[recordId];
+        router.reload({ preserveScroll: true });
+    } catch (error: unknown) {
+        toast.error(error instanceof Error ? error.message : 'Failed to resolve review.');
+    } finally {
+        delete actionLoading.value[recordId];
+    }
 }
 </script>
 
@@ -329,6 +428,18 @@ function exportDtr(format: 'xlsx' | 'pdf') {
                                             >
                                                 OK
                                             </span>
+                                            <span
+                                                v-else-if="record.overtime_denied"
+                                                class="inline-flex items-center rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                                            >
+                                                Denied
+                                            </span>
+                                            <span
+                                                v-else
+                                                class="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
+                                            >
+                                                Pending
+                                            </span>
                                         </div>
                                         <span v-else class="text-sm text-slate-400">-</span>
                                     </td>
@@ -339,19 +450,110 @@ function exportDtr(format: 'xlsx' | 'pdf') {
                                         <span v-else class="text-sm text-slate-400">-</span>
                                     </td>
                                 </tr>
-                                <!-- Expanded Row with Punch Timeline -->
+                                <!-- Expanded Row with Punch Timeline & Actions -->
                                 <tr v-if="expandedRows.has(record.id)">
-                                    <td colspan="10" class="px-4 py-4 bg-slate-50 dark:bg-slate-800/30">
-                                        <div class="flex flex-col gap-3">
-                                            <div v-if="record.needs_review" class="flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
-                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <td colspan="10" class="bg-slate-50 px-4 py-4 dark:bg-slate-800/30">
+                                        <div class="flex flex-col gap-4">
+                                            <!-- Review Warning -->
+                                            <div v-if="record.needs_review" class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
+                                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                                 </svg>
-                                                <span>{{ record.review_reason }}</span>
+                                                <div class="flex grow flex-col gap-2">
+                                                    <span class="text-sm font-medium text-amber-700 dark:text-amber-400">{{ record.review_reason }}</span>
+                                                    <div class="flex items-end gap-2">
+                                                        <textarea
+                                                            v-model="resolveRemarks[record.id]"
+                                                            placeholder="Add remarks (optional)..."
+                                                            rows="2"
+                                                            class="grow rounded-md border border-amber-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-amber-700 dark:bg-slate-800 dark:text-slate-100"
+                                                            @click.stop
+                                                        />
+                                                        <Button
+                                                            size="sm"
+                                                            class="shrink-0 bg-amber-600 text-white hover:bg-amber-700"
+                                                            :disabled="actionLoading[record.id] === 'resolve'"
+                                                            @click.stop="resolveReview(record.id)"
+                                                        >
+                                                            <Check class="mr-1 h-3.5 w-3.5" />
+                                                            {{ actionLoading[record.id] === 'resolve' ? 'Resolving...' : 'Resolve Review' }}
+                                                        </Button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div v-if="record.remarks" class="text-sm text-slate-600 dark:text-slate-400">
-                                                <span class="font-medium">Remarks:</span> {{ record.remarks }}
+
+                                            <!-- Overtime Actions -->
+                                            <div
+                                                v-if="record.overtime_minutes > 0 && !record.overtime_approved && !record.overtime_denied"
+                                                class="flex items-center gap-3 rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-slate-800"
+                                            >
+                                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                                    Overtime: {{ record.overtime_formatted }}
+                                                </span>
+                                                <div class="flex gap-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="default"
+                                                        class="bg-green-600 text-white hover:bg-green-700"
+                                                        :disabled="!!actionLoading[record.id]"
+                                                        @click.stop="approveOvertime(record.id)"
+                                                    >
+                                                        <Check class="mr-1 h-3.5 w-3.5" />
+                                                        {{ actionLoading[record.id] === 'approve-ot' ? 'Approving...' : 'Approve OT' }}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        :disabled="!!actionLoading[record.id]"
+                                                        @click.stop="denyOvertime(record.id)"
+                                                    >
+                                                        <X class="mr-1 h-3.5 w-3.5" />
+                                                        {{ actionLoading[record.id] === 'deny-ot' ? 'Denying...' : 'Deny OT' }}
+                                                    </Button>
+                                                </div>
                                             </div>
+
+                                            <!-- Remarks Section -->
+                                            <div class="flex flex-col gap-1.5">
+                                                <div v-if="!editingRemarks[record.id]" class="flex items-start gap-2">
+                                                    <MessageSquare class="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                                                    <div class="flex grow items-start justify-between gap-2">
+                                                        <p v-if="record.remarks" class="text-sm text-slate-600 dark:text-slate-400">
+                                                            {{ record.remarks }}
+                                                        </p>
+                                                        <p v-else class="text-sm italic text-slate-400 dark:text-slate-500">No remarks</p>
+                                                        <button
+                                                            class="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600 dark:hover:bg-slate-700 dark:hover:text-slate-300"
+                                                            @click.stop="startEditRemarks(record)"
+                                                        >
+                                                            <Pencil class="h-3.5 w-3.5" />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <div v-else class="flex items-end gap-2" @click.stop>
+                                                    <textarea
+                                                        v-model="remarksInput[record.id]"
+                                                        placeholder="Enter remarks..."
+                                                        rows="2"
+                                                        class="grow rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+                                                    />
+                                                    <div class="flex shrink-0 gap-1">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="default"
+                                                            :disabled="actionLoading[record.id] === 'remarks'"
+                                                            @click.stop="saveRemarks(record.id)"
+                                                        >
+                                                            {{ actionLoading[record.id] === 'remarks' ? 'Saving...' : 'Save' }}
+                                                        </Button>
+                                                        <Button size="sm" variant="ghost" @click.stop="cancelEditRemarks(record.id)">
+                                                            Cancel
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Punch Timeline -->
                                             <PunchTimeline v-if="record.punches && record.punches.length > 0" :punches="record.punches" />
                                             <div v-else class="text-sm text-slate-500 dark:text-slate-400">
                                                 No punch records for this day.
@@ -410,13 +612,102 @@ function exportDtr(format: 'xlsx' | 'pdf') {
                             </div>
                         </div>
                         <!-- Expanded Content -->
-                        <div v-if="expandedRows.has(record.id)" class="mt-4 rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
-                            <div v-if="record.needs_review" class="mb-2 flex items-center gap-2 text-sm text-amber-600 dark:text-amber-400">
-                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                </svg>
-                                <span>{{ record.review_reason }}</span>
+                        <div v-if="expandedRows.has(record.id)" class="mt-4 flex flex-col gap-3 rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
+                            <!-- Review Warning (Mobile) -->
+                            <div v-if="record.needs_review" class="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 dark:border-amber-800 dark:bg-amber-900/20">
+                                <div class="flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-400">
+                                    <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    {{ record.review_reason }}
+                                </div>
+                                <textarea
+                                    v-model="resolveRemarks[record.id]"
+                                    placeholder="Remarks (optional)..."
+                                    rows="2"
+                                    class="w-full rounded-md border border-amber-300 bg-white px-3 py-1.5 text-sm dark:border-amber-700 dark:bg-slate-800 dark:text-slate-100"
+                                    @click.stop
+                                />
+                                <Button
+                                    size="sm"
+                                    class="w-full bg-amber-600 text-white hover:bg-amber-700"
+                                    :disabled="actionLoading[record.id] === 'resolve'"
+                                    @click.stop="resolveReview(record.id)"
+                                >
+                                    <Check class="mr-1 h-3.5 w-3.5" />
+                                    {{ actionLoading[record.id] === 'resolve' ? 'Resolving...' : 'Resolve Review' }}
+                                </Button>
                             </div>
+
+                            <!-- Overtime Actions (Mobile) -->
+                            <div
+                                v-if="record.overtime_minutes > 0 && !record.overtime_approved && !record.overtime_denied"
+                                class="flex flex-col gap-2 rounded-lg border border-slate-200 bg-white p-2.5 dark:border-slate-700 dark:bg-slate-900"
+                            >
+                                <span class="text-sm font-medium text-slate-700 dark:text-slate-300">
+                                    Overtime: {{ record.overtime_formatted }}
+                                </span>
+                                <div class="flex gap-2">
+                                    <Button
+                                        size="sm"
+                                        class="grow bg-green-600 text-white hover:bg-green-700"
+                                        :disabled="!!actionLoading[record.id]"
+                                        @click.stop="approveOvertime(record.id)"
+                                    >
+                                        <Check class="mr-1 h-3.5 w-3.5" />
+                                        {{ actionLoading[record.id] === 'approve-ot' ? 'Approving...' : 'Approve' }}
+                                    </Button>
+                                    <Button
+                                        size="sm"
+                                        variant="destructive"
+                                        class="grow"
+                                        :disabled="!!actionLoading[record.id]"
+                                        @click.stop="denyOvertime(record.id)"
+                                    >
+                                        <X class="mr-1 h-3.5 w-3.5" />
+                                        {{ actionLoading[record.id] === 'deny-ot' ? 'Denying...' : 'Deny' }}
+                                    </Button>
+                                </div>
+                            </div>
+
+                            <!-- Remarks (Mobile) -->
+                            <div class="flex flex-col gap-1.5">
+                                <div v-if="!editingRemarks[record.id]" class="flex items-start gap-2">
+                                    <MessageSquare class="mt-0.5 h-4 w-4 shrink-0 text-slate-400" />
+                                    <div class="flex grow items-start justify-between gap-2">
+                                        <p v-if="record.remarks" class="text-sm text-slate-600 dark:text-slate-400">{{ record.remarks }}</p>
+                                        <p v-else class="text-sm italic text-slate-400">No remarks</p>
+                                        <button
+                                            class="shrink-0 rounded p-1 text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
+                                            @click.stop="startEditRemarks(record)"
+                                        >
+                                            <Pencil class="h-3.5 w-3.5" />
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-else class="flex flex-col gap-2" @click.stop>
+                                    <textarea
+                                        v-model="remarksInput[record.id]"
+                                        placeholder="Enter remarks..."
+                                        rows="2"
+                                        class="w-full rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm dark:border-slate-600 dark:bg-slate-900 dark:text-slate-100"
+                                    />
+                                    <div class="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            class="grow"
+                                            :disabled="actionLoading[record.id] === 'remarks'"
+                                            @click.stop="saveRemarks(record.id)"
+                                        >
+                                            {{ actionLoading[record.id] === 'remarks' ? 'Saving...' : 'Save' }}
+                                        </Button>
+                                        <Button size="sm" variant="ghost" class="grow" @click.stop="cancelEditRemarks(record.id)">
+                                            Cancel
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+
                             <PunchTimeline v-if="record.punches && record.punches.length > 0" :punches="record.punches" />
                             <div v-else class="text-sm text-slate-500">No punch records.</div>
                         </div>

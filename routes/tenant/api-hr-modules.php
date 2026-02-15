@@ -37,6 +37,10 @@ Route::prefix('time-attendance')->group(function () {
         ->name('api.dtr.approve-overtime');
     Route::post('/dtr/record/{dailyTimeRecord}/resolve-review', [DailyTimeRecordController::class, 'resolveReview'])
         ->name('api.dtr.resolve-review');
+    Route::post('/dtr/record/{dailyTimeRecord}/deny-overtime', [DailyTimeRecordController::class, 'denyOvertime'])
+        ->name('api.dtr.deny-overtime');
+    Route::post('/dtr/record/{dailyTimeRecord}/remarks', [DailyTimeRecordController::class, 'updateRemarks'])
+        ->name('api.dtr.update-remarks');
 
     // Employee-specific DTR endpoints
     Route::get('/dtr/employee/{employee}', [DailyTimeRecordController::class, 'employeeDtr'])

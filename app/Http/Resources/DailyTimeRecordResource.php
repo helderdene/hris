@@ -41,6 +41,7 @@ class DailyTimeRecordResource extends JsonResource
             'overtime_minutes' => $this->resource->overtime_minutes,
             'overtime_formatted' => $this->resource->overtime_formatted,
             'overtime_approved' => $this->resource->overtime_approved,
+            'overtime_denied' => $this->resource->overtime_denied,
             'night_diff_minutes' => $this->resource->night_diff_minutes,
             'remarks' => $this->resource->remarks,
             'needs_review' => $this->resource->needs_review,
