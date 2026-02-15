@@ -7,17 +7,20 @@ use App\Http\Resources\EmployeeListResource;
 use App\Models\DailyTimeRecord;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Services\Dtr\DtrExportService;
 use App\Services\Dtr\DtrPeriodAggregator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class DtrController extends Controller
 {
     public function __construct(
-        protected DtrPeriodAggregator $aggregator
+        protected DtrPeriodAggregator $aggregator,
+        protected DtrExportService $exportService,
     ) {}
 
     /**
@@ -153,5 +156,38 @@ class DtrController extends Controller
                 'date_to' => $dateTo,
             ],
         ]);
+    }
+
+    /**
+     * Export DTR records for a specific employee.
+     */
+    public function export(Request $request, Employee $employee): StreamedResponse
+    {
+        Gate::authorize('can-manage-employees');
+
+        $dateFrom = $request->input('date_from', now()->startOfMonth()->toDateString());
+        $dateTo = $request->input('date_to', now()->toDateString());
+        $format = $request->input('format', 'xlsx');
+
+        $records = DailyTimeRecord::query()
+            ->where('employee_id', $employee->id)
+            ->with(['workSchedule'])
+            ->whereBetween('date', [$dateFrom, $dateTo])
+            ->orderBy('date')
+            ->get();
+
+        $summary = $this->aggregator->getSummary(
+            $employee,
+            Carbon::parse($dateFrom),
+            Carbon::parse($dateTo)
+        );
+
+        $employee->load(['department', 'position']);
+
+        if ($format === 'pdf') {
+            return $this->exportService->exportPdf($employee, $records, $summary, $dateFrom, $dateTo);
+        }
+
+        return $this->exportService->exportXlsx($employee, $records, $summary, $dateFrom, $dateTo);
     }
 }

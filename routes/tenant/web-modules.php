@@ -133,6 +133,8 @@ Route::prefix('time-attendance')->group(function () {
         ->name('dtr.index');
     Route::get('/dtr/{employee}', [DtrController::class, 'show'])
         ->name('dtr.show');
+    Route::get('/dtr/{employee}/export', [DtrController::class, 'export'])
+        ->name('dtr.export');
 });
 
 /*

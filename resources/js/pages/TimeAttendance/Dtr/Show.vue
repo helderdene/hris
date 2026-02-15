@@ -3,12 +3,18 @@ import DtrStatusBadge from '@/components/Dtr/DtrStatusBadge.vue';
 import DtrSummaryCard from '@/components/Dtr/DtrSummaryCard.vue';
 import PunchTimeline from '@/components/Dtr/PunchTimeline.vue';
 import { Button } from '@/components/ui/button';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-vue-next';
+import { ArrowLeft, ChevronDown, ChevronUp, Download, FileSpreadsheet, FileText } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 
 interface Punch {
@@ -151,6 +157,18 @@ function goBack() {
         },
     });
 }
+
+function exportDtr(format: 'xlsx' | 'pdf') {
+    const params = new URLSearchParams();
+    params.set('format', format);
+    if (dateFrom.value) {
+        params.set('date_from', dateFrom.value);
+    }
+    if (dateTo.value) {
+        params.set('date_to', dateTo.value);
+    }
+    window.location.href = `/time-attendance/dtr/${props.employee.id}/export?${params.toString()}`;
+}
 </script>
 
 <template>
@@ -176,6 +194,25 @@ function goBack() {
                             <span v-if="employee.position">{{ employee.position.title }}</span>
                         </div>
                     </div>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger as-child>
+                            <Button variant="outline" size="sm">
+                                <Download class="mr-2 h-4 w-4" />
+                                Export
+                                <ChevronDown class="ml-2 h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuItem @click="exportDtr('xlsx')">
+                                <FileSpreadsheet class="mr-2 h-4 w-4" />
+                                Export Excel
+                            </DropdownMenuItem>
+                            <DropdownMenuItem @click="exportDtr('pdf')">
+                                <FileText class="mr-2 h-4 w-4" />
+                                Export PDF
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
                 </div>
             </div>
 
