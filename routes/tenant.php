@@ -36,7 +36,7 @@ Route::get('/', function (Request $request) {
     return Inertia::render('TenantDashboard', [
         'justCreated' => $request->boolean('created'),
     ]);
-})->name('tenant.home');
+})->middleware(['auth', 'verified'])->name('tenant.home');
 
 Route::get('/dashboard', function (Request $request) {
     $user = $request->user();
