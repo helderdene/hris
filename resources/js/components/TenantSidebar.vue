@@ -152,7 +152,13 @@ const timeAttendanceItems = computed(() => {
     const items: NavItem[] = [
         { title: 'Attendance', href: '/attendance', icon: Clock },
         { title: 'Daily Time Record', href: '/time-attendance/dtr', icon: ClipboardList },
+        { title: 'OT Requests', href: '/overtime/requests', icon: CalendarClock },
     ];
+
+    // Add OT Approvals for managers/admins
+    if (canManageEmployees.value) {
+        items.push({ title: 'OT Approvals', href: '/overtime/approvals', icon: ClipboardCheck });
+    }
 
     // Configuration items (Admin/HR Manager only)
     if (canManageOrganization.value) {
@@ -354,6 +360,11 @@ const selfServiceItems = computed(() => {
             href: '/my/leave',
             icon: Calendar,
         },
+        {
+            title: 'My Overtime',
+            href: '/my/overtime-requests',
+            icon: CalendarClock,
+        },
     ];
 
     if (canApproveLeaves.value) {
@@ -498,6 +509,18 @@ function isActive(href: string): boolean {
     // Contributions - highlight for all contribution sub-pages
     if (href === '/organization/contributions/sss') {
         return currentPath.startsWith('/organization/contributions');
+    }
+    // OT Requests
+    if (href === '/overtime/requests') {
+        return currentPath.startsWith('/overtime/requests');
+    }
+    // OT Approvals
+    if (href === '/overtime/approvals') {
+        return currentPath.startsWith('/overtime/approvals');
+    }
+    // My Overtime
+    if (href === '/my/overtime-requests') {
+        return currentPath.startsWith('/my/overtime-requests');
     }
     // Leave Applications
     if (href === '/leave/applications') {

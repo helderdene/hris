@@ -210,6 +210,24 @@ Route::prefix('leave')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Overtime Request Web Routes
+|--------------------------------------------------------------------------
+|
+| These routes render the overtime request pages including employee
+| overtime requests, pending approvals, and approval history.
+|
+*/
+Route::prefix('overtime')->group(function () {
+    Route::get('/requests', [\App\Http\Controllers\Overtime\OvertimeRequestPageController::class, 'index'])
+        ->name('overtime.requests.index');
+    Route::get('/requests/{overtime_request}', [\App\Http\Controllers\Overtime\OvertimeRequestPageController::class, 'show'])
+        ->name('overtime.requests.show');
+    Route::get('/approvals', [\App\Http\Controllers\Overtime\OvertimeApprovalPageController::class, 'index'])
+        ->name('overtime.approvals.index');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Loan Approval Management Web Routes
 |--------------------------------------------------------------------------
 |

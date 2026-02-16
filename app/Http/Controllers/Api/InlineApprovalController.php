@@ -11,9 +11,12 @@ use App\Http\Requests\Api\RejectRequisitionRequest;
 use App\Models\Employee;
 use App\Models\JobRequisition;
 use App\Models\LeaveApplication;
+use App\Models\OvertimeRequest;
 use App\Services\JobRequisitionService;
 use App\Services\LeaveApplicationService;
+use App\Services\OvertimeRequestService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -26,7 +29,8 @@ class InlineApprovalController extends Controller
 {
     public function __construct(
         protected LeaveApplicationService $leaveApplicationService,
-        protected JobRequisitionService $jobRequisitionService
+        protected JobRequisitionService $jobRequisitionService,
+        protected OvertimeRequestService $overtimeRequestService
     ) {}
 
     /**
@@ -207,6 +211,100 @@ class InlineApprovalController extends Controller
                     'id' => $requisition->id,
                     'status' => $requisition->status->value,
                     'status_label' => $requisition->status->label(),
+                ],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Approve an overtime request inline.
+     */
+    public function approveOvertimeRequest(Request $request, OvertimeRequest $overtimeRequest): JsonResponse
+    {
+        $user = $request->user();
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        if (! $employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Employee record not found.',
+            ], 403);
+        }
+
+        try {
+            $result = $this->overtimeRequestService->approve(
+                $overtimeRequest,
+                $employee,
+                $request->input('remarks')
+            );
+
+            $this->broadcastActionCenterUpdate('overtime_approved', [
+                'overtime_request_id' => $result->id,
+                'status' => $result->status->value,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Overtime request approved successfully.',
+                'data' => [
+                    'id' => $result->id,
+                    'status' => $result->status->value,
+                    'status_label' => $result->status->label(),
+                ],
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 422);
+        }
+    }
+
+    /**
+     * Reject an overtime request inline.
+     */
+    public function rejectOvertimeRequest(Request $request, OvertimeRequest $overtimeRequest): JsonResponse
+    {
+        $request->validate([
+            'reason' => ['required', 'string', 'max:1000'],
+        ]);
+
+        $user = $request->user();
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        if (! $employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Employee record not found.',
+            ], 403);
+        }
+
+        try {
+            $result = $this->overtimeRequestService->reject(
+                $overtimeRequest,
+                $employee,
+                $request->input('reason')
+            );
+
+            $this->broadcastActionCenterUpdate('overtime_rejected', [
+                'overtime_request_id' => $result->id,
+                'status' => $result->status->value,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Overtime request rejected.',
+                'data' => [
+                    'id' => $result->id,
+                    'status' => $result->status->value,
+                    'status_label' => $result->status->label(),
                 ],
             ]);
         } catch (ValidationException $e) {

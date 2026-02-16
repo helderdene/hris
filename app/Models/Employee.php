@@ -283,6 +283,14 @@ class Employee extends TenantModel
     }
 
     /**
+     * Get the employee's overtime requests.
+     */
+    public function overtimeRequests(): HasMany
+    {
+        return $this->hasMany(OvertimeRequest::class);
+    }
+
+    /**
      * Get leave applications pending this employee's approval.
      */
     public function pendingLeaveApprovals(): HasMany

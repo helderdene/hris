@@ -11,6 +11,7 @@ use App\Models\Employee;
 use App\Models\JobRequisitionApproval;
 use App\Models\LeaveApplicationApproval;
 use App\Models\OnboardingChecklistItem;
+use App\Models\OvertimeRequestApproval;
 use App\Models\ProbationaryEvaluationApproval;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -52,6 +53,7 @@ class ActionCenterDashboardController extends Controller
             'unreadNotificationCount' => Inertia::defer(fn () => $user->unreadNotifications()->count()),
             'activityFeed' => Inertia::defer(fn () => $this->getActivityFeed()),
             'pendingLeaveDetails' => Inertia::defer(fn () => $this->getPendingLeaveDetails($employee)),
+            'pendingOvertimeDetails' => Inertia::defer(fn () => $this->getPendingOvertimeDetails($employee)),
             'pendingRequisitionDetails' => Inertia::defer(fn () => $this->getPendingRequisitionDetails($employee)),
         ]);
     }
@@ -95,6 +97,7 @@ class ActionCenterDashboardController extends Controller
     {
         $counts = [
             'leaveApprovals' => 0,
+            'overtimeApprovals' => 0,
             'requisitionApprovals' => 0,
             'probationaryEvaluations' => 0,
             'documentRequests' => 0,
@@ -104,6 +107,11 @@ class ActionCenterDashboardController extends Controller
         // Leave approvals - for the current user as approver
         if ($employee !== null) {
             $counts['leaveApprovals'] = LeaveApplicationApproval::query()
+                ->pending()
+                ->forApprover($employee)
+                ->count();
+
+            $counts['overtimeApprovals'] = OvertimeRequestApproval::query()
                 ->pending()
                 ->forApprover($employee)
                 ->count();
@@ -169,6 +177,30 @@ class ActionCenterDashboardController extends Controller
 
             foreach ($approachingLeaves as $approval) {
                 $items[] = $this->formatPriorityItem($approval, 'leave_approval', PriorityLevel::High);
+            }
+
+            // Get overdue overtime approvals
+            $overdueOvertime = OvertimeRequestApproval::query()
+                ->overdue()
+                ->forApprover($employee)
+                ->with(['overtimeRequest.employee'])
+                ->limit(10)
+                ->get();
+
+            foreach ($overdueOvertime as $approval) {
+                $items[] = $this->formatOvertimePriorityItem($approval, PriorityLevel::Critical);
+            }
+
+            // Get approaching deadline overtime approvals
+            $approachingOvertime = OvertimeRequestApproval::query()
+                ->approaching()
+                ->forApprover($employee)
+                ->with(['overtimeRequest.employee'])
+                ->limit(10)
+                ->get();
+
+            foreach ($approachingOvertime as $approval) {
+                $items[] = $this->formatOvertimePriorityItem($approval, PriorityLevel::High);
             }
 
             // Get overdue job requisition approvals
@@ -262,6 +294,33 @@ class ActionCenterDashboardController extends Controller
     }
 
     /**
+     * Format an overtime priority item for the frontend.
+     *
+     * @return array<string, mixed>
+     */
+    protected function formatOvertimePriorityItem(
+        OvertimeRequestApproval $approval,
+        PriorityLevel $priority
+    ): array {
+        $request = $approval->overtimeRequest;
+
+        return [
+            'id' => $approval->id,
+            'type' => 'overtime_approval',
+            'priority' => $priority->value,
+            'priority_label' => $priority->label(),
+            'priority_color' => $priority->color(),
+            'created_at' => $approval->created_at->toISOString(),
+            'title' => 'Overtime Request',
+            'employee_name' => $request?->employee?->full_name ?? 'Unknown',
+            'description' => $request ? "{$request->overtime_type->label()} ({$request->expected_hours_formatted})" : 'Overtime request',
+            'hours_overdue' => $approval->hours_overdue ?? 0,
+            'hours_remaining' => $approval->hours_remaining ?? 0,
+            'link' => '/overtime/approvals',
+        ];
+    }
+
+    /**
      * Get user notifications.
      *
      * @return array<array<string, mixed>>
@@ -342,6 +401,43 @@ class ActionCenterDashboardController extends Controller
                 'priority_level' => $approval->priority_level?->value,
                 'hours_remaining' => $approval->hours_remaining,
                 'hours_overdue' => $approval->hours_overdue,
+                'created_at' => $approval->created_at->toISOString(),
+            ])
+            ->toArray();
+    }
+
+    /**
+     * Get detailed pending overtime approvals for inline actions.
+     *
+     * @return array<array<string, mixed>>
+     */
+    protected function getPendingOvertimeDetails(?Employee $employee): array
+    {
+        if ($employee === null) {
+            return [];
+        }
+
+        return OvertimeRequestApproval::query()
+            ->pending()
+            ->forApprover($employee)
+            ->with(['overtimeRequest.employee'])
+            ->orderBy('created_at')
+            ->limit(20)
+            ->get()
+            ->map(fn (OvertimeRequestApproval $approval) => [
+                'id' => $approval->id,
+                'overtime_request_id' => $approval->overtime_request_id,
+                'employee_name' => $approval->overtimeRequest?->employee?->full_name,
+                'employee_id' => $approval->overtimeRequest?->employee_id,
+                'overtime_date' => $approval->overtimeRequest?->overtime_date?->toDateString(),
+                'overtime_type' => $approval->overtimeRequest?->overtime_type->label(),
+                'expected_hours_formatted' => $approval->overtimeRequest?->expected_hours_formatted,
+                'reason' => $approval->overtimeRequest?->reason,
+                'is_overdue' => $approval->is_overdue,
+                'is_approaching_deadline' => $approval->is_approaching_deadline,
+                'priority_level' => $approval->priority_level?->value,
+                'hours_remaining' => $approval->hours_remaining,
+                'hours_overdue' => $approval->hours_overdue ?? 0,
                 'created_at' => $approval->created_at->toISOString(),
             ])
             ->toArray();

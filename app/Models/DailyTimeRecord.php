@@ -39,6 +39,7 @@ class DailyTimeRecord extends TenantModel
         'overtime_minutes',
         'overtime_approved',
         'overtime_denied',
+        'overtime_request_id',
         'night_diff_minutes',
         'remarks',
         'needs_review',
@@ -85,6 +86,14 @@ class DailyTimeRecord extends TenantModel
     public function workSchedule(): BelongsTo
     {
         return $this->belongsTo(WorkSchedule::class);
+    }
+
+    /**
+     * Get the overtime request linked to this DTR.
+     */
+    public function overtimeRequest(): BelongsTo
+    {
+        return $this->belongsTo(OvertimeRequest::class);
     }
 
     /**

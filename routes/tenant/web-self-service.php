@@ -76,6 +76,10 @@ Route::prefix('my')->group(function () {
     Route::get('/leave-approvals', \App\Http\Controllers\My\MyLeaveApprovalController::class)
         ->name('my.leave-approvals.index');
 
+    // Overtime Self-Service
+    Route::get('/overtime-requests', [\App\Http\Controllers\My\MyOvertimeRequestController::class, 'index'])
+        ->name('my.overtime-requests.index');
+
     // Preboarding Self-Service
     Route::get('/preboarding', [\App\Http\Controllers\My\MyPreboardingController::class, 'index'])
         ->name('my.preboarding.index');

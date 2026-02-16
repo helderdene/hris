@@ -356,11 +356,68 @@ Route::prefix('action-center')->group(function () {
     Route::post('/leave-approvals/{leaveApplication}/reject', [\App\Http\Controllers\Api\InlineApprovalController::class, 'rejectLeave'])
         ->name('api.action-center.leave-approvals.reject');
 
+    // Overtime request approval actions
+    Route::post('/overtime-approvals/{overtimeRequest}/approve', [\App\Http\Controllers\Api\InlineApprovalController::class, 'approveOvertimeRequest'])
+        ->name('api.action-center.overtime-approvals.approve');
+    Route::post('/overtime-approvals/{overtimeRequest}/reject', [\App\Http\Controllers\Api\InlineApprovalController::class, 'rejectOvertimeRequest'])
+        ->name('api.action-center.overtime-approvals.reject');
+
     // Job requisition approval actions
     Route::post('/requisitions/{jobRequisition}/approve', [\App\Http\Controllers\Api\InlineApprovalController::class, 'approveRequisition'])
         ->name('api.action-center.requisitions.approve');
     Route::post('/requisitions/{jobRequisition}/reject', [\App\Http\Controllers\Api\InlineApprovalController::class, 'rejectRequisition'])
         ->name('api.action-center.requisitions.reject');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Overtime Request Management API Routes
+|--------------------------------------------------------------------------
+|
+| These endpoints allow employees to submit overtime requests and
+| managers to approve/reject overtime requests through a multi-level
+| approval workflow.
+|
+*/
+
+Route::prefix('overtime-requests')->group(function () {
+    // Employee's own requests
+    Route::get('/my', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'myRequests'])
+        ->name('api.overtime-requests.my');
+
+    // CRUD operations
+    Route::get('/', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'index'])
+        ->name('api.overtime-requests.index');
+    Route::post('/', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'store'])
+        ->name('api.overtime-requests.store');
+    Route::get('/{overtime_request}', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'show'])
+        ->name('api.overtime-requests.show');
+    Route::put('/{overtime_request}', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'update'])
+        ->name('api.overtime-requests.update');
+    Route::delete('/{overtime_request}', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'destroy'])
+        ->name('api.overtime-requests.destroy');
+
+    // Workflow actions
+    Route::post('/{overtime_request}/submit', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'submit'])
+        ->name('api.overtime-requests.submit');
+    Route::post('/{overtime_request}/cancel', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'cancel'])
+        ->name('api.overtime-requests.cancel');
+});
+
+// Employee-specific overtime requests endpoint
+Route::get('/employees/{employee}/overtime-requests', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'employeeRequests'])
+    ->name('api.employees.overtime-requests');
+
+Route::prefix('overtime-approvals')->group(function () {
+    // Pending approvals for current user
+    Route::get('/pending', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'pendingApprovals'])
+        ->name('api.overtime-approvals.pending');
+
+    // Approval actions
+    Route::post('/{overtime_request}/approve', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'approve'])
+        ->name('api.overtime-approvals.approve');
+    Route::post('/{overtime_request}/reject', [\App\Http\Controllers\Api\OvertimeRequestController::class, 'reject'])
+        ->name('api.overtime-approvals.reject');
 });
 
 /*
