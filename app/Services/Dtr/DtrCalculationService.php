@@ -433,6 +433,15 @@ class DtrCalculationService
             $startTime = $this->scheduleResolver->getScheduledStartTime($schedule, $date, $shiftName);
             $endTime = $this->scheduleResolver->getScheduledEndTime($schedule, $date, $shiftName);
 
+            // Tighten the query start to exclude punches that are far before schedule start.
+            // Allow up to 3 hours early arrival grace before shift start.
+            if ($startTime !== null) {
+                $earliestReasonable = $startTime->copy()->subHours(3);
+                if ($earliestReasonable->gt($queryStart)) {
+                    $queryStart = $earliestReasonable;
+                }
+            }
+
             if ($startTime && $endTime && $endTime->gt($date->copy()->endOfDay())) {
                 // Cross-midnight: fetch from query start through end + 2hr grace
                 $graceEnd = $endTime->copy()->addHours(2);
