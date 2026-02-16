@@ -8,6 +8,7 @@ use App\Enums\OfferStatus;
 use App\Models\Offer;
 use App\Models\OfferSignature;
 use App\Models\OfferTemplate;
+use App\Notifications\NewHireAccountSetup;
 use App\Notifications\OfferAccepted;
 use App\Notifications\OfferDeclined;
 use App\Notifications\OfferSent;
@@ -141,7 +142,7 @@ class OfferService
             // Auto-create preboarding checklist
             app(\App\Services\PreboardingService::class)->createFromTemplate($offer);
 
-            // Auto-create user account for the new hire (without sending email)
+            // Auto-create user account and send account setup email
             $this->createNewHireUser($offer);
 
             return $offer->fresh();
@@ -287,10 +288,12 @@ class OfferService
         }
 
         $action = new CreateNewHireUserAction;
-        $action->execute(
+        $result = $action->execute(
             email: $candidate->email,
             name: $candidate->full_name,
             tenant: $tenant
         );
+
+        $result['user']->notify(new NewHireAccountSetup($tenant, $result['token']));
     }
 }

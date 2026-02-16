@@ -6,11 +6,11 @@ use App\Models\Tenant;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Facades\Storage;
 
 /**
- * Notification sent to new hires to set up their account password.
- *
- * This is triggered manually by HR after a candidate is hired.
+ * Notification sent to new hires to set up their account password
+ * and access their pre-boarding checklist.
  */
 class NewHireAccountSetup extends Notification
 {
@@ -40,16 +40,21 @@ class NewHireAccountSetup extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $setupUrl = $this->getSetupUrl();
+        $primaryColor = $this->tenant->primary_color ?? '#111827';
+        $logoUrl = $this->tenant->logo_path
+            ? Storage::disk('public')->url($this->tenant->logo_path)
+            : null;
 
         return (new MailMessage)
             ->subject("Set Up Your {$this->tenant->name} Account")
-            ->greeting("Welcome to {$this->tenant->name}!")
-            ->line('Congratulations on joining our team! Your account has been created and is ready to be activated.')
-            ->line('Click the button below to set your password and access your employee portal.')
-            ->action('Set Up Your Account', $setupUrl)
-            ->line('This link will expire in 30 days.')
-            ->line('Once activated, you can access your preboarding checklist, view company announcements, and more.')
-            ->line('If you have any questions, please contact HR.');
+            ->view('emails.new-hire-account-setup', [
+                'subject' => "Set Up Your {$this->tenant->name} Account",
+                'userName' => $notifiable->name,
+                'tenantName' => $this->tenant->name,
+                'setupUrl' => $setupUrl,
+                'primaryColor' => $primaryColor,
+                'logoUrl' => $logoUrl,
+            ]);
     }
 
     /**

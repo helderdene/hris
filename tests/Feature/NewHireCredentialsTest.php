@@ -148,7 +148,7 @@ describe('User creation on offer acceptance', function () {
         expect($tenantUser->role)->toBe(TenantUserRole::Employee);
     });
 
-    it('does not send account setup email automatically', function () {
+    it('sends account setup email automatically on offer acceptance', function () {
         Storage::fake('local');
         Notification::fake();
 
@@ -165,7 +165,7 @@ describe('User creation on offer acceptance', function () {
             'signature_data' => 'data:image/png;base64,iVBORw0KGgo=',
         ]);
 
-        Notification::assertNotSentTo(
+        Notification::assertSentTo(
             User::where('email', $application->candidate->email)->first(),
             NewHireAccountSetup::class
         );

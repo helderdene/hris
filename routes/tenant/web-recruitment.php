@@ -111,6 +111,14 @@ Route::get('/preboarding', [\App\Http\Controllers\PreboardingPageController::cla
 Route::get('/preboarding/{checklist}', [\App\Http\Controllers\PreboardingPageController::class, 'show'])
     ->name('preboarding.show');
 
+// Pre-boarding Template Management
+Route::get('/preboarding-templates', [\App\Http\Controllers\PreboardingTemplatePageController::class, 'index'])
+    ->name('preboarding.templates.index');
+Route::get('/preboarding-templates/create', [\App\Http\Controllers\PreboardingTemplatePageController::class, 'create'])
+    ->name('preboarding.templates.create');
+Route::get('/preboarding-templates/{template}/edit', [\App\Http\Controllers\PreboardingTemplatePageController::class, 'edit'])
+    ->name('preboarding.templates.edit');
+
 /*
 |--------------------------------------------------------------------------
 | Onboarding Management Web Routes

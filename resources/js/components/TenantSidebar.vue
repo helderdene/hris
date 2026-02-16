@@ -212,6 +212,7 @@ const recruitmentItems = computed(() => {
         { title: 'Offers', href: '/recruitment/offers', icon: FileText },
         { title: 'Offer Templates', href: '/recruitment/offer-templates', icon: ScrollText },
         { title: 'Pre-boarding', href: '/preboarding', icon: ClipboardList },
+        { title: 'Pre-boarding Templates', href: '/preboarding-templates', icon: ScrollText },
         { title: 'Onboarding', href: '/onboarding', icon: ClipboardCheck },
         { title: 'Onboarding Tasks', href: '/onboarding-tasks', icon: ClipboardList },
         { title: 'Onboarding Templates', href: '/onboarding-templates', icon: ScrollText },
@@ -566,8 +567,11 @@ function isActive(href: string): boolean {
     if (href === '/loan-approvals') {
         return currentPath.startsWith('/loan-approvals');
     }
+    if (href === '/preboarding-templates') {
+        return currentPath.startsWith('/preboarding-templates');
+    }
     if (href === '/preboarding') {
-        return currentPath.startsWith('/preboarding');
+        return currentPath.startsWith('/preboarding') && !currentPath.startsWith('/preboarding-templates');
     }
     if (href === '/my/preboarding') {
         return currentPath.startsWith('/my/preboarding');
