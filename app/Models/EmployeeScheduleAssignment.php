@@ -63,15 +63,19 @@ class EmployeeScheduleAssignment extends TenantModel
      * Scope to get only active assignments.
      *
      * Active assignments have:
-     * - effective_date <= today
-     * - end_date IS NULL OR end_date >= today
+     * - effective_date <= reference date
+     * - end_date IS NULL OR end_date >= reference date
+     *
+     * @param  string|\DateTimeInterface|null  $date  Reference date (defaults to today)
      */
-    public function scopeActive(Builder $query): Builder
+    public function scopeActive(Builder $query, string|\DateTimeInterface|null $date = null): Builder
     {
-        return $query->where('effective_date', '<=', now()->toDateString())
-            ->where(function (Builder $query) {
+        $referenceDate = $date ? \Carbon\Carbon::parse($date)->toDateString() : now()->toDateString();
+
+        return $query->where('effective_date', '<=', $referenceDate)
+            ->where(function (Builder $query) use ($referenceDate) {
                 $query->whereNull('end_date')
-                    ->orWhere('end_date', '>=', now()->toDateString());
+                    ->orWhere('end_date', '>=', $referenceDate);
             });
     }
 }

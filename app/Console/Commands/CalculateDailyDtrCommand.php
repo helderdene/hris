@@ -118,11 +118,11 @@ class CalculateDailyDtrCommand extends Command
         $processed = 0;
         $errors = 0;
 
-        Employee::active()
-            ->whereHas('scheduleAssignments', fn ($q) => $q->active())
-            ->chunkById(100, function ($employees) use ($service, $dates, &$processed, &$errors) {
-                foreach ($employees as $employee) {
-                    foreach ($dates as $date) {
+        foreach ($dates as $date) {
+            Employee::active()
+                ->whereHas('scheduleAssignments', fn ($q) => $q->active($date))
+                ->chunkById(100, function ($employees) use ($service, $date, &$processed, &$errors) {
+                    foreach ($employees as $employee) {
                         try {
                             $service->calculateForDate($employee, $date);
                             $processed++;
@@ -131,8 +131,8 @@ class CalculateDailyDtrCommand extends Command
                             $this->error("  Failed for employee #{$employee->id} on {$date->toDateString()}: {$e->getMessage()}");
                         }
                     }
-                }
-            });
+                });
+        }
 
         return [$processed, $errors];
     }
