@@ -62,6 +62,7 @@ class DtrAggregationService
     public function aggregate(Employee $employee, Carbon $startDate, Carbon $endDate): array
     {
         $records = DailyTimeRecord::query()
+            ->with('overtimeRequest')
             ->where('employee_id', $employee->id)
             ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
             ->get();
@@ -92,7 +93,12 @@ class DtrAggregationService
 
         $totalOvertimeMinutes = $records
             ->where('overtime_approved', true)
-            ->sum('overtime_minutes');
+            ->filter(fn ($record) => $record->overtime_request_id !== null)
+            ->sum(function ($record) {
+                $approved = $record->overtimeRequest?->expected_minutes ?? 0;
+
+                return min($record->overtime_minutes, $approved);
+            });
 
         $totalNightDiffMinutes = $records->sum('night_diff_minutes');
 
@@ -178,9 +184,10 @@ class DtrAggregationService
             'double_holiday' => 0,
         ];
 
-        foreach ($records->where('overtime_approved', true) as $record) {
+        foreach ($records->where('overtime_approved', true)->filter(fn ($r) => $r->overtime_request_id !== null) as $record) {
             $dateString = $record->date->toDateString();
-            $overtimeMinutes = $record->overtime_minutes;
+            $approved = $record->overtimeRequest?->expected_minutes ?? 0;
+            $overtimeMinutes = min($record->overtime_minutes, $approved);
 
             if ($overtimeMinutes <= 0) {
                 continue;

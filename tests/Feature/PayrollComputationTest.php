@@ -8,6 +8,7 @@ use App\Enums\TenantUserRole;
 use App\Models\DailyTimeRecord;
 use App\Models\Employee;
 use App\Models\EmployeeCompensation;
+use App\Models\OvertimeRequest;
 use App\Models\PagibigContributionTable;
 use App\Models\PayrollCycle;
 use App\Models\PayrollEntry;
@@ -142,6 +143,18 @@ function createDtrRecordsForPeriod(
             ]);
             $absentDaysCreated++;
         } elseif ($workDaysCreated < $daysWorked) {
+            $hasOt = $workDaysCreated === 0 && $overtimeMinutes > 0;
+            $otRequestId = null;
+
+            if ($hasOt) {
+                $otRequest = OvertimeRequest::factory()->approved()->create([
+                    'employee_id' => $employee->id,
+                    'overtime_date' => $currentDate->copy()->toDateString(),
+                    'expected_minutes' => $overtimeMinutes,
+                ]);
+                $otRequestId = $otRequest->id;
+            }
+
             DailyTimeRecord::factory()->create([
                 'employee_id' => $employee->id,
                 'date' => $currentDate->copy(),
@@ -150,7 +163,8 @@ function createDtrRecordsForPeriod(
                 'late_minutes' => $workDaysCreated === 0 ? $lateMinutes : 0,
                 'undertime_minutes' => $workDaysCreated === 0 ? $undertimeMinutes : 0,
                 'overtime_minutes' => $workDaysCreated === 0 ? $overtimeMinutes : 0,
-                'overtime_approved' => $overtimeMinutes > 0,
+                'overtime_approved' => $hasOt,
+                'overtime_request_id' => $otRequestId,
                 'night_diff_minutes' => $workDaysCreated === 0 ? $nightDiffMinutes : 0,
             ]);
             $workDaysCreated++;

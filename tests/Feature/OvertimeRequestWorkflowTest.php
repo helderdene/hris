@@ -5,6 +5,7 @@ use App\Enums\OvertimeApprovalDecision;
 use App\Enums\OvertimeRequestStatus;
 use App\Enums\OvertimeType;
 use App\Enums\TenantUserRole;
+use App\Models\DailyTimeRecord;
 use App\Models\Employee;
 use App\Models\OvertimeRequest;
 use App\Models\OvertimeRequestApproval;
@@ -14,6 +15,8 @@ use App\Notifications\OvertimeRequestApproved;
 use App\Notifications\OvertimeRequestRejected;
 use App\Services\ApprovalChainResolver;
 use App\Services\OvertimeRequestService;
+use App\Services\Payroll\DtrAggregationService;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
@@ -314,5 +317,92 @@ describe('OvertimeType Enum', function () {
         expect($options)->toBeArray();
         expect(count($options))->toBe(3);
         expect($options[0])->toHaveKeys(['value', 'label', 'color']);
+    });
+});
+
+describe('Payroll OT Gating & Capping', function () {
+    it('only counts overtime with a linked approved OT request in payroll aggregation', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        $employee = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $date = Carbon::parse('2026-01-15');
+
+        $approvedRequest = OvertimeRequest::factory()->approved()->create([
+            'employee_id' => $employee->id,
+            'overtime_date' => $date->toDateString(),
+            'expected_minutes' => 120,
+        ]);
+
+        // DTR with linked approved request — should be counted
+        DailyTimeRecord::factory()->forDate($date)->withOvertime(90, true)->create([
+            'employee_id' => $employee->id,
+            'overtime_request_id' => $approvedRequest->id,
+        ]);
+
+        // DTR with overtime_approved but NO linked request — should NOT be counted
+        DailyTimeRecord::factory()->forDate($date->copy()->addDay())->withOvertime(60, true)->create([
+            'employee_id' => $employee->id,
+            'overtime_request_id' => null,
+        ]);
+
+        $service = new DtrAggregationService;
+        $result = $service->aggregate($employee, $date->copy(), $date->copy()->addDay());
+
+        expect($result['total_overtime_minutes'])->toBe(90);
+    });
+
+    it('caps payable overtime to approved request expected_minutes', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        $employee = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $periodStart = Carbon::parse('2026-01-01');
+        $periodEnd = Carbon::parse('2026-01-31');
+        $otDate = Carbon::parse('2026-01-15');
+
+        $approvedRequest = OvertimeRequest::factory()->approved()->create([
+            'employee_id' => $employee->id,
+            'overtime_date' => $otDate->toDateString(),
+            'expected_minutes' => 90,
+        ]);
+
+        // Employee actually worked 120 OT minutes, but request only approved 90
+        DailyTimeRecord::factory()->forDate($otDate)->withOvertime(120, true)->create([
+            'employee_id' => $employee->id,
+            'overtime_request_id' => $approvedRequest->id,
+        ]);
+
+        $service = new DtrAggregationService;
+        $result = $service->aggregate($employee, $periodStart, $periodEnd);
+
+        expect($result['total_overtime_minutes'])->toBe(90);
+    });
+
+    it('counts full actual overtime when it is less than approved amount', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        $employee = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $periodStart = Carbon::parse('2026-01-01');
+        $periodEnd = Carbon::parse('2026-01-31');
+        $otDate = Carbon::parse('2026-01-15');
+
+        $approvedRequest = OvertimeRequest::factory()->approved()->create([
+            'employee_id' => $employee->id,
+            'overtime_date' => $otDate->toDateString(),
+            'expected_minutes' => 120,
+        ]);
+
+        // Employee worked only 60 OT minutes, less than approved 120
+        DailyTimeRecord::factory()->forDate($otDate)->withOvertime(60, true)->create([
+            'employee_id' => $employee->id,
+            'overtime_request_id' => $approvedRequest->id,
+        ]);
+
+        $service = new DtrAggregationService;
+        $result = $service->aggregate($employee, $periodStart, $periodEnd);
+
+        expect($result['total_overtime_minutes'])->toBe(60);
     });
 });

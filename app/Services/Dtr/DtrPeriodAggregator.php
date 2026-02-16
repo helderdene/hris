@@ -21,6 +21,7 @@ class DtrPeriodAggregator
     public function getSummary(Employee $employee, Carbon $startDate, Carbon $endDate): array
     {
         $records = DailyTimeRecord::query()
+            ->with('overtimeRequest')
             ->where('employee_id', $employee->id)
             ->whereBetween('date', [$startDate->toDateString(), $endDate->toDateString()])
             ->get();
@@ -49,7 +50,14 @@ class DtrPeriodAggregator
         $totalLateMinutes = $records->sum('late_minutes');
         $totalUndertimeMinutes = $records->sum('undertime_minutes');
         $totalOvertimeMinutes = $records->sum('overtime_minutes');
-        $approvedOvertimeMinutes = $records->where('overtime_approved', true)->sum('overtime_minutes');
+        $approvedOvertimeMinutes = $records
+            ->where('overtime_approved', true)
+            ->filter(fn ($record) => $record->overtime_request_id !== null)
+            ->sum(function ($record) {
+                $approved = $record->overtimeRequest?->expected_minutes ?? 0;
+
+                return min($record->overtime_minutes, $approved);
+            });
         $deniedOvertimeMinutes = $records->where('overtime_denied', true)->sum('overtime_minutes');
         $totalNightDiffMinutes = $records->sum('night_diff_minutes');
 
@@ -160,6 +168,7 @@ class DtrPeriodAggregator
     public function getDepartmentSummary(int $departmentId, Carbon $startDate, Carbon $endDate): array
     {
         $records = DailyTimeRecord::query()
+            ->with('overtimeRequest')
             ->whereHas('employee', function ($query) use ($departmentId) {
                 $query->where('department_id', $departmentId);
             })

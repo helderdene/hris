@@ -4,10 +4,12 @@ namespace App\Services\Dtr;
 
 use App\Enums\DtrStatus;
 use App\Enums\HolidayType;
+use App\Enums\OvertimeRequestStatus;
 use App\Models\AttendanceLog;
 use App\Models\DailyTimeRecord;
 use App\Models\Employee;
 use App\Models\Holiday;
+use App\Models\OvertimeRequest;
 use App\Models\TimeRecordPunch;
 use App\Models\WorkSchedule;
 use Carbon\Carbon;
@@ -64,6 +66,9 @@ class DtrCalculationService
 
         // Save punch records (logs already have inferred directions)
         $this->savePunchRecords($dtr, $logs);
+
+        // Auto-link approved overtime request if one exists
+        $this->linkApprovedOvertimeRequest($dtr);
 
         return $dtr->fresh(['employee', 'workSchedule', 'punches']);
     }
@@ -497,6 +502,24 @@ class DtrCalculationService
                 }
             })
             ->first();
+    }
+
+    /**
+     * Auto-link an approved OvertimeRequest to the DTR if one exists for the same employee+date.
+     */
+    protected function linkApprovedOvertimeRequest(DailyTimeRecord $dtr): void
+    {
+        $approvedRequest = OvertimeRequest::query()
+            ->where('employee_id', $dtr->employee_id)
+            ->where('overtime_date', $dtr->date->toDateString())
+            ->where('status', OvertimeRequestStatus::Approved)
+            ->first();
+
+        if ($approvedRequest) {
+            $dtr->overtime_approved = true;
+            $dtr->overtime_request_id = $approvedRequest->id;
+            $dtr->save();
+        }
     }
 
     /**
