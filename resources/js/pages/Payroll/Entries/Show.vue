@@ -194,7 +194,7 @@ async function handleStatusChange(newStatus: string) {
     isUpdatingStatus.value = true;
 
     try {
-        const response = await fetch(`/api/payroll/entries/${props.entry.id}/status`, {
+        const response = await fetch(`/api/organization/payroll-entries/${props.entry.id}/status`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
@@ -225,7 +225,7 @@ async function handleRecompute() {
 
     try {
         const response = await fetch(
-            `/api/payroll/periods/${props.entry.payroll_period.id}/recompute`,
+            `/api/organization/payroll-periods/${props.entry.payroll_period.id}/recompute`,
             {
                 method: 'POST',
                 headers: {

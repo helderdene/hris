@@ -33,6 +33,17 @@ Route::post('/careers/{slug}/apply', [\App\Http\Controllers\Api\PublicApplicatio
     ->name('careers.apply');
 
 Route::get('/', function (Request $request) {
+    $user = $request->user();
+    if ($user) {
+        $tenant = app('tenant');
+        if ($tenant) {
+            $role = $user->getRoleInTenant($tenant);
+            if ($role === \App\Enums\TenantUserRole::Employee) {
+                return redirect('/my/dashboard');
+            }
+        }
+    }
+
     return Inertia::render('TenantDashboard', [
         'justCreated' => $request->boolean('created'),
     ]);
@@ -45,7 +56,7 @@ Route::get('/dashboard', function (Request $request) {
         if ($tenant) {
             $role = $user->getRoleInTenant($tenant);
             if ($role === \App\Enums\TenantUserRole::Employee) {
-                return redirect()->route('my.dashboard');
+                return redirect('/my/dashboard');
             }
         }
     }

@@ -23,7 +23,7 @@ class ComputePayrollRequest extends FormRequest
     {
         return [
             'employee_ids' => ['nullable', 'array'],
-            'employee_ids.*' => ['integer', 'exists:employees,id'],
+            'employee_ids.*' => ['integer', 'exists:tenant.employees,id'],
             'force_recompute' => ['nullable', 'boolean'],
         ];
     }

@@ -220,7 +220,7 @@ function handleFormSuccess(): void {
                                 <span
                                     class="text-2xl font-bold text-slate-900 dark:text-slate-100"
                                 >
-                                    {{ balance.available }}
+                                    {{ parseFloat(balance.available.toFixed(2)) }}
                                 </span>
                                 <span
                                     class="text-sm text-slate-500 dark:text-slate-400"

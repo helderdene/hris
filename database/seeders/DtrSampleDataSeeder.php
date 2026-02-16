@@ -36,11 +36,13 @@ class DtrSampleDataSeeder extends Seeder
             return;
         }
 
-        $tenantSlug = select(
-            label: 'Which tenant do you want to seed DTR data for?',
-            options: $tenants->pluck('name', 'slug')->toArray(),
-            default: $tenants->first()->slug,
-        );
+        $tenantSlug = $this->command->option('no-interaction')
+            ? $tenants->first()->slug
+            : select(
+                label: 'Which tenant do you want to seed DTR data for?',
+                options: $tenants->pluck('name', 'slug')->toArray(),
+                default: $tenants->first()->slug,
+            );
 
         $tenant = Tenant::where('slug', $tenantSlug)->firstOrFail();
 

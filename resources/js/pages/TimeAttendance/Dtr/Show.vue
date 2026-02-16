@@ -177,6 +177,18 @@ const actionLoading = ref<Record<number, string>>({});
 const editingRemarks = ref<Record<number, boolean>>({});
 const remarksInput = ref<Record<number, string>>({});
 const resolveRemarks = ref<Record<number, string>>({});
+const resolutionType = ref<Record<number, string>>({});
+const manualTimeOut = ref<Record<number, string>>({});
+
+type ResolutionOption = { value: string; label: string; description: string };
+
+const resolutionOptions: ResolutionOption[] = [
+    { value: 'manual_time_out', label: 'Enter Manual Time-Out', description: 'Specify the actual time the employee left' },
+    { value: 'use_schedule_end', label: 'Use Schedule End Time', description: 'Set time-out to the scheduled end of shift' },
+    { value: 'mark_half_day', label: 'Mark as Half-Day', description: 'Record as 4 hours worked with undertime' },
+    { value: 'mark_absent', label: 'Mark as Absent', description: 'Override record as absent for the day' },
+    { value: 'no_change', label: 'Resolve Without Change', description: 'Clear the review flag without modifying times' },
+];
 
 function getCsrfToken(): string {
     return decodeURIComponent(document.cookie.match(/XSRF-TOKEN=([^;]+)/)?.[1] ?? '');
@@ -254,13 +266,35 @@ async function saveRemarks(recordId: number) {
 }
 
 async function resolveReview(recordId: number) {
+    const type = resolutionType.value[recordId];
+    const remarks = resolveRemarks.value[recordId];
+
+    if (!type) {
+        toast.error('Please select a resolution type.');
+        return;
+    }
+
+    if (!remarks?.trim()) {
+        toast.error('Remarks are required.');
+        return;
+    }
+
+    if (type === 'manual_time_out' && !manualTimeOut.value[recordId]) {
+        toast.error('Please enter the time-out.');
+        return;
+    }
+
     actionLoading.value[recordId] = 'resolve';
     try {
         const result = await apiPost(`/api/time-attendance/dtr/record/${recordId}/resolve-review`, {
-            remarks: resolveRemarks.value[recordId] || null,
+            resolution_type: type,
+            manual_time_out: type === 'manual_time_out' ? manualTimeOut.value[recordId] : null,
+            remarks: remarks,
         });
         toast.success(result.message);
         delete resolveRemarks.value[recordId];
+        delete resolutionType.value[recordId];
+        delete manualTimeOut.value[recordId];
         router.reload({ preserveScroll: true });
     } catch (error: unknown) {
         toast.error(error instanceof Error ? error.message : 'Failed to resolve review.');
@@ -455,31 +489,72 @@ async function resolveReview(recordId: number) {
                                     <td colspan="10" class="bg-slate-50 px-4 py-4 dark:bg-slate-800/30">
                                         <div class="flex flex-col gap-4">
                                             <!-- Review Warning -->
-                                            <div v-if="record.needs_review" class="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20">
-                                                <svg class="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                                                </svg>
-                                                <div class="flex grow flex-col gap-2">
-                                                    <span class="text-sm font-medium text-amber-700 dark:text-amber-400">{{ record.review_reason }}</span>
-                                                    <div class="flex items-end gap-2">
-                                                        <textarea
-                                                            v-model="resolveRemarks[record.id]"
-                                                            placeholder="Add remarks (optional)..."
-                                                            rows="2"
-                                                            class="grow rounded-md border border-amber-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-amber-700 dark:bg-slate-800 dark:text-slate-100"
-                                                            @click.stop
-                                                        />
-                                                        <Button
-                                                            size="sm"
-                                                            class="shrink-0 bg-amber-600 text-white hover:bg-amber-700"
-                                                            :disabled="actionLoading[record.id] === 'resolve'"
-                                                            @click.stop="resolveReview(record.id)"
+                                            <div v-if="record.needs_review" class="rounded-lg border border-amber-200 bg-amber-50 p-4 dark:border-amber-800 dark:bg-amber-900/20" @click.stop>
+                                                <div class="flex items-center gap-2 mb-3">
+                                                    <svg class="h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                    </svg>
+                                                    <span class="text-sm font-semibold text-amber-700 dark:text-amber-400">{{ record.review_reason }}</span>
+                                                </div>
+
+                                                <!-- Resolution Type -->
+                                                <div class="space-y-2 mb-3">
+                                                    <label class="block text-xs font-medium text-amber-700 dark:text-amber-400">Resolution</label>
+                                                    <div class="grid grid-cols-1 gap-1.5">
+                                                        <label
+                                                            v-for="opt in resolutionOptions"
+                                                            :key="opt.value"
+                                                            class="flex items-start gap-2.5 rounded-md border px-3 py-2 cursor-pointer transition-colors text-sm"
+                                                            :class="resolutionType[record.id] === opt.value
+                                                                ? 'border-amber-500 bg-amber-100 dark:border-amber-600 dark:bg-amber-900/40'
+                                                                : 'border-amber-200 bg-white hover:bg-amber-50 dark:border-amber-700 dark:bg-slate-800 dark:hover:bg-slate-700'"
                                                         >
-                                                            <Check class="mr-1 h-3.5 w-3.5" />
-                                                            {{ actionLoading[record.id] === 'resolve' ? 'Resolving...' : 'Resolve Review' }}
-                                                        </Button>
+                                                            <input
+                                                                type="radio"
+                                                                :name="`resolution-${record.id}`"
+                                                                :value="opt.value"
+                                                                v-model="resolutionType[record.id]"
+                                                                class="mt-0.5 accent-amber-600"
+                                                            />
+                                                            <div>
+                                                                <span class="font-medium text-slate-800 dark:text-slate-200">{{ opt.label }}</span>
+                                                                <p class="text-xs text-slate-500 dark:text-slate-400">{{ opt.description }}</p>
+                                                            </div>
+                                                        </label>
                                                     </div>
                                                 </div>
+
+                                                <!-- Manual Time-Out Input -->
+                                                <div v-if="resolutionType[record.id] === 'manual_time_out'" class="mb-3">
+                                                    <label class="block text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">Time-Out</label>
+                                                    <input
+                                                        type="time"
+                                                        v-model="manualTimeOut[record.id]"
+                                                        class="h-9 w-48 rounded-md border border-amber-300 bg-white px-3 text-sm dark:border-amber-700 dark:bg-slate-800 dark:text-slate-100 focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                                                    />
+                                                </div>
+
+                                                <!-- Remarks -->
+                                                <div class="mb-3">
+                                                    <label class="block text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">Remarks <span class="text-red-500">*</span></label>
+                                                    <textarea
+                                                        v-model="resolveRemarks[record.id]"
+                                                        placeholder="Explain the resolution..."
+                                                        rows="2"
+                                                        class="w-full rounded-md border border-amber-300 bg-white px-3 py-1.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:ring-1 focus:ring-amber-500 dark:border-amber-700 dark:bg-slate-800 dark:text-slate-100"
+                                                    />
+                                                </div>
+
+                                                <!-- Submit -->
+                                                <Button
+                                                    size="sm"
+                                                    class="bg-amber-600 text-white hover:bg-amber-700"
+                                                    :disabled="actionLoading[record.id] === 'resolve' || !resolutionType[record.id] || !resolveRemarks[record.id]?.trim()"
+                                                    @click.stop="resolveReview(record.id)"
+                                                >
+                                                    <Check class="mr-1 h-3.5 w-3.5" />
+                                                    {{ actionLoading[record.id] === 'resolve' ? 'Resolving...' : 'Resolve Review' }}
+                                                </Button>
                                             </div>
 
                                             <!-- Overtime Actions -->
@@ -614,24 +689,63 @@ async function resolveReview(recordId: number) {
                         <!-- Expanded Content -->
                         <div v-if="expandedRows.has(record.id)" class="mt-4 flex flex-col gap-3 rounded-lg bg-slate-100 p-3 dark:bg-slate-800">
                             <!-- Review Warning (Mobile) -->
-                            <div v-if="record.needs_review" class="flex flex-col gap-2 rounded-lg border border-amber-200 bg-amber-50 p-2.5 dark:border-amber-800 dark:bg-amber-900/20">
-                                <div class="flex items-center gap-2 text-sm font-medium text-amber-700 dark:text-amber-400">
+                            <div v-if="record.needs_review" class="flex flex-col gap-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20" @click.stop>
+                                <div class="flex items-center gap-2 text-sm font-semibold text-amber-700 dark:text-amber-400">
                                     <svg class="h-4 w-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                     {{ record.review_reason }}
                                 </div>
-                                <textarea
-                                    v-model="resolveRemarks[record.id]"
-                                    placeholder="Remarks (optional)..."
-                                    rows="2"
-                                    class="w-full rounded-md border border-amber-300 bg-white px-3 py-1.5 text-sm dark:border-amber-700 dark:bg-slate-800 dark:text-slate-100"
-                                    @click.stop
-                                />
+
+                                <!-- Resolution Type -->
+                                <div class="space-y-1.5">
+                                    <label
+                                        v-for="opt in resolutionOptions"
+                                        :key="opt.value"
+                                        class="flex items-start gap-2 rounded-md border px-2.5 py-2 cursor-pointer transition-colors text-sm"
+                                        :class="resolutionType[record.id] === opt.value
+                                            ? 'border-amber-500 bg-amber-100 dark:border-amber-600 dark:bg-amber-900/40'
+                                            : 'border-amber-200 bg-white dark:border-amber-700 dark:bg-slate-800'"
+                                    >
+                                        <input
+                                            type="radio"
+                                            :name="`resolution-mobile-${record.id}`"
+                                            :value="opt.value"
+                                            v-model="resolutionType[record.id]"
+                                            class="mt-0.5 accent-amber-600"
+                                        />
+                                        <div>
+                                            <span class="font-medium text-slate-800 dark:text-slate-200">{{ opt.label }}</span>
+                                            <p class="text-xs text-slate-500 dark:text-slate-400">{{ opt.description }}</p>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Manual Time-Out Input -->
+                                <div v-if="resolutionType[record.id] === 'manual_time_out'">
+                                    <label class="block text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">Time-Out</label>
+                                    <input
+                                        type="time"
+                                        v-model="manualTimeOut[record.id]"
+                                        class="h-9 w-full rounded-md border border-amber-300 bg-white px-3 text-sm dark:border-amber-700 dark:bg-slate-800 dark:text-slate-100"
+                                    />
+                                </div>
+
+                                <!-- Remarks -->
+                                <div>
+                                    <label class="block text-xs font-medium text-amber-700 dark:text-amber-400 mb-1">Remarks <span class="text-red-500">*</span></label>
+                                    <textarea
+                                        v-model="resolveRemarks[record.id]"
+                                        placeholder="Explain the resolution..."
+                                        rows="2"
+                                        class="w-full rounded-md border border-amber-300 bg-white px-3 py-1.5 text-sm dark:border-amber-700 dark:bg-slate-800 dark:text-slate-100"
+                                    />
+                                </div>
+
                                 <Button
                                     size="sm"
                                     class="w-full bg-amber-600 text-white hover:bg-amber-700"
-                                    :disabled="actionLoading[record.id] === 'resolve'"
+                                    :disabled="actionLoading[record.id] === 'resolve' || !resolutionType[record.id] || !resolveRemarks[record.id]?.trim()"
                                     @click.stop="resolveReview(record.id)"
                                 >
                                     <Check class="mr-1 h-3.5 w-3.5" />

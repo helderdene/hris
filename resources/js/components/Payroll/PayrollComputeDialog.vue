@@ -55,7 +55,7 @@ async function handleCompute() {
     progress.value = null;
 
     try {
-        const response = await fetch(`/api/payroll/periods/${props.period.id}/compute`, {
+        const response = await fetch(`/api/organization/payroll-periods/${props.period.id}/compute`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

@@ -141,40 +141,96 @@ it('rejects remarks exceeding max length', function () {
 |--------------------------------------------------------------------------
 */
 
-it('resolves review for a DTR record', function () {
+it('resolves review with no_change resolution type', function () {
     $record = DailyTimeRecord::factory()->needsReview('Missing time-out')->create();
 
     $response = $this->actingAs($this->user)
         ->postJson("{$this->baseUrl}/api/time-attendance/dtr/record/{$record->id}/resolve-review", [
-            'remarks' => 'Verified with supervisor.',
+            'resolution_type' => 'no_change',
+            'remarks' => 'Verified with supervisor - employee left on time.',
         ]);
 
     $response->assertSuccessful();
-    $response->assertJsonFragment(['message' => 'Review resolved successfully.']);
+    $response->assertJsonFragment(['message' => 'Review resolved.']);
 
     $record->refresh();
     expect($record->needs_review)->toBeFalse();
     expect($record->review_reason)->toBeNull();
-    expect($record->remarks)->toBe('Verified with supervisor.');
+    expect($record->remarks)->toContain('Verified with supervisor');
 });
 
-it('resolves review without remarks', function () {
+it('resolves review by marking as absent', function () {
+    $record = DailyTimeRecord::factory()->needsReview('Missing time-out')->create([
+        'first_in' => now()->setTime(8, 0),
+        'total_work_minutes' => 120,
+    ]);
+
+    $response = $this->actingAs($this->user)
+        ->postJson("{$this->baseUrl}/api/time-attendance/dtr/record/{$record->id}/resolve-review", [
+            'resolution_type' => 'mark_absent',
+            'remarks' => 'Unreliable record, employee did not work.',
+        ]);
+
+    $response->assertSuccessful();
+
+    $record->refresh();
+    expect($record->needs_review)->toBeFalse();
+    expect($record->status->value)->toBe('absent');
+    expect($record->total_work_minutes)->toBe(0);
+    expect($record->first_in)->toBeNull();
+});
+
+it('resolves review by marking as half-day', function () {
+    $record = DailyTimeRecord::factory()->needsReview('Missing time-out')->create([
+        'first_in' => now()->setTime(8, 0),
+        'total_work_minutes' => 120,
+    ]);
+
+    $response = $this->actingAs($this->user)
+        ->postJson("{$this->baseUrl}/api/time-attendance/dtr/record/{$record->id}/resolve-review", [
+            'resolution_type' => 'mark_half_day',
+            'remarks' => 'Employee left at lunch.',
+        ]);
+
+    $response->assertSuccessful();
+
+    $record->refresh();
+    expect($record->needs_review)->toBeFalse();
+    expect($record->total_work_minutes)->toBe(240);
+    expect($record->undertime_minutes)->toBe(240);
+});
+
+it('requires resolution_type and remarks when resolving review', function () {
     $record = DailyTimeRecord::factory()->needsReview()->create();
 
     $response = $this->actingAs($this->user)
         ->postJson("{$this->baseUrl}/api/time-attendance/dtr/record/{$record->id}/resolve-review");
 
-    $response->assertSuccessful();
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(['resolution_type', 'remarks']);
+});
 
-    $record->refresh();
-    expect($record->needs_review)->toBeFalse();
+it('requires manual_time_out when resolution type is manual_time_out', function () {
+    $record = DailyTimeRecord::factory()->needsReview()->create();
+
+    $response = $this->actingAs($this->user)
+        ->postJson("{$this->baseUrl}/api/time-attendance/dtr/record/{$record->id}/resolve-review", [
+            'resolution_type' => 'manual_time_out',
+            'remarks' => 'Set time from supervisor confirmation.',
+        ]);
+
+    $response->assertUnprocessable();
+    $response->assertJsonValidationErrors(['manual_time_out']);
 });
 
 it('returns error when resolving review on a record that does not need review', function () {
     $record = DailyTimeRecord::factory()->create(['needs_review' => false]);
 
     $response = $this->actingAs($this->user)
-        ->postJson("{$this->baseUrl}/api/time-attendance/dtr/record/{$record->id}/resolve-review");
+        ->postJson("{$this->baseUrl}/api/time-attendance/dtr/record/{$record->id}/resolve-review", [
+            'resolution_type' => 'no_change',
+            'remarks' => 'Attempting resolve.',
+        ]);
 
     $response->assertUnprocessable();
     $response->assertJsonFragment(['message' => 'This record does not need review.']);

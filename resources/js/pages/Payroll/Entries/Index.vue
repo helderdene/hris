@@ -292,9 +292,9 @@ async function handleBulkStatusUpdate(newStatus: string) {
 
     try {
         const response = await fetch(
-            `/api/payroll/entries/bulk-status`,
+            `/api/organization/payroll-periods/${props.period.id}/entries/bulk-status`,
             {
-                method: 'PATCH',
+                method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Accept: 'application/json',

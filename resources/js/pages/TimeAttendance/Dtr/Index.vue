@@ -2,6 +2,7 @@
 import DtrStatusBadge from '@/components/Dtr/DtrStatusBadge.vue';
 import DtrSummaryCard from '@/components/Dtr/DtrSummaryCard.vue';
 import EnumSelect from '@/components/EnumSelect.vue';
+import SearchableSelect from '@/components/SearchableSelect.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTenant } from '@/composables/useTenant';
@@ -311,7 +312,7 @@ function viewEmployeeDtr(employeeId: number) {
                     <label class="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">
                         Employee
                     </label>
-                    <EnumSelect v-model="employeeFilter" :options="employeeOptions" placeholder="All Employees" />
+                    <SearchableSelect v-model="employeeFilter" :options="employeeOptions" placeholder="All Employees" />
                 </div>
                 <div class="w-full sm:w-40">
                     <label class="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400">

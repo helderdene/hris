@@ -1,0 +1,3113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KasamaHR &mdash; Pricing Reference (Internal)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #3d3d5c;
+    --ink-muted: #6b6b8a;
+    --surface: #fafaf8;
+    --surface-warm: #f5f3ee;
+    --surface-code: #f0eee8;
+    --border: #e2dfd6;
+    --border-strong: #c9c5b8;
+    --accent: #c17f24;
+    --accent-soft: #f0dbb8;
+    --accent-bg: #fdf6ea;
+    --starter: #2d6a4f;
+    --starter-bg: #f0f7f4;
+    --starter-border: #b7debf;
+    --pro: #1d4ed8;
+    --pro-bg: #eff4ff;
+    --pro-border: #b3cbf7;
+    --enterprise: #7c3aed;
+    --enterprise-bg: #f5f0ff;
+    --enterprise-border: #c7b3f4;
+    --onetime: #b45309;
+    --onetime-bg: #fffbeb;
+    --onetime-border: #fcd34d;
+    --lgu: #0e7490;
+    --lgu-bg: #ecfeff;
+    --lgu-border: #67e8f9;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --green: #16a34a;
+    --green-bg: #f0fdf4;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'DM Sans', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; font-size: 16px; }
+
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--surface);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: var(--ink);
+    color: #c8c6be;
+    padding: 32px 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  nav .brand {
+    padding: 0 28px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 16px;
+  }
+
+  nav .brand h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.35rem;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+
+  nav .brand span {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  nav .nav-group { padding: 8px 20px; }
+
+  nav .nav-group-label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.3);
+    padding: 12px 8px 6px;
+    font-weight: 500;
+  }
+
+  nav a {
+    display: block;
+    padding: 7px 8px;
+    color: #a8a6a0;
+    text-decoration: none;
+    font-size: 0.82rem;
+    border-radius: 6px;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+
+  nav a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+  }
+
+  nav .nav-footer {
+    margin-top: auto;
+    padding: 20px 28px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  nav .nav-footer .badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(193,127,36,0.15);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ---- MAIN ---- */
+  main {
+    margin-left: 260px;
+    max-width: 960px;
+    padding: 60px 64px 120px;
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    margin-bottom: 64px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero .overline {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 2.8rem;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  .hero .lead {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    max-width: 620px;
+    line-height: 1.75;
+  }
+
+  /* ---- SECTIONS ---- */
+  section { margin-bottom: 56px; }
+
+  section h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.75rem;
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+
+  section h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    margin-top: 32px;
+    margin-bottom: 12px;
+    color: var(--ink);
+  }
+
+  section p {
+    color: var(--ink-soft);
+    margin-bottom: 16px;
+    font-size: 0.92rem;
+  }
+
+  .section-intro {
+    color: var(--ink-muted);
+    font-size: 0.88rem;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ---- PRICING MODELS ---- */
+  .model-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 28px 0;
+  }
+
+  .model-card {
+    padding: 28px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .model-card.recommended {
+    border-color: var(--accent-soft);
+    background: var(--accent-bg);
+    position: relative;
+  }
+
+  .model-card.recommended::before {
+    content: 'RECOMMENDED';
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 3px 10px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .model-card .model-name {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+
+  .model-card .model-desc {
+    font-size: 0.85rem;
+    color: var(--ink-muted);
+    line-height: 1.6;
+  }
+
+  /* ---- TIER CARDS ---- */
+  .tier-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 28px 0;
+  }
+
+  .tier-card {
+    padding: 28px 24px;
+    border-radius: 12px;
+    border: 1px solid;
+    position: relative;
+  }
+
+  .tier-card.starter { border-color: var(--starter-border); background: var(--starter-bg); }
+  .tier-card.pro { border-color: var(--pro-border); background: var(--pro-bg); }
+  .tier-card.enterprise { border-color: var(--enterprise-border); background: var(--enterprise-bg); }
+
+  .tier-card .tier-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .tier-card.starter .tier-label { color: var(--starter); }
+  .tier-card.pro .tier-label { color: var(--pro); }
+  .tier-card.enterprise .tier-label { color: var(--enterprise); }
+
+  .tier-card .tier-name {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+  }
+
+  .tier-card .tier-tagline {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    margin-bottom: 16px;
+  }
+
+  .tier-card .price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .tier-card .price small {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+
+  .tier-card .price-annual {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+
+  .tier-card .minimum {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+
+  .tier-card .minimum strong {
+    color: var(--ink-soft);
+  }
+
+  /* ---- ONE-TIME CARDS ---- */
+  .onetime-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 28px 0;
+  }
+
+  .onetime-card {
+    padding: 28px 24px;
+    border-radius: 12px;
+    border: 1px solid var(--onetime-border);
+    background: var(--onetime-bg);
+  }
+
+  .onetime-card .tier-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    color: var(--onetime);
+    margin-bottom: 6px;
+  }
+
+  .onetime-card .tier-name {
+    font-family: var(--serif);
+    font-size: 1.25rem;
+    margin-bottom: 4px;
+  }
+
+  .onetime-card .tier-tagline {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    margin-bottom: 16px;
+  }
+
+  .onetime-card .price {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .onetime-card .price small {
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+
+  .onetime-card .includes {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    line-height: 1.6;
+  }
+
+  /* ---- TABLES ---- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 16px 0 24px;
+  }
+
+  thead th {
+    text-align: left;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border-strong);
+    font-weight: 600;
+  }
+
+  thead th:not(:first-child) {
+    text-align: center;
+  }
+
+  tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-soft);
+    vertical-align: top;
+  }
+
+  tbody td:not(:first-child) {
+    text-align: center;
+  }
+
+  tbody tr:hover {
+    background: rgba(0,0,0,0.015);
+  }
+
+  .check { color: var(--green); font-weight: 600; }
+  .dash { color: var(--ink-muted); }
+
+  /* ---- CALLOUTS ---- */
+  .callout {
+    padding: 20px 24px;
+    border-radius: 10px;
+    margin: 20px 0;
+    font-size: 0.88rem;
+    line-height: 1.7;
+  }
+
+  .callout.info {
+    background: var(--pro-bg);
+    border: 1px solid var(--pro-border);
+    color: var(--ink-soft);
+  }
+
+  .callout.warning {
+    background: var(--onetime-bg);
+    border: 1px solid var(--onetime-border);
+    color: var(--ink-soft);
+  }
+
+  .callout.success {
+    background: var(--green-bg);
+    border: 1px solid #bbf7d0;
+    color: var(--ink-soft);
+  }
+
+  .callout strong {
+    color: var(--ink);
+  }
+
+  .callout .callout-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+  }
+
+  .callout.info .callout-label { color: var(--pro); }
+  .callout.warning .callout-label { color: var(--onetime); }
+  .callout.success .callout-label { color: var(--green); }
+
+  /* ---- REVENUE PROJECTIONS ---- */
+  .revenue-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 24px 0;
+  }
+
+  .revenue-card {
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+    text-align: center;
+  }
+
+  .revenue-card .rev-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .revenue-card .rev-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    font-family: var(--mono);
+  }
+
+  .revenue-card .rev-note {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    margin-top: 4px;
+  }
+
+  /* ---- COMPARISON ---- */
+  .comparison-table th.starter-col { background: var(--starter-bg); color: var(--starter); }
+  .comparison-table th.pro-col { background: var(--pro-bg); color: var(--pro); }
+  .comparison-table th.enterprise-col { background: var(--enterprise-bg); color: var(--enterprise); }
+
+  .category-row td {
+    font-weight: 600;
+    color: var(--ink) !important;
+    background: var(--surface-warm);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-top: 14px !important;
+    padding-bottom: 14px !important;
+  }
+
+  /* ---- PROS/CONS ---- */
+  .proscons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+
+  .proscons-list {
+    list-style: none;
+    font-size: 0.85rem;
+  }
+
+  .proscons-list li {
+    padding: 6px 0;
+    color: var(--ink-soft);
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .proscons-list li .icon {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+    font-weight: 700;
+    margin-top: 2px;
+  }
+
+  .proscons-list.pros li .icon {
+    background: var(--green-bg);
+    color: var(--green);
+  }
+
+  .proscons-list.cons li .icon {
+    background: var(--red-bg);
+    color: var(--red);
+  }
+
+  /* ---- MISC ---- */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  .tag {
+    display: inline-block;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .tag.saas { background: var(--pro-bg); color: var(--pro); }
+  .tag.onetime { background: var(--onetime-bg); color: var(--onetime); }
+  .tag.both { background: var(--enterprise-bg); color: var(--enterprise); }
+  .tag.lgu { background: var(--lgu-bg); color: var(--lgu); }
+
+  /* ---- LGU CARDS ---- */
+  .lgu-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 28px 0;
+  }
+
+  .lgu-card {
+    padding: 24px 20px;
+    border-radius: 12px;
+    border: 1px solid var(--lgu-border);
+    background: var(--lgu-bg);
+  }
+
+  .lgu-card .tier-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    font-weight: 600;
+    color: var(--lgu);
+    margin-bottom: 6px;
+  }
+
+  .lgu-card .tier-name {
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    margin-bottom: 4px;
+  }
+
+  .lgu-card .tier-tagline {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+
+  .lgu-card .price {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+
+  .lgu-card .price small {
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--ink-muted);
+  }
+
+  .lgu-card .includes {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+    line-height: 1.6;
+  }
+
+  .lgu-callout {
+    background: var(--lgu-bg);
+    border: 1px solid var(--lgu-border);
+  }
+
+  .lgu-callout .callout-label { color: var(--lgu); }
+
+  .small-note {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+    margin-top: 8px;
+  }
+
+  .amt {
+    font-family: var(--mono);
+    font-size: 0.9em;
+  }
+
+  /* ---- BREAK-EVEN CHART ---- */
+  .breakeven-bar {
+    display: flex;
+    align-items: center;
+    margin: 8px 0;
+    gap: 12px;
+  }
+
+  .breakeven-bar .bar-label {
+    width: 120px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .breakeven-bar .bar-track {
+    flex: 1;
+    height: 28px;
+    background: var(--surface-warm);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .breakeven-bar .bar-fill {
+    height: 100%;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    min-width: 60px;
+    transition: width 0.3s;
+  }
+
+  .breakeven-bar .bar-fill.saas { background: var(--pro); }
+  .breakeven-bar .bar-fill.onetime { background: var(--onetime); }
+
+  .breakeven-bar .bar-value {
+    font-size: 0.75rem;
+    color: var(--ink-muted);
+    margin-left: 10px;
+    flex-shrink: 0;
+    font-family: var(--mono);
+    width: 80px;
+  }
+
+  .cost-breakdown {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin: 24px 0;
+  }
+
+  .cost-box {
+    padding: 24px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .cost-box .cost-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+    margin-bottom: 16px;
+  }
+
+  .cost-box.saas-box .cost-title { color: var(--pro); }
+  .cost-box.onetime-box .cost-title { color: var(--onetime); }
+
+  .cost-line {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .cost-line:last-child { border-bottom: none; }
+
+  .cost-line.total {
+    font-weight: 700;
+    color: var(--ink);
+    border-top: 2px solid var(--border-strong);
+    margin-top: 4px;
+    padding-top: 10px;
+  }
+
+  .timeline-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 4px;
+    margin: 24px 0;
+  }
+
+  .timeline-cell {
+    padding: 12px 8px;
+    border-radius: 8px;
+    text-align: center;
+    font-size: 0.78rem;
+  }
+
+  .timeline-cell .yr-label {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 4px;
+    display: block;
+  }
+
+  .timeline-cell .yr-saas {
+    font-family: var(--mono);
+    color: var(--pro);
+    font-weight: 600;
+    font-size: 0.82rem;
+  }
+
+  .timeline-cell .yr-onetime {
+    font-family: var(--mono);
+    color: var(--onetime);
+    font-weight: 600;
+    font-size: 0.82rem;
+  }
+
+  .timeline-cell .yr-note {
+    font-size: 0.65rem;
+    color: var(--ink-muted);
+    margin-top: 2px;
+  }
+
+  .timeline-cell.breakeven-point {
+    background: var(--accent-bg);
+    border: 2px solid var(--accent);
+  }
+
+  dl {
+    margin: 16px 0;
+  }
+
+  dl dt {
+    font-weight: 600;
+    font-size: 0.88rem;
+    margin-top: 12px;
+  }
+
+  dl dd {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin-left: 0;
+    padding-left: 16px;
+    border-left: 2px solid var(--border);
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== SIDEBAR NAV ===================== -->
+<nav>
+  <div class="brand">
+    <h2>KasamaHR</h2>
+    <span>Pricing Reference</span>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a href="#models">Pricing Models</a>
+    <a href="#recommendation">Recommendation</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Model A &mdash; SaaS</div>
+    <a href="#saas-tiers">Subscription Tiers</a>
+    <a href="#saas-features">Feature Matrix</a>
+    <a href="#saas-limits">Limits &amp; Extras</a>
+    <a href="#saas-trial">Trial Period</a>
+    <a href="#saas-revenue">Revenue Projections</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Model B &mdash; One-Time</div>
+    <a href="#onetime-editions">Editions &amp; Pricing</a>
+    <a href="#onetime-support">Support &amp; Maintenance</a>
+    <a href="#onetime-hosting">Hosting Options</a>
+    <a href="#onetime-revenue">Revenue Projections</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Model C &mdash; LGU</div>
+    <a href="#lgu-overview">LGU Overview</a>
+    <a href="#lgu-tiers">LGU Editions &amp; Pricing</a>
+    <a href="#lgu-modules">Module Selection</a>
+    <a href="#lgu-addons">Add-Ons &amp; Services</a>
+    <a href="#lgu-saas">LGU SaaS Subscription</a>
+    <a href="#lgu-procurement">Procurement &amp; Delivery</a>
+    <a href="#lgu-revenue">Revenue Projections</a>
+    <a href="#build-vs-buy">Build vs. Buy</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Costs</div>
+    <a href="#saas-costs">SaaS Deployment &amp; Ops</a>
+    <a href="#onetime-costs">One-Time Delivery Costs</a>
+    <a href="#customer-costs">Customer Total Cost</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Analysis</div>
+    <a href="#breakeven">Break-Even Analysis</a>
+    <a href="#comparison">Side-by-Side Comparison</a>
+    <a href="#hybrid">Hybrid Approach</a>
+    <a href="#implementation">Implementation Notes</a>
+  </div>
+
+  <div class="nav-footer">
+    <div class="badge">Internal Document</div>
+    <div style="font-size: 0.72rem; margin-top: 8px; color: rgba(255,255,255,0.35);">
+      Last updated: Feb 2026
+    </div>
+  </div>
+</nav>
+
+<!-- ===================== MAIN CONTENT ===================== -->
+<main>
+
+  <!-- ---- HERO ---- -->
+  <div class="hero">
+    <div class="overline">Internal Reference &mdash; Confidential</div>
+    <h1>Pricing Strategy &amp; Models</h1>
+    <p class="lead">
+      This document outlines two pricing approaches for KasamaHR: a recurring SaaS subscription model and a one-time purchase (perpetual license) model. It includes pricing, features, revenue projections, and a recommended strategy.
+    </p>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: PRICING MODELS OVERVIEW                                 -->
+  <!-- ================================================================ -->
+  <section id="models">
+    <h2>Pricing Models Overview</h2>
+    <p class="section-intro">KasamaHR can be sold under two fundamentally different models. Each has distinct implications for revenue, support burden, and customer expectations.</p>
+
+    <div class="model-cards">
+      <div class="model-card recommended">
+        <div class="model-name">Model A: SaaS Subscription</div>
+        <div class="model-desc">
+          Per-employee, per-month recurring billing. Customers access KasamaHR as a hosted service on <code>{company}.kasamahr.com</code>. We handle hosting, updates, backups, and security. Three tiers differentiated by modules and limits.
+        </div>
+      </div>
+
+      <div class="model-card">
+        <div class="model-name">Model B: One-Time Purchase</div>
+        <div class="model-desc">
+          Perpetual license with a one-time fee. Customer receives the full application source code or a self-hosted deployment. They handle their own infrastructure. Optional annual support/maintenance contract for updates and priority support.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="recommendation">
+    <h2>Recommendation</h2>
+
+    <div class="callout success">
+      <span class="callout-label">Strategic Recommendation</span>
+      <strong>Lead with SaaS (Model A) as the primary offering.</strong> Offer one-time purchase (Model B) as a premium add-on for enterprise clients who require on-premise deployment for compliance or data sovereignty reasons. This maximizes recurring revenue while capturing the on-premise market segment.
+    </div>
+
+    <p>The SaaS model is recommended as the primary strategy because:</p>
+    <ul style="margin: 12px 0 12px 20px; font-size: 0.88rem; color: var(--ink-soft);">
+      <li>Predictable monthly recurring revenue (MRR) enables sustainable growth</li>
+      <li>Lower barrier to entry for SMEs (no large upfront cost)</li>
+      <li>Centralized deployment simplifies updates, support, and monitoring</li>
+      <li>Per-employee pricing aligns cost with value as companies grow</li>
+      <li>Matches the Philippine HR SaaS market trend (Sprout, GreatDay, PayrollHero)</li>
+    </ul>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================================================================ -->
+  <!-- SECTION: SAAS SUBSCRIPTION TIERS                                 -->
+  <!-- ================================================================ -->
+  <section id="saas-tiers">
+    <h2><span class="tag saas">SaaS</span> Subscription Tiers</h2>
+    <p class="section-intro">Three tiers differentiated by module access, employee limits, and support level. Per-employee, per-month pricing with annual discount.</p>
+
+    <div class="tier-grid">
+      <!-- STARTER -->
+      <div class="tier-card starter">
+        <div class="tier-label">Starter</div>
+        <div class="tier-name">Core HR Operations</div>
+        <div class="tier-tagline">9 modules &middot; Small companies</div>
+        <div class="price">
+          <span class="amt">&nbsp;99</span> <small>/ employee / month</small>
+        </div>
+        <div class="price-annual">
+          Annual: <span class="amt">&nbsp;990</span>/employee/year (~17% savings)
+        </div>
+        <div class="minimum">
+          <strong>Minimum:</strong> 5 employees<br>
+          Floor: <span class="amt">&nbsp;495</span>/mo &middot; <span class="amt">&nbsp;4,950</span>/yr
+        </div>
+      </div>
+
+      <!-- PROFESSIONAL -->
+      <div class="tier-card pro">
+        <div class="tier-label">Professional</div>
+        <div class="tier-name">Strategic HR</div>
+        <div class="tier-tagline">17 modules &middot; Growing companies</div>
+        <div class="price">
+          <span class="amt">&nbsp;199</span> <small>/ employee / month</small>
+        </div>
+        <div class="price-annual">
+          Annual: <span class="amt">&nbsp;1,990</span>/employee/year (~17% savings)
+        </div>
+        <div class="minimum">
+          <strong>Minimum:</strong> 10 employees<br>
+          Floor: <span class="amt">&nbsp;1,990</span>/mo &middot; <span class="amt">&nbsp;19,900</span>/yr
+        </div>
+      </div>
+
+      <!-- ENTERPRISE -->
+      <div class="tier-card enterprise">
+        <div class="tier-label">Enterprise</div>
+        <div class="tier-name">Full Platform</div>
+        <div class="tier-tagline">21 modules &middot; Large organizations</div>
+        <div class="price">
+          <span class="amt">&nbsp;349</span> <small>/ employee / month</small>
+        </div>
+        <div class="price-annual">
+          Annual: <span class="amt">&nbsp;3,490</span>/employee/year (~17% savings)
+        </div>
+        <div class="minimum">
+          <strong>Minimum:</strong> 25 employees<br>
+          Floor: <span class="amt">&nbsp;8,725</span>/mo &middot; <span class="amt">&nbsp;87,250</span>/yr
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ---- FEATURE MATRIX ---- -->
+  <section id="saas-features">
+    <h3>Feature Matrix</h3>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th style="width: 40%;">Capability</th>
+          <th class="starter-col" style="width: 20%;">Starter</th>
+          <th class="pro-col" style="width: 20%;">Professional</th>
+          <th class="enterprise-col" style="width: 20%;">Enterprise</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="category-row"><td colspan="4">Core HR</td></tr>
+        <tr><td>Employee Records &amp; HR Management</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Organization Management</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Time &amp; Attendance</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Biometric Integration</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Web Kiosk Clock-In <em>(planned)</em></td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Leave Management</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Payroll Processing</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Government Compliance Reports</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Employee Self-Service (Basic)</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+
+        <tr class="category-row"><td colspan="4">Strategic HR</td></tr>
+        <tr><td>Recruitment &amp; Hiring</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Onboarding &amp; Pre-boarding</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Training &amp; Development</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Performance Management</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Probationary Management</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Manager/Supervisor Tools</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Help Center</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>HR Analytics Dashboard</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+
+        <tr class="category-row"><td colspan="4">Enterprise</td></tr>
+        <tr><td>Compliance Training</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Background &amp; Reference Checks</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Audit Logs &amp; Security</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Public Careers Portal</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ---- LIMITS & EXTRAS ---- -->
+  <section id="saas-limits">
+    <h3>Limits &amp; Extras</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 40%;">Limit / Extra</th>
+          <th style="width: 20%;">Starter</th>
+          <th style="width: 20%;">Professional</th>
+          <th style="width: 20%;">Enterprise</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Max Employees</td><td>50</td><td>250</td><td>Unlimited</td></tr>
+        <tr><td>Max Admin/HR Users</td><td>3</td><td>10</td><td>Unlimited</td></tr>
+        <tr><td>Max Departments</td><td>5</td><td>Unlimited</td><td>Unlimited</td></tr>
+        <tr><td>Max Biometric Devices</td><td>2</td><td>10</td><td>Unlimited</td></tr>
+        <tr><td>Max Kiosks <em>(planned)</em></td><td>1</td><td>5</td><td>Unlimited</td></tr>
+        <tr><td>Storage</td><td>1 GB</td><td>10 GB</td><td>100 GB</td></tr>
+        <tr><td>API Access</td><td class="dash">&mdash;</td><td>Read-only</td><td>Full</td></tr>
+        <tr><td>Custom Branding</td><td>Logo only</td><td>Logo + Colors</td><td>Full White-Label</td></tr>
+        <tr><td>SSO / SAML</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Support</td><td>Email</td><td>Priority Email</td><td>Dedicated Manager</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ---- TRIAL ---- -->
+  <section id="saas-trial">
+    <h3>Trial Period</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Parameter</th>
+          <th style="text-align: left;">Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: left;">Duration</td><td style="text-align: left;">14 days</td></tr>
+        <tr><td style="text-align: left;">Trial Tier</td><td style="text-align: left;">Professional (full strategic HR experience)</td></tr>
+        <tr><td style="text-align: left;">Credit Card Required</td><td style="text-align: left;">No</td></tr>
+        <tr><td style="text-align: left;">Expiration Behavior</td><td style="text-align: left;">Auto-locks access; requires plan selection to continue</td></tr>
+        <tr><td style="text-align: left;">Enterprise Trial</td><td style="text-align: left;">Sales-assisted, 30 days, by request</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ---- SAAS REVENUE PROJECTIONS ---- -->
+  <section id="saas-revenue">
+    <h3>Revenue Projections (SaaS)</h3>
+    <p>Illustrative scenarios based on different customer mixes. All amounts in PHP.</p>
+
+    <h3 style="font-size: 0.92rem; margin-top: 24px;">Scenario: Year 1 Conservative</h3>
+    <p class="small-note">20 Starter (avg 15 emp) + 10 Professional (avg 30 emp) + 2 Enterprise (avg 50 emp)</p>
+
+    <div class="revenue-grid">
+      <div class="revenue-card">
+        <div class="rev-label">Starter MRR</div>
+        <div class="rev-value" style="font-size: 1.2rem;">29,700</div>
+        <div class="rev-note">20 &times; 15 &times; 99</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Pro MRR</div>
+        <div class="rev-value" style="font-size: 1.2rem;">59,700</div>
+        <div class="rev-note">10 &times; 30 &times; 199</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Enterprise MRR</div>
+        <div class="rev-value" style="font-size: 1.2rem;">34,900</div>
+        <div class="rev-note">2 &times; 50 &times; 349</div>
+      </div>
+      <div class="revenue-card" style="border-color: var(--accent-soft); background: var(--accent-bg);">
+        <div class="rev-label">Total MRR</div>
+        <div class="rev-value" style="font-size: 1.2rem;">124,300</div>
+        <div class="rev-note">~1.49M ARR</div>
+      </div>
+    </div>
+
+    <h3 style="font-size: 0.92rem; margin-top: 24px;">Scenario: Year 2 Growth</h3>
+    <p class="small-note">50 Starter (avg 20 emp) + 25 Professional (avg 40 emp) + 5 Enterprise (avg 80 emp)</p>
+
+    <div class="revenue-grid">
+      <div class="revenue-card">
+        <div class="rev-label">Starter MRR</div>
+        <div class="rev-value" style="font-size: 1.2rem;">99,000</div>
+        <div class="rev-note">50 &times; 20 &times; 99</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Pro MRR</div>
+        <div class="rev-value" style="font-size: 1.2rem;">199,000</div>
+        <div class="rev-note">25 &times; 40 &times; 199</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Enterprise MRR</div>
+        <div class="rev-value" style="font-size: 1.2rem;">139,600</div>
+        <div class="rev-note">5 &times; 80 &times; 349</div>
+      </div>
+      <div class="revenue-card" style="border-color: var(--accent-soft); background: var(--accent-bg);">
+        <div class="rev-label">Total MRR</div>
+        <div class="rev-value" style="font-size: 1.2rem;">437,600</div>
+        <div class="rev-note">~5.25M ARR</div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================================================================ -->
+  <!-- SECTION: ONE-TIME PURCHASE                                       -->
+  <!-- ================================================================ -->
+  <section id="onetime-editions">
+    <h2><span class="tag onetime">One-Time</span> Editions &amp; Pricing</h2>
+    <p class="section-intro">Perpetual license model where the customer pays once and owns the right to use the application indefinitely. Source code is delivered for self-hosting. Module tiers mirror the SaaS offering.</p>
+
+    <div class="onetime-grid">
+      <!-- STARTER -->
+      <div class="onetime-card">
+        <div class="tier-label">Starter Edition</div>
+        <div class="tier-name">Core HR</div>
+        <div class="tier-tagline">9 modules &middot; Perpetual license</div>
+        <div class="price">
+          <span class="amt">&nbsp;75,000</span> <small>one-time</small>
+        </div>
+        <div class="includes">
+          Includes: source code, 1-year updates, email support for 90 days, deployment guide
+        </div>
+      </div>
+
+      <!-- PROFESSIONAL -->
+      <div class="onetime-card">
+        <div class="tier-label">Professional Edition</div>
+        <div class="tier-name">Strategic HR</div>
+        <div class="tier-tagline">17 modules &middot; Perpetual license</div>
+        <div class="price">
+          <span class="amt">&nbsp;175,000</span> <small>one-time</small>
+        </div>
+        <div class="includes">
+          Includes: source code, 1-year updates, priority email support for 6 months, deployment assistance
+        </div>
+      </div>
+
+      <!-- ENTERPRISE -->
+      <div class="onetime-card">
+        <div class="tier-label">Enterprise Edition</div>
+        <div class="tier-name">Full Platform</div>
+        <div class="tier-tagline">21 modules &middot; Perpetual license</div>
+        <div class="price">
+          <span class="amt">&nbsp;350,000</span> <small>one-time</small>
+        </div>
+        <div class="includes">
+          Includes: source code, 1-year updates, dedicated onboarding, deployment assistance, 6-month priority support
+        </div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-label">Pricing Rationale</span>
+      One-time prices are set at roughly <strong>5&ndash;6&times; the annual SaaS cost for a typical customer</strong> in each tier. This ensures the one-time model is attractive for customers committed to long-term use, while keeping SaaS as the better value for most buyers. Example: A Professional customer with 20 employees pays ~47,760/yr on SaaS vs. 175,000 one-time (break-even at ~3.7 years).
+    </div>
+  </section>
+
+  <!-- ---- SUPPORT & MAINTENANCE ---- -->
+  <section id="onetime-support">
+    <h3>Annual Support &amp; Maintenance Contract</h3>
+    <p>One-time purchase customers can optionally renew an annual support and maintenance (S&M) contract to continue receiving updates, security patches, and support.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Edition</th>
+          <th>Annual S&amp;M Fee</th>
+          <th>% of License</th>
+          <th>Includes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">Starter</td>
+          <td><span class="amt">&nbsp;15,000</span>/yr</td>
+          <td>20%</td>
+          <td style="text-align: left; font-size: 0.8rem;">All updates, security patches, email support</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Professional</td>
+          <td><span class="amt">&nbsp;35,000</span>/yr</td>
+          <td>20%</td>
+          <td style="text-align: left; font-size: 0.8rem;">All updates, security patches, priority email support</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Enterprise</td>
+          <td><span class="amt">&nbsp;70,000</span>/yr</td>
+          <td>20%</td>
+          <td style="text-align: left; font-size: 0.8rem;">All updates, security patches, dedicated support, custom patches</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="small-note">First year of S&M is included in the license fee. Renewal is optional but strongly recommended. Customers without active S&M do not receive updates or security patches.</p>
+  </section>
+
+  <!-- ---- HOSTING OPTIONS ---- -->
+  <section id="onetime-hosting">
+    <h3>Hosting Options for One-Time Customers</h3>
+
+    <dl>
+      <dt>Self-Hosted (Customer Manages)</dt>
+      <dd>Customer deploys on their own server. We provide a deployment guide and Docker setup. Minimum requirements: PHP 8.4+, MySQL 8+, Redis, 2 vCPU / 4 GB RAM. No recurring fees from us beyond optional S&M.</dd>
+
+      <dt>Managed Hosting Add-On (We Host)</dt>
+      <dd>We host the customer's dedicated instance on our infrastructure. Billed separately at <span class="amt">&nbsp;3,000&ndash;8,000</span>/mo depending on usage. Includes server management, backups, SSL, monitoring. This creates a recurring revenue stream even from one-time customers.</dd>
+
+      <dt>Customer Cloud (Assisted Setup)</dt>
+      <dd>One-time setup fee of <span class="amt">&nbsp;15,000&ndash;25,000</span> to deploy on customer's own cloud (AWS, DigitalOcean, etc). Includes CI/CD pipeline setup, monitoring, and documentation handoff.</dd>
+    </dl>
+  </section>
+
+  <!-- ---- ONE-TIME REVENUE ---- -->
+  <section id="onetime-revenue">
+    <h3>Revenue Projections (One-Time)</h3>
+    <p>Illustrative Year 1 scenario. Revenue is front-loaded with diminishing recurring from S&M renewals.</p>
+
+    <p class="small-note" style="margin-bottom: 16px;">5 Starter + 3 Professional + 1 Enterprise license sales (Year 1)</p>
+
+    <div class="revenue-grid">
+      <div class="revenue-card">
+        <div class="rev-label">License Revenue</div>
+        <div class="rev-value" style="font-size: 1.2rem;">1.25M</div>
+        <div class="rev-note">One-time (Year 1)</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">S&amp;M Year 2</div>
+        <div class="rev-value" style="font-size: 1.2rem;">250K</div>
+        <div class="rev-note">If all renew (20%)</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Hosting Add-On</div>
+        <div class="rev-value" style="font-size: 1.2rem;">~180K</div>
+        <div class="rev-note">If 3 use managed hosting</div>
+      </div>
+      <div class="revenue-card" style="border-color: var(--accent-soft); background: var(--accent-bg);">
+        <div class="rev-label">Year 1 Total</div>
+        <div class="rev-value" style="font-size: 1.2rem;">~1.43M</div>
+        <div class="rev-note">Drops to ~430K in Year 2</div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-label">Revenue Risk</span>
+      One-time revenue is inherently volatile. Year 2+ depends entirely on new sales and S&M renewals. S&M renewal rates for Philippine SME software are typically <strong>40&ndash;60%</strong>, meaning revenue can drop significantly after the initial sale.
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================================================================ -->
+  <!-- SECTION: LGU OVERVIEW                                            -->
+  <!-- ================================================================ -->
+  <section id="lgu-overview">
+    <h2><span class="tag lgu">LGU</span> Local Government Unit Pricing</h2>
+    <p class="section-intro">A dedicated one-time purchase model designed for Philippine Local Government Units (barangays, municipalities, cities, and provinces), structured around government procurement rules and budget cycles.</p>
+
+    <div class="callout lgu-callout">
+      <span class="callout-label">Why a Separate LGU Model</span>
+      LGUs have fundamentally different procurement and budgeting processes compared to private companies:
+      <ul style="margin: 8px 0 0 16px; font-size: 0.85rem; line-height: 1.8;">
+        <li><strong>RA 9184 (Government Procurement Reform Act)</strong> &mdash; requires competitive bidding for purchases above 1M, with Alternative Methods of Procurement (AMP) below that threshold</li>
+        <li><strong>Annual budget appropriation</strong> &mdash; funds allocated via MOOE (Maintenance and Other Operating Expenses) or Capital Outlay; no multi-year subscription commitments</li>
+        <li><strong>Data sovereignty</strong> &mdash; some LGUs require data to stay on government-owned or locally hosted infrastructure</li>
+        <li><strong>Different scale</strong> &mdash; employee counts range from ~20 (barangay) to 2,000+ (cities/provinces)</li>
+        <li><strong>COA audit requirements</strong> &mdash; Commission on Audit needs clear documentation of software as a capital asset or service expense</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: LGU EDITIONS & PRICING                                  -->
+  <!-- ================================================================ -->
+  <section id="lgu-tiers">
+    <h3>LGU Editions &amp; Pricing</h3>
+    <p>Tiers are structured by LGU classification rather than module bundles. Each tier includes all modules relevant to that LGU size, plus deployment and training.</p>
+
+    <div class="lgu-grid">
+      <!-- BARANGAY -->
+      <div class="lgu-card">
+        <div class="tier-label">Barangay</div>
+        <div class="tier-name">Barangay HR</div>
+        <div class="tier-tagline">Up to 30 employees<br>Core HR + Payroll</div>
+        <div class="price">
+          <span class="amt">270,000</span> <small>one-time</small>
+        </div>
+        <div class="includes">
+          9 core modules, deployment on LGU server or shared cloud, 1-day onsite training, 90-day email support
+        </div>
+      </div>
+
+      <!-- MUNICIPALITY -->
+      <div class="lgu-card">
+        <div class="tier-label">Municipality</div>
+        <div class="tier-name">Municipal HR</div>
+        <div class="tier-tagline">Up to 150 employees<br>Core + Strategic HR</div>
+        <div class="price">
+          <span class="amt">720,000</span> <small>one-time</small>
+        </div>
+        <div class="includes">
+          17 modules, deployment assistance, 2-day onsite training, 6-month priority support, data migration
+        </div>
+      </div>
+
+      <!-- CITY -->
+      <div class="lgu-card">
+        <div class="tier-label">City</div>
+        <div class="tier-name">City HR</div>
+        <div class="tier-tagline">Up to 500 employees<br>Full platform</div>
+        <div class="price">
+          <span class="amt">1,500,000</span> <small>one-time</small>
+        </div>
+        <div class="includes">
+          21 modules, full deployment, 3-day onsite training, 1-year priority support, data migration, custom reports
+        </div>
+      </div>
+
+      <!-- PROVINCE -->
+      <div class="lgu-card">
+        <div class="tier-label">Province</div>
+        <div class="tier-name">Provincial HR</div>
+        <div class="tier-tagline">500+ employees<br>Full platform + multi-office</div>
+        <div class="price">
+          <span class="amt">2,700,000</span> <small>one-time</small>
+        </div>
+        <div class="includes">
+          21 modules, multi-office deployment, 5-day training program, 1-year dedicated support, data migration, integrations
+        </div>
+      </div>
+    </div>
+
+    <div class="callout lgu-callout">
+      <span class="callout-label">Pricing Justification</span>
+      LGU pricing reflects the <strong>true value of a production-ready, 21-module HRIS</strong> that would cost 8&ndash;15M to develop from scratch (see <a href="#build-vs-buy" style="color: var(--lgu);">Build vs. Buy Analysis</a>). Even at these prices, LGUs save <strong>90&ndash;95%</strong> compared to custom development. The pricing is well within typical LGU ICT budget allocations:
+      <ul style="margin: 8px 0 0 16px; font-size: 0.85rem; line-height: 1.8;">
+        <li><strong>Barangay (270K):</strong> within typical barangay ICT capital outlay allocation</li>
+        <li><strong>Municipality (720K):</strong> within SVP threshold or competitive bidding</li>
+        <li><strong>City (1.5M):</strong> competitive bidding; well within annual ICT capital outlay for cities</li>
+        <li><strong>Province (2.7M):</strong> competitive bidding; justified by scope, multi-office deployment, and 500+ employees</li>
+      </ul>
+    </div>
+
+    <h3>Annual Maintenance &amp; Support</h3>
+    <p>Renewable annually from the LGU's MOOE budget. First year is included in the license.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Edition</th>
+          <th>Annual Fee</th>
+          <th>% of License</th>
+          <th>Includes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">Barangay</td>
+          <td><span class="amt">54,000</span>/yr</td>
+          <td>20%</td>
+          <td style="text-align: left; font-size: 0.8rem;">Updates, security patches, email support</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Municipality</td>
+          <td><span class="amt">144,000</span>/yr</td>
+          <td>20%</td>
+          <td style="text-align: left; font-size: 0.8rem;">Updates, patches, priority support, 1 onsite visit/yr</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">City</td>
+          <td><span class="amt">300,000</span>/yr</td>
+          <td>20%</td>
+          <td style="text-align: left; font-size: 0.8rem;">Updates, patches, priority support, 2 onsite visits/yr, report customization</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Province</td>
+          <td><span class="amt">540,000</span>/yr</td>
+          <td>20%</td>
+          <td style="text-align: left; font-size: 0.8rem;">Updates, patches, dedicated support, quarterly onsite, custom patches, training refreshers</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: LGU MODULE SELECTION                                    -->
+  <!-- ================================================================ -->
+  <section id="lgu-modules">
+    <h3>Module Inclusion by LGU Edition</h3>
+
+    <table class="comparison-table">
+      <thead>
+        <tr>
+          <th style="width: 35%;">Module</th>
+          <th style="width: 16%; background: var(--lgu-bg); color: var(--lgu);">Barangay</th>
+          <th style="width: 16%; background: var(--lgu-bg); color: var(--lgu);">Municipal</th>
+          <th style="width: 16%; background: var(--lgu-bg); color: var(--lgu);">City</th>
+          <th style="width: 16%; background: var(--lgu-bg); color: var(--lgu);">Province</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="category-row"><td colspan="5">Core HR</td></tr>
+        <tr><td>Employee Records</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Organization Management</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Time &amp; Attendance</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Biometric Integration</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Web Kiosk Clock-In</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Leave Management</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Payroll Processing</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Government Compliance Reports</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Employee Self-Service</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+
+        <tr class="category-row"><td colspan="5">Strategic HR</td></tr>
+        <tr><td>Recruitment &amp; Hiring</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Onboarding &amp; Pre-boarding</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Training &amp; Development</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Performance Management</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Probationary Management</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Manager/Supervisor Tools</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Help Center</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>HR Analytics Dashboard</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+
+        <tr class="category-row"><td colspan="5">Enterprise</td></tr>
+        <tr><td>Compliance Training</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Background &amp; Reference Checks</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Audit Logs &amp; Security</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Public Careers Portal</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+
+        <tr class="category-row"><td colspan="5">LGU-Specific</td></tr>
+        <tr><td>Service Record Generation *</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Plantilla Management *</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>CSC Report Templates *</td><td class="dash">&mdash;</td><td class="check">&#10003;</td><td class="check">&#10003;</td><td class="check">&#10003;</td></tr>
+        <tr><td>Multi-Office / Satellite *</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check">&#10003;</td></tr>
+      </tbody>
+    </table>
+
+    <p class="small-note">* LGU-specific features are custom additions not available in the private sector offering. Service Record follows CSC Form 212 format. Plantilla Management tracks authorized positions vs filled positions. CSC Report Templates auto-generate reports required by the Civil Service Commission.</p>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: LGU ADD-ONS & SERVICES                                  -->
+  <!-- ================================================================ -->
+  <section id="lgu-addons">
+    <h3>Add-On Services</h3>
+    <p>Additional services that can be included in the procurement bid or purchased separately.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 35%;">Service</th>
+          <th style="width: 20%;">Price</th>
+          <th style="text-align: left;">Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Data Migration</td>
+          <td><span class="amt">15,000&ndash;50,000</span></td>
+          <td style="text-align: left; font-size: 0.82rem;">Import existing employee records, DTR history, leave balances from spreadsheets or legacy systems. Price depends on volume and data quality.</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Server Setup (On-Premise)</td>
+          <td><span class="amt">20,000&ndash;35,000</span></td>
+          <td style="text-align: left; font-size: 0.82rem;">Deploy on LGU-owned hardware. Includes OS setup, database, web server, SSL, firewall, automated backups. 1-day onsite.</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Cloud Hosting Setup</td>
+          <td><span class="amt">10,000&ndash;15,000</span></td>
+          <td style="text-align: left; font-size: 0.82rem;">Deploy on DigitalOcean / AWS / government cloud (DICT GovCloud). Includes CI/CD, monitoring, SSL.</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Additional Training Day</td>
+          <td><span class="amt">8,000</span>/day</td>
+          <td style="text-align: left; font-size: 0.82rem;">Onsite or remote training session for HR staff, department heads, or IT administrators. Includes training materials.</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Biometric Device (with setup)</td>
+          <td><span class="amt">12,000&ndash;18,000</span>/unit</td>
+          <td style="text-align: left; font-size: 0.82rem;">Face recognition device with MQTT integration, wall mount, employee enrollment. Includes device + installation + configuration.</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Custom Report Development</td>
+          <td><span class="amt">5,000&ndash;15,000</span>/report</td>
+          <td style="text-align: left; font-size: 0.82rem;">Custom reports for COA, DILG, CSC, or internal requirements. Export to Excel/PDF.</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">System Integration</td>
+          <td><span class="amt">25,000&ndash;80,000</span></td>
+          <td style="text-align: left; font-size: 0.82rem;">Integration with existing LGU systems (eBudget, eNGAS, LGU payroll systems, DBM reporting). Price based on complexity.</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Kiosk Tablet (with stand)</td>
+          <td><span class="amt">15,000&ndash;20,000</span>/unit</td>
+          <td style="text-align: left; font-size: 0.82rem;">10" Android tablet with floor/wall stand, pre-configured as clock-in kiosk terminal. Alternative to biometric devices.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Sample Packaged Bids</h3>
+    <p>Pre-configured packages optimized for common LGU procurement scenarios. These simplify the bidding process by bundling software, hardware, and services.</p>
+
+    <div class="cost-breakdown">
+      <div class="cost-box" style="border-color: var(--lgu-border);">
+        <div class="cost-title" style="color: var(--lgu);">Municipal Package (Typical)</div>
+        <div class="cost-line"><span>Municipal HR License</span><span class="amt">720,000</span></div>
+        <div class="cost-line"><span>Data Migration</span><span class="amt">20,000</span></div>
+        <div class="cost-line"><span>On-Premise Server Setup</span><span class="amt">25,000</span></div>
+        <div class="cost-line"><span>2x Biometric Devices</span><span class="amt">30,000</span></div>
+        <div class="cost-line"><span>Training (2 days, included)</span><span class="amt">0</span></div>
+        <div class="cost-line total"><span>Total Bid Amount</span><span class="amt">795,000</span></div>
+        <p class="small-note" style="margin-top: 10px;">Within AMP threshold for most municipalities. Eligible for Small Value Procurement or Negotiated Procurement.</p>
+      </div>
+
+      <div class="cost-box" style="border-color: var(--lgu-border);">
+        <div class="cost-title" style="color: var(--lgu);">City Package (Typical)</div>
+        <div class="cost-line"><span>City HR License</span><span class="amt">1,500,000</span></div>
+        <div class="cost-line"><span>Data Migration</span><span class="amt">35,000</span></div>
+        <div class="cost-line"><span>Cloud Hosting Setup</span><span class="amt">12,000</span></div>
+        <div class="cost-line"><span>4x Biometric Devices</span><span class="amt">60,000</span></div>
+        <div class="cost-line"><span>2x Kiosk Tablets</span><span class="amt">35,000</span></div>
+        <div class="cost-line"><span>Custom Reports (3)</span><span class="amt">25,000</span></div>
+        <div class="cost-line"><span>Training (3 days, included)</span><span class="amt">0</span></div>
+        <div class="cost-line total"><span>Total Bid Amount</span><span class="amt">1,667,000</span></div>
+        <p class="small-note" style="margin-top: 10px;">Requires competitive bidding under RA 9184. Include in Capital Outlay for ICT Equipment + Software.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: LGU SAAS SUBSCRIPTION                                   -->
+  <!-- ================================================================ -->
+  <section id="lgu-saas">
+    <h2><span class="tag lgu">LGU</span> SaaS Subscription Option</h2>
+    <p class="section-intro">A single, all-inclusive hosted subscription for LGUs that prefer operational expenditure (MOOE) over capital outlay. One plan, full access, no tier decisions &mdash; every LGU gets everything.</p>
+
+    <div class="callout lgu-callout">
+      <span class="callout-label">Why One Tier for LGUs</span>
+      Unlike the private sector where tiered pricing drives upsells, LGU procurement favors simplicity:
+      <ul style="margin: 8px 0 0 16px; font-size: 0.85rem; line-height: 1.8;">
+        <li><strong>Simpler bidding</strong> &mdash; one price point means cleaner technical specifications and no confusion during BAC evaluation</li>
+        <li><strong>No upgrade friction</strong> &mdash; LGU budget cycles make mid-year plan changes nearly impossible; better to give everything upfront</li>
+        <li><strong>Equal access</strong> &mdash; a barangay gets the same system as a city; differentiator is employee count, not feature access</li>
+        <li><strong>Faster deployment</strong> &mdash; no scoping discussions about which modules to include; deploy the full platform immediately</li>
+      </ul>
+    </div>
+
+    <h3>LGU SaaS Plan</h3>
+
+    <div style="max-width: 380px; margin: 28px 0;">
+      <div class="tier-card" style="border-color: var(--lgu-border); background: var(--lgu-bg); border-width: 2px;">
+        <div class="tier-label" style="color: var(--lgu);">KasamaHR for LGU</div>
+        <div class="tier-name">Full Platform</div>
+        <div class="tier-tagline">All 21 modules + LGU-specific features<br>Unlimited employees &middot; No feature restrictions</div>
+        <div class="price">
+          <span class="amt">&nbsp;300</span> <small>/ employee / month</small>
+        </div>
+        <div class="price-annual">
+          Annual: <span class="amt">&nbsp;3,000</span>/employee/year (~17% savings)
+        </div>
+        <div class="minimum">
+          <strong>Minimum:</strong> 10 employees<br>
+          Floor: <span class="amt">&nbsp;3,000</span>/mo &middot; <span class="amt">&nbsp;30,000</span>/yr
+        </div>
+      </div>
+    </div>
+
+    <h3>Everything Included</h3>
+    <p>One plan, no add-ons, no surprises. Every LGU SaaS subscription includes:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 50%;">Feature</th>
+          <th style="width: 50%; text-align: left;">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: left; font-weight: 600;">All 21 Modules</td><td style="text-align: left; font-size: 0.82rem;">HR, Payroll, Time &amp; Attendance, Leave, Recruitment, Onboarding, Training, Performance, Compliance, Audit &mdash; everything</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">LGU-Specific Modules</td><td style="text-align: left; font-size: 0.82rem;">Service Record (CSC 212), Plantilla Management, CSC Report Templates</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Biometric Integration</td><td style="text-align: left; font-size: 0.82rem;">Unlimited devices &middot; MQTT attendance sync</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Web Kiosk Clock-In</td><td style="text-align: left; font-size: 0.82rem;">Unlimited kiosks &middot; Browser-based alternative to biometric hardware</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Hosting &amp; Infrastructure</td><td style="text-align: left; font-size: 0.82rem;">Cloud hosting, SSL, daily backups, monitoring, 99.9% uptime SLA</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Automatic Updates</td><td style="text-align: left; font-size: 0.82rem;">Gov&rsquo;t contribution tables (SSS, PhilHealth, Pag-IBIG, BIR), security patches, feature releases</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Data Migration</td><td style="text-align: left; font-size: 0.82rem;">Import existing employee records, DTR history, leave balances from spreadsheets or legacy systems</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Training</td><td style="text-align: left; font-size: 0.82rem;">Remote onboarding training for HR staff and administrators included</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Support</td><td style="text-align: left; font-size: 0.82rem;">Priority email support &middot; Response within 24 business hours</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Unlimited Admin Users</td><td style="text-align: left; font-size: 0.82rem;">No cap on HR users, department heads, or admin accounts</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Unlimited Departments</td><td style="text-align: left; font-size: 0.82rem;">No cap on organizational units</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Unlimited Storage</td><td style="text-align: left; font-size: 0.82rem;">Documents, attachments, employee files &mdash; no storage limits</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Full API Access</td><td style="text-align: left; font-size: 0.82rem;">Read/write API for integration with other LGU systems</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Custom Branding</td><td style="text-align: left; font-size: 0.82rem;">LGU logo and colors on the platform</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Public Careers Portal</td><td style="text-align: left; font-size: 0.82rem;">Public job listings page for transparency in government hiring</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Cost Examples by LGU Size</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 25%;">LGU Type</th>
+          <th>Typical Employees</th>
+          <th>Monthly Cost</th>
+          <th>Annual Cost</th>
+          <th>Annual (Discounted)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Barangay</td>
+          <td>15&ndash;30</td>
+          <td><span class="amt">4,500&ndash;9,000</span></td>
+          <td><span class="amt">54,000&ndash;108,000</span></td>
+          <td><span class="amt">45,000&ndash;90,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Small Municipality</td>
+          <td>40&ndash;80</td>
+          <td><span class="amt">12,000&ndash;24,000</span></td>
+          <td><span class="amt">144,000&ndash;288,000</span></td>
+          <td><span class="amt">120,000&ndash;240,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Large Municipality</td>
+          <td>80&ndash;150</td>
+          <td><span class="amt">24,000&ndash;45,000</span></td>
+          <td><span class="amt">288,000&ndash;540,000</span></td>
+          <td><span class="amt">240,000&ndash;450,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Component City</td>
+          <td>200&ndash;500</td>
+          <td><span class="amt">60,000&ndash;150,000</span></td>
+          <td><span class="amt">720,000&ndash;1,800,000</span></td>
+          <td><span class="amt">600,000&ndash;1,500,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Province</td>
+          <td>500&ndash;2,000</td>
+          <td><span class="amt">150,000&ndash;600,000</span></td>
+          <td><span class="amt">1,800,000&ndash;7,200,000</span></td>
+          <td><span class="amt">1,500,000&ndash;6,000,000</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>LGU SaaS vs. One-Time Purchase Break-Even</h3>
+    <p>When does the cumulative SaaS cost exceed the one-time license? This helps LGUs choose the right model.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 30%;">Scenario</th>
+          <th>Annual SaaS Cost</th>
+          <th>One-Time License</th>
+          <th>Break-Even</th>
+          <th style="text-align: left;">Recommendation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Barangay (20 emp)</td>
+          <td><span class="amt">72,000</span>/yr</td>
+          <td><span class="amt">270,000</span></td>
+          <td>~3.8 years</td>
+          <td style="text-align: left; font-size: 0.8rem; color: var(--lgu);"><strong>SaaS</strong> &mdash; lower upfront, no IT staff needed</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Municipality (60 emp)</td>
+          <td><span class="amt">216,000</span>/yr</td>
+          <td><span class="amt">720,000</span></td>
+          <td>~3.3 years</td>
+          <td style="text-align: left; font-size: 0.8rem; color: var(--lgu);"><strong>SaaS</strong> &mdash; break-even far enough that SaaS is safer</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Municipality (100 emp)</td>
+          <td><span class="amt">360,000</span>/yr</td>
+          <td><span class="amt">720,000</span></td>
+          <td>~2 years</td>
+          <td style="text-align: left; font-size: 0.8rem; color: var(--lgu);"><strong>Either</strong> &mdash; depends on IT capacity and budget type</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">City (300 emp)</td>
+          <td><span class="amt">1,080,000</span>/yr</td>
+          <td><span class="amt">1,500,000</span></td>
+          <td>~1.4 years</td>
+          <td style="text-align: left; font-size: 0.8rem; color: var(--onetime);"><strong>One-time</strong> &mdash; breaks even quickly at high employee count</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Province (800 emp)</td>
+          <td><span class="amt">2,880,000</span>/yr</td>
+          <td><span class="amt">2,700,000</span></td>
+          <td>~11 months</td>
+          <td style="text-align: left; font-size: 0.8rem; color: var(--onetime);"><strong>One-time</strong> &mdash; SaaS exceeds license before Year 1 ends</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout lgu-callout">
+      <span class="callout-label">Sales Guidance</span>
+      <strong>SaaS is ideal for LGUs with fewer than ~80 employees</strong> (barangays, small municipalities) where the annual cost stays manageable and the LGU avoids the upfront capital outlay. <strong>One-time purchase is better for larger LGUs</strong> (100+ employees) where the per-employee SaaS cost exceeds the license fee within a year. Offer both and let the LGU choose based on budget type (MOOE vs. Capital Outlay) and IT capacity.
+    </div>
+
+    <h3>LGU SaaS Procurement Notes</h3>
+    <dl>
+      <dt>Budget Classification</dt>
+      <dd>SaaS subscriptions are classified under <strong>MOOE &rarr; Internet/ICT Subscription Services</strong>, which is renewed annually. This is simpler to procure than Capital Outlay and doesn't require competitive bidding for amounts under 1M.</dd>
+
+      <dt>Contract Term</dt>
+      <dd>Annual contracts aligned to the LGU fiscal year (Jan&ndash;Dec). Auto-renews unless the LGU notifies non-renewal 30 days before term end. Multi-year contracts possible via MOA for budget certainty.</dd>
+
+      <dt>Data Sovereignty</dt>
+      <dd>Data is hosted on Philippine-region servers (or DICT GovCloud if required). Data export available at any time in standard formats. Full data handover upon contract termination.</dd>
+
+      <dt>Transition to One-Time</dt>
+      <dd>LGUs that start on SaaS can switch to a one-time license at any point. The last 12 months of SaaS payments can be credited toward the one-time license fee (up to 50% of license cost).</dd>
+    </dl>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: LGU PROCUREMENT & DELIVERY                              -->
+  <!-- ================================================================ -->
+  <section id="lgu-procurement">
+    <h3>Procurement &amp; Delivery</h3>
+
+    <h3 style="font-size: 0.92rem; margin-top: 24px;">Procurement Methods by Amount</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 25%;">Amount Range</th>
+          <th style="text-align: left; width: 30%;">Method</th>
+          <th style="text-align: left;">Applicable Editions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">Below 50,000</td>
+          <td style="text-align: left;">Shopping / Direct Purchase</td>
+          <td style="text-align: left;">&mdash;</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">50,000 &ndash; 1,000,000</td>
+          <td style="text-align: left;">Small Value Procurement / Negotiated Procurement (SVP)</td>
+          <td style="text-align: left;">Barangay, Municipal (license + basic add-ons)</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Above 1,000,000</td>
+          <td style="text-align: left;">Competitive Bidding (Public Bidding)</td>
+          <td style="text-align: left;">City packages, Provincial, Municipal full packages with devices</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 0.92rem; margin-top: 24px;">Required Documents (for bidding)</h3>
+    <ul style="margin: 12px 0 20px 20px; font-size: 0.85rem; color: var(--ink-soft); line-height: 1.8;">
+      <li>PhilGEPS registration and posting</li>
+      <li>Technical specifications document (system requirements, features, compliance)</li>
+      <li>Approved Budget for the Contract (ABC) alignment</li>
+      <li>Certificate of Product Registration / DTI registration</li>
+      <li>Financial capability documents (tax clearance, audited financial statements)</li>
+      <li>Omnibus Sworn Statement</li>
+      <li>Post-qualification documents (demo capability, reference LGU clients)</li>
+    </ul>
+
+    <h3 style="font-size: 0.92rem; margin-top: 24px;">Delivery Timeline</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 20%;">Phase</th>
+          <th style="text-align: left; width: 25%;">Duration</th>
+          <th style="text-align: left;">Activities</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Week 1</td>
+          <td style="text-align: left;">Kickoff &amp; Setup</td>
+          <td style="text-align: left; font-size: 0.82rem;">Site survey, server setup or cloud provisioning, network assessment, install application</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Week 2</td>
+          <td style="text-align: left;">Configuration</td>
+          <td style="text-align: left; font-size: 0.82rem;">Organizational structure setup, salary grades, leave types, payroll parameters, government contribution tables</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Week 3</td>
+          <td style="text-align: left;">Data Migration</td>
+          <td style="text-align: left; font-size: 0.82rem;">Import employee masterlist, historical DTR (if available), leave balances, plantilla positions</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Week 3&ndash;4</td>
+          <td style="text-align: left;">Training</td>
+          <td style="text-align: left; font-size: 0.82rem;">HR staff training, admin training, department head orientation, IT admin handover</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Week 4</td>
+          <td style="text-align: left;">Go-Live &amp; Acceptance</td>
+          <td style="text-align: left; font-size: 0.82rem;">Parallel run, UAT sign-off, Certificate of Acceptance, final handover</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3 style="font-size: 0.92rem; margin-top: 24px;">Hosting Recommendations</h3>
+    <dl>
+      <dt>Barangay / Small Municipality</dt>
+      <dd>Local server (refurbished desktop running Ubuntu Server) or shared cloud VPS. Cost: ~1,500&ndash;2,500/mo. Backup to external HDD or cloud.</dd>
+
+      <dt>Municipality / City</dt>
+      <dd>Dedicated VPS or LGU-owned server room. DigitalOcean or DICT GovCloud recommended. Cost: ~3,000&ndash;6,000/mo. Automated daily backups.</dd>
+
+      <dt>Province</dt>
+      <dd>Dedicated server or private cloud instance. High availability recommended for 500+ users. Cost: ~8,000&ndash;15,000/mo. Must include disaster recovery plan.</dd>
+    </dl>
+
+    <div class="callout lgu-callout">
+      <span class="callout-label">Budget Classification Guidance</span>
+      <strong>Software License:</strong> Capital Outlay &rarr; Information and Communication Technology Equipment &rarr; Software. <strong>Annual Maintenance:</strong> MOOE &rarr; Repairs and Maintenance &rarr; ICT Software. <strong>Training:</strong> MOOE &rarr; Training Expenses. <strong>Hosting (cloud):</strong> MOOE &rarr; Internet/Communication Services. This classification helps LGU budget officers properly allocate funds.
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: LGU REVENUE PROJECTIONS                                 -->
+  <!-- ================================================================ -->
+  <section id="lgu-revenue">
+    <h3>LGU Revenue Projections</h3>
+    <p>Conservative estimates assuming gradual market penetration. The Philippines has 1,488 municipalities, 146 cities, 82 provinces, and 42,036 barangays.</p>
+
+    <h3 style="font-size: 0.92rem; margin-top: 24px;">Year 1 &mdash; Proof of Concept</h3>
+    <p class="small-note" style="margin-bottom: 12px;">Target: 5 municipalities + 2 cities in a pilot region (e.g., one province)</p>
+
+    <div class="revenue-grid">
+      <div class="revenue-card">
+        <div class="rev-label">License Revenue</div>
+        <div class="rev-value" style="font-size: 1.2rem;">6.6M</div>
+        <div class="rev-note">5 &times; 720K + 2 &times; 1.5M</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Add-On Services</div>
+        <div class="rev-value" style="font-size: 1.2rem;">~600K</div>
+        <div class="rev-note">Migration, devices, setup</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Total Year 1</div>
+        <div class="rev-value" style="font-size: 1.2rem;">~7.2M</div>
+        <div class="rev-note">7 LGU clients</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Year 2 S&amp;M</div>
+        <div class="rev-value" style="font-size: 1.2rem;">~1.32M</div>
+        <div class="rev-note">If all renew</div>
+      </div>
+    </div>
+
+    <h3 style="font-size: 0.92rem; margin-top: 24px;">Year 2&ndash;3 &mdash; Regional Expansion</h3>
+    <p class="small-note" style="margin-bottom: 12px;">Target: 20 municipalities + 5 cities + 2 provinces (word-of-mouth from Year 1 pilots)</p>
+
+    <div class="revenue-grid">
+      <div class="revenue-card">
+        <div class="rev-label">License Revenue</div>
+        <div class="rev-value" style="font-size: 1.2rem;">24.3M</div>
+        <div class="rev-note">20 &times; 720K + 5 &times; 1.5M + 2 &times; 2.7M</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Add-On Services</div>
+        <div class="rev-value" style="font-size: 1.2rem;">~3M</div>
+        <div class="rev-note">Higher avg. per client</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">S&amp;M Renewals</div>
+        <div class="rev-value" style="font-size: 1.2rem;">~4.3M</div>
+        <div class="rev-note">From Y1 + Y2 clients</div>
+      </div>
+      <div class="revenue-card" style="border-color: var(--accent-soft); background: var(--accent-bg);">
+        <div class="rev-label">Total Year 2&ndash;3</div>
+        <div class="rev-value" style="font-size: 1.2rem;">~31.6M</div>
+        <div class="rev-note">27 new + 7 renewing</div>
+      </div>
+    </div>
+
+    <div class="callout lgu-callout">
+      <span class="callout-label">Scaling Strategy</span>
+      LGU sales follow a <strong>regional cluster model</strong>. Win 2&ndash;3 LGUs in a province, then leverage them as references for neighboring LGUs. Provincial government deals are especially valuable &mdash; a province adopting the system often drives adoption by its component municipalities. Budget for 1 sales/implementation person per region.
+    </div>
+
+    <h3>LGU Pricing Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Item</th>
+          <th>Barangay</th>
+          <th>Municipal</th>
+          <th>City</th>
+          <th>Province</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">License (one-time)</td>
+          <td><span class="amt">270,000</span></td>
+          <td><span class="amt">720,000</span></td>
+          <td><span class="amt">1,500,000</span></td>
+          <td><span class="amt">2,700,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Annual Maintenance</td>
+          <td><span class="amt">54,000</span>/yr</td>
+          <td><span class="amt">144,000</span>/yr</td>
+          <td><span class="amt">300,000</span>/yr</td>
+          <td><span class="amt">540,000</span>/yr</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Max Employees</td>
+          <td>30</td>
+          <td>150</td>
+          <td>500</td>
+          <td>Unlimited</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Modules</td>
+          <td>9 core</td>
+          <td>17 + LGU</td>
+          <td>21 + LGU</td>
+          <td>21 + LGU + multi-office</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Included Training</td>
+          <td>1 day</td>
+          <td>2 days</td>
+          <td>3 days</td>
+          <td>5 days</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Included Support</td>
+          <td>90 days email</td>
+          <td>6 months priority</td>
+          <td>1 year priority</td>
+          <td>1 year dedicated</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Typical Bid Total</td>
+          <td><span class="amt">~370K</span></td>
+          <td><span class="amt">~870K</span></td>
+          <td><span class="amt">~1.84M</span></td>
+          <td><span class="amt">~3.4M</span></td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="small-note">"Typical Bid Total" includes license + common add-ons (data migration, server setup, devices). Actual amounts vary per LGU requirements.</p>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: BUILD VS. BUY                                           -->
+  <!-- ================================================================ -->
+  <section id="build-vs-buy">
+    <h2><span class="tag lgu">LGU</span> Build vs. Buy Analysis</h2>
+    <p class="section-intro">What would it cost an LGU to commission a custom HRIS from scratch instead of purchasing KasamaHR? This analysis justifies the pricing and serves as a comparison point during procurement evaluation.</p>
+
+    <h3>KasamaHR Codebase Profile</h3>
+    <p>The system being licensed is not a template or starter kit &mdash; it is a fully built, production-grade HRIS with the following scope:</p>
+
+    <div class="revenue-grid">
+      <div class="revenue-card">
+        <div class="rev-label">PHP Backend</div>
+        <div class="rev-value" style="font-size: 1.3rem;">109,590</div>
+        <div class="rev-note">lines of code &middot; 954 files</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Vue Frontend</div>
+        <div class="rev-value" style="font-size: 1.3rem;">123,177</div>
+        <div class="rev-note">lines of code &middot; 522 components</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Data Models</div>
+        <div class="rev-value" style="font-size: 1.3rem;">126</div>
+        <div class="rev-note">Eloquent models &middot; 142 migrations</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Test Coverage</div>
+        <div class="rev-value" style="font-size: 1.3rem;">231</div>
+        <div class="rev-note">test files &middot; 204 controllers</div>
+      </div>
+    </div>
+
+    <p style="font-size: 0.88rem; color: var(--ink-soft); margin-top: 16px;"><strong>Total codebase: ~232,000+ lines of code</strong> across 21 functional modules, including payroll computation, government contribution tables (SSS, PhilHealth, Pag-IBIG, BIR), biometric device MQTT integration, real-time attendance processing, performance management with 360-degree evaluations, and Philippine compliance reporting.</p>
+
+    <h3>Custom Development Cost Estimate</h3>
+    <p>Estimated cost to build an equivalent system from scratch using a Philippine-based development team.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 35%;">Phase / Component</th>
+          <th>Duration</th>
+          <th>Team Size</th>
+          <th>Estimated Cost</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="category-row"><td colspan="4">Discovery &amp; Design</td></tr>
+        <tr>
+          <td style="text-align: left;">Requirements analysis &amp; process mapping</td>
+          <td>4 weeks</td>
+          <td>2 (BA + PM)</td>
+          <td><span class="amt">160,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">UI/UX design (522 screens/components)</td>
+          <td>8 weeks</td>
+          <td>2 (designer + BA)</td>
+          <td><span class="amt">320,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Database architecture (126 models, 142 migrations)</td>
+          <td>3 weeks</td>
+          <td>1 (senior dev)</td>
+          <td><span class="amt">150,000</span></td>
+        </tr>
+
+        <tr class="category-row"><td colspan="4">Core HR Development (9 modules)</td></tr>
+        <tr>
+          <td style="text-align: left;">Employee records &amp; organization management</td>
+          <td>6 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">480,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Time &amp; attendance + biometric MQTT integration</td>
+          <td>8 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">640,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Leave management (types, balances, approvals, calendar)</td>
+          <td>4 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">320,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Payroll engine (computation, loans, adjustments)</td>
+          <td>10 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">800,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Government contributions (SSS, PhilHealth, Pag-IBIG, BIR)</td>
+          <td>6 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">480,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Employee self-service portal</td>
+          <td>4 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">320,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">User management, roles, permissions, 2FA</td>
+          <td>3 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">240,000</span></td>
+        </tr>
+
+        <tr class="category-row"><td colspan="4">Strategic HR Development (8 modules)</td></tr>
+        <tr>
+          <td style="text-align: left;">Recruitment (requisitions, postings, candidates, offers)</td>
+          <td>6 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">480,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Onboarding &amp; pre-boarding workflows</td>
+          <td>4 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">320,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Training &amp; development (catalog, sessions, enrollments)</td>
+          <td>5 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">400,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Performance management (goals, KPIs, 360 evals)</td>
+          <td>6 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">480,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Probationary management &amp; manager tools</td>
+          <td>4 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">320,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Help center &amp; HR analytics dashboard</td>
+          <td>4 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">320,000</span></td>
+        </tr>
+
+        <tr class="category-row"><td colspan="4">Enterprise Modules (4 modules)</td></tr>
+        <tr>
+          <td style="text-align: left;">Compliance training, background checks, audit logs</td>
+          <td>6 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">480,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Public careers portal</td>
+          <td>3 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">240,000</span></td>
+        </tr>
+
+        <tr class="category-row"><td colspan="4">LGU-Specific Features</td></tr>
+        <tr>
+          <td style="text-align: left;">Service record, plantilla, CSC reports</td>
+          <td>4 weeks</td>
+          <td>2 devs</td>
+          <td><span class="amt">320,000</span></td>
+        </tr>
+
+        <tr class="category-row"><td colspan="4">Quality &amp; Infrastructure</td></tr>
+        <tr>
+          <td style="text-align: left;">Testing (231 test files, unit + feature + browser)</td>
+          <td>6 weeks</td>
+          <td>1 QA + 1 dev</td>
+          <td><span class="amt">360,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Server setup, CI/CD, security hardening</td>
+          <td>2 weeks</td>
+          <td>1 devops</td>
+          <td><span class="amt">120,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">UAT, bug fixes, deployment</td>
+          <td>4 weeks</td>
+          <td>2 devs + PM</td>
+          <td><span class="amt">400,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Documentation &amp; training materials</td>
+          <td>2 weeks</td>
+          <td>1 BA</td>
+          <td><span class="amt">80,000</span></td>
+        </tr>
+
+        <tr class="category-row"><td colspan="4">Project Management &amp; Overhead</td></tr>
+        <tr>
+          <td style="text-align: left;">Project management (full duration)</td>
+          <td>~12 months</td>
+          <td>1 PM</td>
+          <td><span class="amt">600,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Contingency &amp; scope creep (15%)</td>
+          <td>&mdash;</td>
+          <td>&mdash;</td>
+          <td><span class="amt">~1,200,000</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="revenue-grid" style="grid-template-columns: repeat(3, 1fr); margin-top: 24px;">
+      <div class="revenue-card" style="border-color: var(--red); border-width: 2px;">
+        <div class="rev-label" style="color: var(--red);">Total Custom Dev Cost</div>
+        <div class="rev-value">~9.2M</div>
+        <div class="rev-note">Full 21-module HRIS</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Core HR Only (9 modules)</div>
+        <div class="rev-value">~4.5M</div>
+        <div class="rev-note">Minimum viable system</div>
+      </div>
+      <div class="revenue-card">
+        <div class="rev-label">Timeline</div>
+        <div class="rev-value">10&ndash;14 mo</div>
+        <div class="rev-note">To production-ready</div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-label">Cost Assumptions</span>
+      Based on Philippine market rates: Senior developer at <span class="amt">50,000</span>/mo, Mid-level developer at <span class="amt">35,000&ndash;40,000</span>/mo, Business Analyst/PM at <span class="amt">40,000&ndash;50,000</span>/mo, UI/UX Designer at <span class="amt">35,000&ndash;40,000</span>/mo, DevOps at <span class="amt">50,000&ndash;60,000</span>/mo. These are conservative full-time monthly rates. Outsourced/agency development would cost <strong>2&ndash;3&times; more</strong>.
+    </div>
+
+    <h3>Savings Comparison: Buy KasamaHR vs. Build from Scratch</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 25%;">LGU Edition</th>
+          <th>KasamaHR Cost</th>
+          <th>Equivalent Build Cost</th>
+          <th>Savings</th>
+          <th>% Saved</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Barangay (9 modules)</td>
+          <td><span class="amt">270,000</span></td>
+          <td><span class="amt">~4,500,000</span></td>
+          <td style="color: var(--green); font-weight: 600;"><span class="amt">4,230,000</span></td>
+          <td style="color: var(--green); font-weight: 600;">94%</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Municipal (17 modules)</td>
+          <td><span class="amt">720,000</span></td>
+          <td><span class="amt">~7,200,000</span></td>
+          <td style="color: var(--green); font-weight: 600;"><span class="amt">6,480,000</span></td>
+          <td style="color: var(--green); font-weight: 600;">90%</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">City (21 modules)</td>
+          <td><span class="amt">1,500,000</span></td>
+          <td><span class="amt">~9,200,000</span></td>
+          <td style="color: var(--green); font-weight: 600;"><span class="amt">7,700,000</span></td>
+          <td style="color: var(--green); font-weight: 600;">84%</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Province (21 + multi-office)</td>
+          <td><span class="amt">2,700,000</span></td>
+          <td><span class="amt">~11,000,000</span></td>
+          <td style="color: var(--green); font-weight: 600;"><span class="amt">8,300,000</span></td>
+          <td style="color: var(--green); font-weight: 600;">75%</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Additional Hidden Costs of Custom Development</h3>
+    <p>The 9.2M estimate covers initial development only. LGUs should also account for:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 40%;">Hidden Cost</th>
+          <th>Annual Estimate</th>
+          <th style="text-align: left;">Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">Ongoing maintenance developer</td>
+          <td><span class="amt">420,000&ndash;600,000</span>/yr</td>
+          <td style="text-align: left; font-size: 0.8rem;">At least 1 developer retained for bug fixes, updates, government table changes</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Government table updates (SSS, BIR, etc.)</td>
+          <td><span class="amt">50,000&ndash;100,000</span>/yr</td>
+          <td style="text-align: left; font-size: 0.8rem;">Contribution tables and tax brackets change regularly; requires developer intervention</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Security patches &amp; PHP/framework updates</td>
+          <td><span class="amt">50,000&ndash;80,000</span>/yr</td>
+          <td style="text-align: left; font-size: 0.8rem;">Framework versions EOL every 2&ndash;3 years; must upgrade to maintain security</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Server administration</td>
+          <td><span class="amt">60,000&ndash;120,000</span>/yr</td>
+          <td style="text-align: left; font-size: 0.8rem;">Backups, monitoring, OS updates, certificate renewals</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Knowledge transfer risk</td>
+          <td>Incalculable</td>
+          <td style="text-align: left; font-size: 0.8rem;">If the original developer leaves, onboarding a replacement to 232K lines of code takes months</td>
+        </tr>
+        <tr style="border-top: 2px solid var(--border-strong);">
+          <td style="text-align: left; font-weight: 700;">Total Annual Maintenance</td>
+          <td style="font-weight: 700;"><span class="amt">580,000&ndash;900,000</span>/yr</td>
+          <td style="text-align: left; font-size: 0.8rem;">vs. 27K&ndash;270K/yr for KasamaHR S&M contract</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout success">
+      <span class="callout-label">The Bottom Line</span>
+      A custom-built HRIS costs <strong>9&ndash;11M upfront + 600&ndash;900K/year in maintenance</strong>, takes 10&ndash;14 months to build, and carries significant risk (developer turnover, scope creep, untested edge cases). KasamaHR delivers the same capability for <strong>135K&ndash;1.35M</strong> with 4-week deployment, production-tested code, and predictable annual maintenance costs. Even at the highest Provincial tier, the LGU saves <strong>88% compared to custom development</strong>.
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================================================================ -->
+  <!-- SECTION: SAAS DEPLOYMENT & OPS COSTS                             -->
+  <!-- ================================================================ -->
+  <section id="saas-costs">
+    <h2><span class="tag saas">SaaS</span> Deployment &amp; Operational Costs</h2>
+    <p class="section-intro">Our recurring costs for running KasamaHR as a hosted SaaS platform. These are the costs we bear to deliver the service.</p>
+
+    <h3>Infrastructure (Monthly)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 40%;">Item</th>
+          <th>Small Scale<br><span style="font-weight: 400; font-size: 0.7rem;">(&lt;50 tenants)</span></th>
+          <th>Medium Scale<br><span style="font-weight: 400; font-size: 0.7rem;">(50&ndash;200 tenants)</span></th>
+          <th>Large Scale<br><span style="font-weight: 400; font-size: 0.7rem;">(200+ tenants)</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: left;">App Server (Laravel Forge / VPS)</td><td><span class="amt">2,500</span></td><td><span class="amt">8,000</span></td><td><span class="amt">20,000</span></td></tr>
+        <tr><td style="text-align: left;">Database (MySQL managed / RDS)</td><td><span class="amt">1,500</span></td><td><span class="amt">5,000</span></td><td><span class="amt">15,000</span></td></tr>
+        <tr><td style="text-align: left;">Redis (cache + queues)</td><td><span class="amt">500</span></td><td><span class="amt">1,500</span></td><td><span class="amt">4,000</span></td></tr>
+        <tr><td style="text-align: left;">Object Storage (S3 / Spaces)</td><td><span class="amt">300</span></td><td><span class="amt">1,000</span></td><td><span class="amt">3,000</span></td></tr>
+        <tr><td style="text-align: left;">CDN / SSL (Cloudflare)</td><td><span class="amt">0</span></td><td><span class="amt">1,200</span></td><td><span class="amt">3,000</span></td></tr>
+        <tr><td style="text-align: left;">Email (Postmark / SES)</td><td><span class="amt">500</span></td><td><span class="amt">1,500</span></td><td><span class="amt">3,500</span></td></tr>
+        <tr><td style="text-align: left;">MQTT Broker (biometric)</td><td><span class="amt">500</span></td><td><span class="amt">1,000</span></td><td><span class="amt">2,500</span></td></tr>
+        <tr><td style="text-align: left;">Monitoring (Sentry, uptime)</td><td><span class="amt">0</span></td><td><span class="amt">1,500</span></td><td><span class="amt">3,000</span></td></tr>
+        <tr><td style="text-align: left;">Backups (daily automated)</td><td><span class="amt">200</span></td><td><span class="amt">800</span></td><td><span class="amt">2,000</span></td></tr>
+        <tr class="cost-line total" style="border-top: 2px solid var(--border-strong);">
+          <td style="text-align: left; font-weight: 700;">Total Infrastructure/mo</td>
+          <td style="font-weight: 700;"><span class="amt">6,000</span></td>
+          <td style="font-weight: 700;"><span class="amt">21,500</span></td>
+          <td style="font-weight: 700;"><span class="amt">56,000</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Operational Costs (Monthly)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 50%;">Item</th>
+          <th>Estimated Cost/mo</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: left;">PayMongo Transaction Fees</td><td>~3.5% of revenue</td><td style="text-align: left; font-size: 0.78rem;">Cards: 2.5% + 15. Maya: 2% + 10</td></tr>
+        <tr><td style="text-align: left;">Domain &amp; DNS</td><td><span class="amt">100</span></td><td style="text-align: left; font-size: 0.78rem;">Wildcard SSL via Cloudflare</td></tr>
+        <tr><td style="text-align: left;">Customer Support (part-time)</td><td><span class="amt">10,000&ndash;25,000</span></td><td style="text-align: left; font-size: 0.78rem;">Scales with customer count</td></tr>
+        <tr><td style="text-align: left;">DevOps / Server Maintenance</td><td><span class="amt">5,000&ndash;15,000</span></td><td style="text-align: left; font-size: 0.78rem;">Part-time initially, full-time at scale</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <span class="callout-label">Gross Margin Target</span>
+      At small scale (~30 tenants, ~100K MRR), infrastructure costs of ~6K/mo represent <strong>~6% of revenue</strong>, giving a strong gross margin of ~90%+ before personnel costs. At medium scale (200K+ MRR), infrastructure at ~21.5K/mo is still only <strong>~10% of revenue</strong>. SaaS unit economics improve with scale.
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: ONE-TIME DELIVERY COSTS                                 -->
+  <!-- ================================================================ -->
+  <section id="onetime-costs">
+    <h2><span class="tag onetime">One-Time</span> Delivery &amp; Maintenance Costs</h2>
+    <p class="section-intro">Our costs per customer for delivering and maintaining one-time purchase licenses.</p>
+
+    <h3>Per-Customer Delivery Cost</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 45%;">Item</th>
+          <th>Starter</th>
+          <th>Professional</th>
+          <th>Enterprise</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: left;">Build &amp; Package (single-tenant)</td><td><span class="amt">2,000</span></td><td><span class="amt">2,000</span></td><td><span class="amt">2,000</span></td></tr>
+        <tr><td style="text-align: left;">Deployment Assistance</td><td><span class="amt">0</span></td><td><span class="amt">5,000</span></td><td><span class="amt">10,000</span></td></tr>
+        <tr><td style="text-align: left;">Onboarding / Walkthrough</td><td><span class="amt">0</span></td><td><span class="amt">2,000</span></td><td><span class="amt">5,000</span></td></tr>
+        <tr><td style="text-align: left;">Documentation Customization</td><td><span class="amt">1,000</span></td><td><span class="amt">1,000</span></td><td><span class="amt">2,000</span></td></tr>
+        <tr><td style="text-align: left;">QA / Smoke Testing</td><td><span class="amt">1,000</span></td><td><span class="amt">2,000</span></td><td><span class="amt">3,000</span></td></tr>
+        <tr style="border-top: 2px solid var(--border-strong);">
+          <td style="text-align: left; font-weight: 700;">Total Delivery Cost</td>
+          <td style="font-weight: 700;"><span class="amt">4,000</span></td>
+          <td style="font-weight: 700;"><span class="amt">12,000</span></td>
+          <td style="font-weight: 700;"><span class="amt">22,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Gross Margin per License</td>
+          <td><span class="amt">71,000</span> (95%)</td>
+          <td><span class="amt">163,000</span> (93%)</td>
+          <td><span class="amt">328,000</span> (94%)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Ongoing S&amp;M Delivery Cost (Annual)</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 50%;">Item</th>
+          <th>Per Customer/yr</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: left;">Update packaging &amp; release notes</td><td><span class="amt">2,000&ndash;5,000</span></td><td style="text-align: left; font-size: 0.78rem;">Shared cost across all S&M customers</td></tr>
+        <tr><td style="text-align: left;">Support hours (email / remote)</td><td><span class="amt">3,000&ndash;10,000</span></td><td style="text-align: left; font-size: 0.78rem;">Varies by tier; Enterprise uses more</td></tr>
+        <tr><td style="text-align: left;">Environment-specific debugging</td><td><span class="amt">2,000&ndash;8,000</span></td><td style="text-align: left; font-size: 0.78rem;">Self-hosted = varied environments</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout warning">
+      <span class="callout-label">Hidden Cost Risk</span>
+      Support for self-hosted customers is significantly more expensive than SaaS. Each customer has a unique environment (different PHP version, OS, database config), making debugging 2&ndash;3&times; slower. Budget <strong>5&ndash;15 hours/year</strong> of senior dev time per self-hosted customer for environment-specific issues.
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <!-- SECTION: CUSTOMER TOTAL COST                                     -->
+  <!-- ================================================================ -->
+  <section id="customer-costs">
+    <h2>Customer Total Cost of Ownership</h2>
+    <p class="section-intro">What the customer actually pays over time under each model, including all recurring costs. This is from the <strong>customer's perspective</strong>.</p>
+
+    <h3>Customer Costs &mdash; SaaS</h3>
+    <p>Customers pay only the subscription fee. Hosting, updates, security, and backups are included.</p>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 30%;">Scenario</th>
+          <th>Year 1</th>
+          <th>Year 2</th>
+          <th>Year 3</th>
+          <th>Year 5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Starter (15 emp, monthly)</td>
+          <td><span class="amt">17,820</span></td>
+          <td><span class="amt">35,640</span></td>
+          <td><span class="amt">53,460</span></td>
+          <td><span class="amt">89,100</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Pro (30 emp, monthly)</td>
+          <td><span class="amt">71,640</span></td>
+          <td><span class="amt">143,280</span></td>
+          <td><span class="amt">214,920</span></td>
+          <td><span class="amt">358,200</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Pro (30 emp, annual)</td>
+          <td><span class="amt">59,700</span></td>
+          <td><span class="amt">119,400</span></td>
+          <td><span class="amt">179,100</span></td>
+          <td><span class="amt">298,500</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Enterprise (80 emp, monthly)</td>
+          <td><span class="amt">335,040</span></td>
+          <td><span class="amt">670,080</span></td>
+          <td><span class="amt">1,005,120</span></td>
+          <td><span class="amt">1,675,200</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Enterprise (80 emp, annual)</td>
+          <td><span class="amt">279,200</span></td>
+          <td><span class="amt">558,400</span></td>
+          <td><span class="amt">837,600</span></td>
+          <td><span class="amt">1,396,000</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Customer Costs &mdash; One-Time Purchase (Self-Hosted)</h3>
+    <p>Customer pays the license + their own hosting + optional S&M renewal. Hosting estimate: customer's own server costs.</p>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 30%;">Scenario</th>
+          <th>Year 1</th>
+          <th>Year 2</th>
+          <th>Year 3</th>
+          <th>Year 5</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Starter + self-host</td>
+          <td><span class="amt">105,000</span></td>
+          <td><span class="amt">150,000</span></td>
+          <td><span class="amt">195,000</span></td>
+          <td><span class="amt">285,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-size: 0.75rem; color: var(--ink-muted);">Breakdown</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">75K license + 30K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">+ 15K S&M + 30K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">+ 15K S&M + 30K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">cumulative</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Pro + self-host</td>
+          <td><span class="amt">223,000</span></td>
+          <td><span class="amt">306,000</span></td>
+          <td><span class="amt">389,000</span></td>
+          <td><span class="amt">555,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-size: 0.75rem; color: var(--ink-muted);">Breakdown</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">175K license + 48K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">+ 35K S&M + 48K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">+ 35K S&M + 48K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">cumulative</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Enterprise + self-host</td>
+          <td><span class="amt">446,000</span></td>
+          <td><span class="amt">612,000</span></td>
+          <td><span class="amt">778,000</span></td>
+          <td><span class="amt">1,110,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-size: 0.75rem; color: var(--ink-muted);">Breakdown</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">350K license + 96K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">+ 70K S&M + 96K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">+ 70K S&M + 96K hosting</td>
+          <td style="font-size: 0.72rem; color: var(--ink-muted);">cumulative</td>
+        </tr>
+      </tbody>
+    </table>
+    <p class="small-note">Self-hosted hosting estimates: Starter ~2,500/mo, Professional ~4,000/mo, Enterprise ~8,000/mo (VPS + DB + Redis + backups managed by customer or their IT team). S&M renewal assumed every year.</p>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================================================================ -->
+  <!-- SECTION: BREAK-EVEN ANALYSIS                                     -->
+  <!-- ================================================================ -->
+  <section id="breakeven">
+    <h2>Break-Even Analysis: SaaS vs. One-Time</h2>
+    <p class="section-intro">At what point does the cumulative SaaS subscription cost exceed the one-time purchase total cost? This helps determine when one-time purchase becomes the better deal <strong>for the customer</strong>.</p>
+
+    <div class="callout info">
+      <span class="callout-label">How to Read This</span>
+      The break-even point is when the <strong>customer's cumulative SaaS payments equal the one-time purchase cost (license + hosting + S&M)</strong>. Before that point, SaaS is cheaper. After that point, the one-time purchase is cheaper for the customer.
+    </div>
+
+    <!-- STARTER BREAK-EVEN -->
+    <h3>Starter &mdash; 15 Employees (Monthly Billing)</h3>
+    <p class="small-note" style="margin-bottom: 8px;">SaaS: 15 &times; 99 = 1,485/mo (17,820/yr) &nbsp;|&nbsp; One-time: 75K license + 30K hosting/yr + 15K S&M/yr = 105K Year 1, then 45K/yr</p>
+
+    <div class="timeline-grid">
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 1</span>
+        <div class="yr-saas">17,820</div>
+        <div class="yr-onetime">105,000</div>
+        <div class="yr-note">SaaS saves 87K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 2</span>
+        <div class="yr-saas">35,640</div>
+        <div class="yr-onetime">150,000</div>
+        <div class="yr-note">SaaS saves 114K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 3</span>
+        <div class="yr-saas">53,460</div>
+        <div class="yr-onetime">195,000</div>
+        <div class="yr-note">SaaS saves 142K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 5</span>
+        <div class="yr-saas">89,100</div>
+        <div class="yr-onetime">285,000</div>
+        <div class="yr-note">SaaS saves 196K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 10</span>
+        <div class="yr-saas">178,200</div>
+        <div class="yr-onetime">510,000</div>
+        <div class="yr-note">SaaS saves 332K</div>
+      </div>
+    </div>
+
+    <div class="callout success">
+      <span class="callout-label">Starter Verdict</span>
+      <strong>SaaS is always cheaper for Starter customers.</strong> At 15 employees, the customer never reaches break-even. One-time purchase only makes sense at the Starter tier if the customer has 50+ employees &mdash; at which point they should be on the Professional tier.
+    </div>
+
+    <!-- PRO BREAK-EVEN -->
+    <h3>Professional &mdash; 30 Employees (Monthly Billing)</h3>
+    <p class="small-note" style="margin-bottom: 8px;">SaaS: 30 &times; 199 = 5,970/mo (71,640/yr) &nbsp;|&nbsp; One-time: 175K license + 48K hosting/yr + 35K S&M/yr = 223K Year 1, then 83K/yr</p>
+
+    <div class="timeline-grid">
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 1</span>
+        <div class="yr-saas">71,640</div>
+        <div class="yr-onetime">223,000</div>
+        <div class="yr-note">SaaS saves 151K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 2</span>
+        <div class="yr-saas">143,280</div>
+        <div class="yr-onetime">306,000</div>
+        <div class="yr-note">SaaS saves 163K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 3</span>
+        <div class="yr-saas">214,920</div>
+        <div class="yr-onetime">389,000</div>
+        <div class="yr-note">SaaS saves 174K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 5</span>
+        <div class="yr-saas">358,200</div>
+        <div class="yr-onetime">555,000</div>
+        <div class="yr-note">SaaS saves 197K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 10</span>
+        <div class="yr-saas">716,400</div>
+        <div class="yr-onetime">970,000</div>
+        <div class="yr-note">SaaS saves 254K</div>
+      </div>
+    </div>
+
+    <div class="callout success">
+      <span class="callout-label">Professional Verdict</span>
+      <strong>SaaS is always cheaper for Professional customers at 30 employees.</strong> The annual SaaS cost (71.6K) is lower than the ongoing one-time costs (83K/yr hosting + S&M), so break-even never happens. One-time only makes financial sense for Pro customers with <strong>50+ employees</strong> where SaaS exceeds 119K/yr.
+    </div>
+
+    <!-- ENTERPRISE BREAK-EVEN -->
+    <h3>Enterprise &mdash; 80 Employees (Monthly Billing)</h3>
+    <p class="small-note" style="margin-bottom: 8px;">SaaS: 80 &times; 349 = 27,920/mo (335,040/yr) &nbsp;|&nbsp; One-time: 350K license + 96K hosting/yr + 70K S&M/yr = 446K Year 1, then 166K/yr</p>
+
+    <div class="timeline-grid">
+      <div class="timeline-cell" style="background: var(--onetime-bg);">
+        <span class="yr-label">Year 1</span>
+        <div class="yr-saas">335,040</div>
+        <div class="yr-onetime">446,000</div>
+        <div class="yr-note">SaaS saves 111K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--onetime-bg); border: 1px solid var(--onetime-border);">
+        <span class="yr-label">Year 2</span>
+        <div class="yr-saas">670,080</div>
+        <div class="yr-onetime">612,000</div>
+        <div class="yr-note">One-time saves 58K</div>
+      </div>
+      <div class="timeline-cell breakeven-point">
+        <span class="yr-label">Break-Even</span>
+        <div style="font-size: 1.1rem; font-weight: 700; color: var(--accent);">~1.7 years</div>
+        <div class="yr-note">Costs equalize</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--onetime-bg); border: 1px solid var(--onetime-border);">
+        <span class="yr-label">Year 3</span>
+        <div class="yr-saas">1,005,120</div>
+        <div class="yr-onetime">778,000</div>
+        <div class="yr-note">One-time saves 227K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--onetime-bg); border: 1px solid var(--onetime-border);">
+        <span class="yr-label">Year 5</span>
+        <div class="yr-saas">1,675,200</div>
+        <div class="yr-onetime">1,110,000</div>
+        <div class="yr-note">One-time saves 565K</div>
+      </div>
+    </div>
+
+    <div class="callout warning">
+      <span class="callout-label">Enterprise Verdict</span>
+      <strong>One-time purchase breaks even at ~1.7 years for Enterprise (80 emp).</strong> After that, one-time is significantly cheaper for the customer. This is expected &mdash; Enterprise customers with many employees are the target market for perpetual licenses. The <strong>savings of 565K over 5 years</strong> makes a compelling case.
+    </div>
+
+    <!-- ENTERPRISE ANNUAL BREAK-EVEN -->
+    <h3>Enterprise &mdash; 80 Employees (Annual Billing)</h3>
+    <p class="small-note" style="margin-bottom: 8px;">SaaS annual: 80 &times; 3,490 = 279,200/yr &nbsp;|&nbsp; One-time: same as above (446K Year 1, then 166K/yr)</p>
+
+    <div class="timeline-grid">
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 1</span>
+        <div class="yr-saas">279,200</div>
+        <div class="yr-onetime">446,000</div>
+        <div class="yr-note">SaaS saves 167K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--pro-bg);">
+        <span class="yr-label">Year 2</span>
+        <div class="yr-saas">558,400</div>
+        <div class="yr-onetime">612,000</div>
+        <div class="yr-note">SaaS saves 54K</div>
+      </div>
+      <div class="timeline-cell breakeven-point">
+        <span class="yr-label">Break-Even</span>
+        <div style="font-size: 1.1rem; font-weight: 700; color: var(--accent);">~2.5 years</div>
+        <div class="yr-note">Costs equalize</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--onetime-bg); border: 1px solid var(--onetime-border);">
+        <span class="yr-label">Year 3</span>
+        <div class="yr-saas">837,600</div>
+        <div class="yr-onetime">778,000</div>
+        <div class="yr-note">One-time saves 60K</div>
+      </div>
+      <div class="timeline-cell" style="background: var(--onetime-bg); border: 1px solid var(--onetime-border);">
+        <span class="yr-label">Year 5</span>
+        <div class="yr-saas">1,396,000</div>
+        <div class="yr-onetime">1,110,000</div>
+        <div class="yr-note">One-time saves 286K</div>
+      </div>
+    </div>
+
+    <!-- SUMMARY TABLE -->
+    <h3>Break-Even Summary</h3>
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Scenario</th>
+          <th>Break-Even Point</th>
+          <th>5-Year SaaS Total</th>
+          <th>5-Year One-Time Total</th>
+          <th>Customer Saves</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left;">Starter (15 emp)</td>
+          <td style="color: var(--green); font-weight: 600;">Never</td>
+          <td><span class="amt">89,100</span></td>
+          <td><span class="amt">285,000</span></td>
+          <td style="color: var(--green);">SaaS saves 196K</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Pro (30 emp)</td>
+          <td style="color: var(--green); font-weight: 600;">Never</td>
+          <td><span class="amt">358,200</span></td>
+          <td><span class="amt">555,000</span></td>
+          <td style="color: var(--green);">SaaS saves 197K</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Pro (50 emp, monthly)</td>
+          <td style="font-weight: 600;">~14 years</td>
+          <td><span class="amt">597,000</span></td>
+          <td><span class="amt">555,000</span></td>
+          <td style="color: var(--onetime);">One-time saves 42K</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Enterprise (80 emp, monthly)</td>
+          <td style="color: var(--onetime); font-weight: 600;">~1.7 years</td>
+          <td><span class="amt">1,675,200</span></td>
+          <td><span class="amt">1,110,000</span></td>
+          <td style="color: var(--onetime);">One-time saves 565K</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Enterprise (80 emp, annual)</td>
+          <td style="color: var(--onetime); font-weight: 600;">~2.5 years</td>
+          <td><span class="amt">1,396,000</span></td>
+          <td><span class="amt">1,110,000</span></td>
+          <td style="color: var(--onetime);">One-time saves 286K</td>
+        </tr>
+        <tr>
+          <td style="text-align: left;">Enterprise (200 emp, monthly)</td>
+          <td style="color: var(--onetime); font-weight: 600;">~8 months</td>
+          <td><span class="amt">4,188,000</span></td>
+          <td><span class="amt">1,110,000</span></td>
+          <td style="color: var(--onetime);">One-time saves 3.08M</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout success">
+      <span class="callout-label">Key Insight</span>
+      <strong>The break-even threshold is employee count, not time.</strong> At Starter and Professional tiers with typical employee counts, SaaS is always cheaper for the customer. One-time purchase only becomes attractive for <strong>Enterprise customers with 50+ employees</strong> who plan to use the system for 2+ years. This naturally segments the market: SMEs stay on SaaS, large orgs get the perpetual license option.
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================================================================ -->
+  <!-- SECTION: SIDE-BY-SIDE COMPARISON                                 -->
+  <!-- ================================================================ -->
+  <section id="comparison">
+    <h2>Side-by-Side Comparison</h2>
+    <p class="section-intro">Key differences between the two pricing models across business, technical, and operational dimensions.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width: 30%; text-align: left;">Dimension</th>
+          <th style="width: 35%; text-align: left;">SaaS Subscription</th>
+          <th style="width: 35%; text-align: left;">One-Time Purchase</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td style="text-align: left; font-weight: 600;">Revenue Pattern</td><td style="text-align: left;">Recurring, predictable, compounds</td><td style="text-align: left;">Front-loaded, volatile</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Barrier to Entry</td><td style="text-align: left;">Low (495/mo minimum)</td><td style="text-align: left;">High (75K minimum)</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Customer LTV</td><td style="text-align: left;">High if retained (grows with employee count)</td><td style="text-align: left;">Fixed (license + optional S&M)</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Hosting Burden</td><td style="text-align: left;">We manage everything</td><td style="text-align: left;">Customer manages (or pays for managed hosting)</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Update Delivery</td><td style="text-align: left;">Automatic, instant for all</td><td style="text-align: left;">Manual; customer must apply updates</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Support Complexity</td><td style="text-align: left;">Standardized environment</td><td style="text-align: left;">Varied environments, harder to debug</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Churn Risk</td><td style="text-align: left;">Monthly cancellation possible</td><td style="text-align: left;">No churn (they own it)</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Upsell Opportunities</td><td style="text-align: left;">Tier upgrades, employee growth</td><td style="text-align: left;">S&M renewal, managed hosting, edition upgrades</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">IP Risk</td><td style="text-align: left;">Low (code stays on our servers)</td><td style="text-align: left;">Higher (source code delivered to customer)</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Target Market</td><td style="text-align: left;">SMEs, startups, cost-sensitive</td><td style="text-align: left;">Large companies, government, compliance-bound</td></tr>
+        <tr><td style="text-align: left; font-weight: 600;">Payment Infra</td><td style="text-align: left;">PayMongo subscriptions (automated)</td><td style="text-align: left;">Invoice/bank transfer (manual)</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Pros &amp; Cons</h3>
+
+    <h3 style="font-size: 0.88rem; margin-top: 20px; margin-bottom: 8px;">SaaS Subscription</h3>
+    <div class="proscons">
+      <ul class="proscons-list pros">
+        <li><span class="icon">+</span> Predictable recurring revenue</li>
+        <li><span class="icon">+</span> Low entry cost attracts more customers</li>
+        <li><span class="icon">+</span> Centralized updates and security</li>
+        <li><span class="icon">+</span> Revenue scales with customer growth</li>
+        <li><span class="icon">+</span> Source code stays protected</li>
+      </ul>
+      <ul class="proscons-list cons">
+        <li><span class="icon">&minus;</span> Ongoing hosting and infrastructure costs</li>
+        <li><span class="icon">&minus;</span> Churn risk (monthly cancellations)</li>
+        <li><span class="icon">&minus;</span> PayMongo limitations (no proration, limited methods)</li>
+        <li><span class="icon">&minus;</span> Must maintain 99.9%+ uptime SLA</li>
+      </ul>
+    </div>
+
+    <h3 style="font-size: 0.88rem; margin-top: 20px; margin-bottom: 8px;">One-Time Purchase</h3>
+    <div class="proscons">
+      <ul class="proscons-list pros">
+        <li><span class="icon">+</span> Large upfront cash injection</li>
+        <li><span class="icon">+</span> No churn &mdash; customer owns the license</li>
+        <li><span class="icon">+</span> Appeals to compliance/data-sovereignty needs</li>
+        <li><span class="icon">+</span> No ongoing hosting burden (if self-hosted)</li>
+      </ul>
+      <ul class="proscons-list cons">
+        <li><span class="icon">&minus;</span> Revenue is unpredictable and non-recurring</li>
+        <li><span class="icon">&minus;</span> Source code delivered (IP exposure risk)</li>
+        <li><span class="icon">&minus;</span> Support burden for varied environments</li>
+        <li><span class="icon">&minus;</span> Harder to enforce updates and security patches</li>
+        <li><span class="icon">&minus;</span> Smaller addressable market in PH</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================================================================ -->
+  <!-- SECTION: HYBRID APPROACH                                         -->
+  <!-- ================================================================ -->
+  <section id="hybrid">
+    <h2><span class="tag both">Hybrid</span> Combined Strategy</h2>
+    <p class="section-intro">The recommended approach combines both models to maximize market coverage.</p>
+
+    <div class="callout info">
+      <span class="callout-label">Hybrid Model</span>
+      <strong>Primary: SaaS subscription</strong> for all customers by default. <strong>Secondary: One-time purchase</strong> available only for Enterprise-tier customers upon request, positioned as a premium on-premise option with a price premium over the SaaS equivalent.
+    </div>
+
+    <h3>Implementation Strategy</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Phase</th>
+          <th style="text-align: left;">Action</th>
+          <th style="text-align: left;">Timeline</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Phase 1</td>
+          <td style="text-align: left;">Launch with SaaS-only. Build subscription billing, feature gating, and billing UI as described in <a href="SAAS_TIER_DESIGN.html" style="color: var(--pro);">SaaS Tier Design</a>.</td>
+          <td style="text-align: left;">Weeks 1&ndash;8</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Phase 2</td>
+          <td style="text-align: left;">Begin offering one-time purchase for Enterprise prospects. Handle manually (invoice + license agreement). No code changes needed &mdash; deploy a dedicated instance per customer.</td>
+          <td style="text-align: left;">Month 3+</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Phase 3</td>
+          <td style="text-align: left;">If demand warrants, build self-service one-time purchase flow: license key system, download portal, auto-provisioning scripts. Evaluate based on Phase 2 volume.</td>
+          <td style="text-align: left;">Month 6+ (if needed)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>One-Time Purchase Delivery Model</h3>
+    <dl>
+      <dt>License Agreement</dt>
+      <dd>Standard perpetual license with restrictions on redistribution. Customer may modify for internal use only. No resale rights. License is per-organization (not per-server).</dd>
+
+      <dt>Code Delivery</dt>
+      <dd>Private Git repository access (read-only) for the duration of active S&M. Alternatively, a versioned ZIP archive for customers without Git. Multi-tenant code is stripped &mdash; customer receives a single-tenant build.</dd>
+
+      <dt>Deployment Package</dt>
+      <dd>Docker Compose setup, .env template, database migration scripts, seed data, and a step-by-step deployment guide. Optional Ansible/Forge scripts for production deployment.</dd>
+
+      <dt>Onboarding</dt>
+      <dd>Enterprise Edition includes 2 hours of remote onboarding. Professional includes a 30-minute walkthrough. Starter receives documentation only.</dd>
+    </dl>
+  </section>
+
+  <hr class="divider">
+
+  <!-- ================================================================ -->
+  <!-- SECTION: IMPLEMENTATION NOTES                                    -->
+  <!-- ================================================================ -->
+  <section id="implementation">
+    <h2>Implementation Notes</h2>
+
+    <h3>For SaaS (Model A)</h3>
+    <p>Full technical implementation is documented in <a href="SAAS_TIER_DESIGN.html" style="color: var(--pro);">SAAS_TIER_DESIGN.html</a>. Key components:</p>
+    <ul style="margin: 12px 0 20px 20px; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.8;">
+      <li>PayMongo integration for recurring billing (per-tenant dynamic plans)</li>
+      <li>Module gating via middleware + Inertia shared props</li>
+      <li><code>FeatureGateService</code> for centralized access checks</li>
+      <li>Employee count sync to update billing quantities</li>
+      <li>Platform admin dashboard for tenant management</li>
+    </ul>
+
+    <h3>For One-Time Purchase (Model B)</h3>
+    <p>Minimal code changes needed for Phase 2 (manual process):</p>
+    <ul style="margin: 12px 0 20px 20px; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.8;">
+      <li>Create a single-tenant deployment script (strip multi-tenancy, hardcode config)</li>
+      <li>Build a Docker Compose production template</li>
+      <li>Write deployment documentation (server requirements, setup steps)</li>
+      <li>Draft a license agreement template</li>
+      <li>Set up a private repository or download delivery mechanism</li>
+    </ul>
+
+    <p>Phase 3 automation (if demand warrants):</p>
+    <ul style="margin: 12px 0 20px 20px; font-size: 0.88rem; color: var(--ink-soft); line-height: 1.8;">
+      <li>License key generation and validation system</li>
+      <li>Automated build pipeline to produce single-tenant packages</li>
+      <li>Customer download portal with version management</li>
+      <li>Auto-update notification system for S&M customers</li>
+    </ul>
+
+    <h3>Pricing Summary Table</h3>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: left;">Offering</th>
+          <th>Starter</th>
+          <th>Professional</th>
+          <th>Enterprise</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">SaaS Monthly</td>
+          <td><span class="amt">99</span>/emp/mo</td>
+          <td><span class="amt">199</span>/emp/mo</td>
+          <td><span class="amt">349</span>/emp/mo</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">SaaS Annual</td>
+          <td><span class="amt">990</span>/emp/yr</td>
+          <td><span class="amt">1,990</span>/emp/yr</td>
+          <td><span class="amt">3,490</span>/emp/yr</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">SaaS Min Floor (Monthly)</td>
+          <td><span class="amt">495</span>/mo</td>
+          <td><span class="amt">1,990</span>/mo</td>
+          <td><span class="amt">8,725</span>/mo</td>
+        </tr>
+        <tr style="border-top: 2px solid var(--border-strong);">
+          <td style="text-align: left; font-weight: 600;">One-Time License</td>
+          <td><span class="amt">75,000</span></td>
+          <td><span class="amt">175,000</span></td>
+          <td><span class="amt">350,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Annual S&amp;M</td>
+          <td><span class="amt">15,000</span>/yr</td>
+          <td><span class="amt">35,000</span>/yr</td>
+          <td><span class="amt">70,000</span>/yr</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Managed Hosting</td>
+          <td colspan="3"><span class="amt">3,000&ndash;8,000</span>/mo (varies by usage)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table style="margin-top: 28px;">
+      <thead>
+        <tr>
+          <th style="text-align: left;">LGU One-Time</th>
+          <th>Barangay</th>
+          <th>Municipal</th>
+          <th>City</th>
+          <th>Province</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">One-Time License</td>
+          <td><span class="amt">270,000</span></td>
+          <td><span class="amt">720,000</span></td>
+          <td><span class="amt">1,500,000</span></td>
+          <td><span class="amt">2,700,000</span></td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Annual Maintenance</td>
+          <td><span class="amt">54,000</span>/yr</td>
+          <td><span class="amt">144,000</span>/yr</td>
+          <td><span class="amt">300,000</span>/yr</td>
+          <td><span class="amt">540,000</span>/yr</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Typical Bid Total</td>
+          <td><span class="amt">~370K</span></td>
+          <td><span class="amt">~870K</span></td>
+          <td><span class="amt">~1.84M</span></td>
+          <td><span class="amt">~3.4M</span></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table style="margin-top: 28px;">
+      <thead>
+        <tr>
+          <th style="text-align: left;">LGU SaaS</th>
+          <th colspan="3">Full Platform (Single Tier)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Monthly</td>
+          <td colspan="3"><span class="amt">300</span>/emp/mo &middot; All 21 modules + LGU features</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Annual</td>
+          <td colspan="3"><span class="amt">3,000</span>/emp/yr (~17% savings)</td>
+        </tr>
+        <tr>
+          <td style="text-align: left; font-weight: 600;">Min Floor (Monthly)</td>
+          <td colspan="3"><span class="amt">3,000</span>/mo (10 employee minimum)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="small-note" style="margin-top: 24px;">All prices in Philippine Pesos (PHP). Currency symbol intentionally omitted from code/database &mdash; amounts stored in centavos for SaaS billing via PayMongo.</p>
+
+  </section>
+
+</main>
+
+</body>
+</html>

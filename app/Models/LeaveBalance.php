@@ -91,10 +91,13 @@ class LeaveBalance extends TenantModel
     {
         return Attribute::make(
             get: function (): float {
-                return (float) $this->brought_forward
+                return round(
+                    (float) $this->brought_forward
                     + (float) $this->earned
                     + (float) $this->adjustments
-                    - (float) $this->expired;
+                    - (float) $this->expired,
+                    2
+                );
             }
         );
     }
@@ -106,12 +109,15 @@ class LeaveBalance extends TenantModel
     {
         return Attribute::make(
             get: function (): float {
-                return (float) $this->brought_forward
+                return round(
+                    (float) $this->brought_forward
                     + (float) $this->earned
                     + (float) $this->adjustments
                     - (float) $this->used
                     - (float) $this->pending
-                    - (float) $this->expired;
+                    - (float) $this->expired,
+                    2
+                );
             }
         );
     }

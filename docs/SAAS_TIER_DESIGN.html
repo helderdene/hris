@@ -1,0 +1,1924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KasamaHR &mdash; SaaS Tier Subscription Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #3d3d5c;
+    --ink-muted: #6b6b8a;
+    --surface: #fafaf8;
+    --surface-warm: #f5f3ee;
+    --surface-code: #f0eee8;
+    --border: #e2dfd6;
+    --border-strong: #c9c5b8;
+    --accent: #c17f24;
+    --accent-soft: #f0dbb8;
+    --accent-bg: #fdf6ea;
+    --starter: #2d6a4f;
+    --starter-bg: #f0f7f4;
+    --starter-border: #b7debf;
+    --pro: #1d4ed8;
+    --pro-bg: #eff4ff;
+    --pro-border: #b3cbf7;
+    --enterprise: #7c3aed;
+    --enterprise-bg: #f5f0ff;
+    --enterprise-border: #c7b3f4;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'DM Sans', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; font-size: 16px; }
+
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--surface);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: var(--ink);
+    color: #c8c6be;
+    padding: 32px 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  nav .brand {
+    padding: 0 28px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 16px;
+  }
+
+  nav .brand h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.35rem;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+
+  nav .brand span {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  nav .nav-group {
+    padding: 8px 20px;
+  }
+
+  nav .nav-group-label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.3);
+    padding: 12px 8px 6px;
+    font-weight: 500;
+  }
+
+  nav a {
+    display: block;
+    padding: 7px 8px;
+    color: #a8a6a0;
+    text-decoration: none;
+    font-size: 0.82rem;
+    border-radius: 6px;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+
+  nav a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+  }
+
+  nav .nav-footer {
+    margin-top: auto;
+    padding: 20px 28px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  nav .nav-footer .badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(193,127,36,0.15);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ---- MAIN ---- */
+  main {
+    margin-left: 260px;
+    max-width: 920px;
+    padding: 60px 64px 120px;
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    margin-bottom: 64px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero .overline {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 2.8rem;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  .hero .lead {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    max-width: 620px;
+    line-height: 1.75;
+  }
+
+  .hero .state-cards {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 0;
+    margin-top: 32px;
+    align-items: center;
+  }
+
+  .hero .state-card {
+    padding: 20px 24px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .hero .state-card.target {
+    border-color: var(--accent-soft);
+    background: var(--accent-bg);
+  }
+
+  .hero .state-card .label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .hero .state-card.target .label { color: var(--accent); }
+
+  .hero .state-card p {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .hero .arrow {
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--border-strong);
+  }
+
+  /* ---- TYPOGRAPHY ---- */
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.9rem;
+    letter-spacing: -0.015em;
+    margin: 72px 0 12px;
+    padding-top: 20px;
+    line-height: 1.2;
+  }
+
+  h2 .part-num {
+    display: block;
+    font-family: var(--sans);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 40px 0 12px;
+    color: var(--ink);
+  }
+
+  h4 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin: 28px 0 8px;
+    color: var(--ink-soft);
+  }
+
+  p { margin-bottom: 14px; font-size: 0.92rem; color: var(--ink-soft); }
+
+  strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- TABLES ---- */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0 28px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    font-weight: 500;
+    background: var(--surface-warm);
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th:first-child { border-radius: 9px 0 0 0; }
+  thead th:last-child { border-radius: 0 9px 0 0; }
+
+  tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-soft);
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-warm); }
+
+  td.module-name {
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ---- TIER CARDS ---- */
+  .tier-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 24px 0 40px;
+  }
+
+  .tier-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 28px 24px;
+    background: #fff;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .tier-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  }
+
+  .tier-card.starter { border-color: var(--starter-border); }
+  .tier-card.pro {
+    border-color: var(--pro-border);
+    box-shadow: 0 0 0 1px var(--pro-border);
+  }
+  .tier-card.enterprise { border-color: var(--enterprise-border); }
+
+  .tier-card .tier-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .tier-card.starter .tier-badge {
+    background: var(--starter-bg);
+    color: var(--starter);
+  }
+
+  .tier-card.pro .tier-badge {
+    background: var(--pro-bg);
+    color: var(--pro);
+  }
+
+  .tier-card.pro::before {
+    content: 'MOST POPULAR';
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.55rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    background: var(--pro);
+    color: #fff;
+    padding: 3px 12px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .tier-card.enterprise .tier-badge {
+    background: var(--enterprise-bg);
+    color: var(--enterprise);
+  }
+
+  .tier-card .tier-name {
+    font-family: var(--serif);
+    font-size: 1.55rem;
+    font-weight: 400;
+    margin-bottom: 4px;
+    color: var(--ink);
+  }
+
+  .tier-card .tier-desc {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+
+  .tier-card .tier-price {
+    margin-bottom: 20px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .tier-card .tier-price .amount {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+
+  .tier-card .tier-price .period {
+    font-size: 0.78rem;
+    color: var(--ink-muted);
+  }
+
+  .tier-card .tier-price .min {
+    font-size: 0.72rem;
+    color: var(--ink-muted);
+    margin-top: 2px;
+  }
+
+  .tier-card .tier-modules-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    font-weight: 500;
+    margin-bottom: 10px;
+  }
+
+  .tier-card .tier-module {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    padding: 4px 0;
+    line-height: 1.4;
+  }
+
+  .tier-card .tier-module .check {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.6rem;
+    margin-top: 1px;
+  }
+
+  .tier-card.starter .check { background: var(--starter-bg); color: var(--starter); }
+  .tier-card.pro .check { background: var(--pro-bg); color: var(--pro); }
+  .tier-card.enterprise .check { background: var(--enterprise-bg); color: var(--enterprise); }
+
+  .tier-card .tier-module.inherited {
+    color: var(--ink-muted);
+  }
+
+  .tier-card .tier-module.planned {
+    font-style: italic;
+    color: var(--ink-muted);
+  }
+
+  .tier-card .tier-divider {
+    font-size: 0.68rem;
+    color: var(--ink-muted);
+    padding: 8px 0 4px;
+    font-style: italic;
+  }
+
+  /* ---- COMPARISON MATRIX ---- */
+  .matrix-table thead th {
+    text-align: center;
+    font-size: 0.72rem;
+  }
+
+  .matrix-table thead th:first-child { text-align: left; }
+
+  .matrix-table tbody td { text-align: center; }
+  .matrix-table tbody td:first-child {
+    text-align: left;
+    font-weight: 400;
+    color: var(--ink-soft);
+  }
+
+  .matrix-table .section-row td {
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--surface-warm);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 10px 16px;
+    text-align: left;
+  }
+
+  .matrix-table .check-mark { color: var(--starter); font-weight: 600; }
+  .matrix-table .dash { color: var(--border-strong); }
+  .matrix-table .limit-val { font-size: 0.82rem; color: var(--ink-soft); font-weight: 500; }
+
+  /* ---- CODE BLOCKS ---- */
+  .code-block {
+    background: var(--surface-code);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 14px 0 24px;
+    overflow-x: auto;
+  }
+
+  .code-block .code-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .code-block pre {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .code-block pre .kw { color: #7c3aed; }
+  .code-block pre .str { color: #b45309; }
+  .code-block pre .cm { color: #9ca3af; font-style: italic; }
+  .code-block pre .fn { color: #1d4ed8; }
+  .code-block pre .num { color: #c17f24; }
+
+  /* ---- CALLOUT ---- */
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-bg);
+    padding: 16px 20px;
+    border-radius: 0 8px 8px 0;
+    margin: 18px 0 24px;
+  }
+
+  .callout p { margin: 0; color: var(--ink-soft); font-size: 0.86rem; }
+  .callout strong { color: var(--accent); }
+
+  .callout.info {
+    border-left-color: var(--pro);
+    background: var(--pro-bg);
+  }
+
+  .callout.info strong { color: var(--pro); }
+
+  /* ---- ROADMAP ---- */
+  .roadmap {
+    margin: 24px 0 32px;
+  }
+
+  .roadmap-phase {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 20px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  .roadmap-phase:last-child { border-bottom: none; }
+
+  .roadmap-phase .phase-badge {
+    text-align: right;
+    padding-top: 2px;
+  }
+
+  .roadmap-phase .phase-badge .num {
+    display: inline-block;
+    font-size: 0.62rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 600;
+    background: var(--surface-warm);
+    color: var(--ink-muted);
+    border: 1px solid var(--border);
+  }
+
+  .roadmap-phase .phase-badge .week {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--ink-muted);
+    margin-top: 6px;
+  }
+
+  .roadmap-phase .phase-content h4 {
+    margin: 0 0 10px;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+
+  .roadmap-phase .phase-content ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .roadmap-phase .phase-content li {
+    font-size: 0.82rem;
+    color: var(--ink-soft);
+    padding: 3px 0;
+    padding-left: 20px;
+    position: relative;
+  }
+
+  .roadmap-phase .phase-content li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 10px;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: 3px;
+  }
+
+  /* ---- FILE TABLES ---- */
+  .file-table td:first-child {
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    white-space: nowrap;
+    color: var(--pro);
+  }
+
+  /* ---- DECISION TABLE ---- */
+  .decision-table td:first-child {
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  .decision-table td:nth-child(2) {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    color: var(--pro);
+  }
+
+  /* ---- ANTI-FRAUD ---- */
+  .measure-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 16px 0 28px;
+  }
+
+  .measure-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 16px;
+    background: #fff;
+  }
+
+  .measure-card .measure-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: var(--surface-warm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+  }
+
+  .measure-card .measure-name {
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+
+  .measure-card .measure-desc {
+    font-size: 0.76rem;
+    color: var(--ink-muted);
+    line-height: 1.5;
+  }
+
+  /* ---- KIOSK LIMITS ---- */
+  .kiosk-limits {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 16px 0 28px;
+  }
+
+  .kiosk-limit-card {
+    text-align: center;
+    padding: 20px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  .kiosk-limit-card .tier-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .kiosk-limit-card .limit-value {
+    font-family: var(--serif);
+    font-size: 1.6rem;
+    color: var(--ink);
+  }
+
+  /* ---- PLANNED BADGE ---- */
+  .planned-tag {
+    display: inline-block;
+    font-size: 0.58rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--accent-bg);
+    color: var(--accent);
+    font-weight: 600;
+    vertical-align: middle;
+    margin-left: 6px;
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 1080px) {
+    nav { display: none; }
+    main { margin-left: 0; padding: 40px 32px 80px; }
+  }
+
+  @media (max-width: 720px) {
+    .tier-cards { grid-template-columns: 1fr; }
+    .hero .state-cards { grid-template-columns: 1fr; gap: 12px; }
+    .hero .arrow { transform: rotate(90deg); }
+    .measure-grid { grid-template-columns: 1fr; }
+    .kiosk-limits { grid-template-columns: 1fr; }
+    .roadmap-phase { grid-template-columns: 1fr; }
+    .roadmap-phase .phase-badge { text-align: left; }
+    main { padding: 32px 20px 60px; }
+    .hero h1 { font-size: 2rem; }
+  }
+
+  /* ---- PRINT ---- */
+  @media print {
+    nav { display: none; }
+    main { margin-left: 0; padding: 20px; }
+    .tier-card:hover { transform: none; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav>
+  <div class="brand">
+    <h2>KasamaHR</h2>
+    <span>SaaS Design Document</span>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Business Design</div>
+    <a href="#modules">Module Inventory</a>
+    <a href="#tiers">Subscription Tiers</a>
+    <a href="#comparison">Feature Matrix</a>
+    <a href="#pricing">Pricing Strategy</a>
+    <a href="#trial">Trial Period</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Technical</div>
+    <a href="#architecture">Architecture Decisions</a>
+    <a href="#schema">Database Schema</a>
+    <a href="#models">New Models</a>
+    <a href="#gating">Feature Gating</a>
+    <a href="#middleware">Middleware</a>
+    <a href="#frontend">Frontend Gating</a>
+    <a href="#paymongo">PayMongo Setup</a>
+    <a href="#billing-routes">Billing Routes</a>
+    <a href="#webhooks">Webhook Handling</a>
+    <a href="#registration">Tenant Registration</a>
+    <a href="#upgrade-downgrade">Upgrade / Downgrade</a>
+    <a href="#sync">Employee Sync</a>
+    <a href="#limits">Limit Enforcement</a>
+    <a href="#trial-tech">Trial Expiration</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Roadmap</div>
+    <a href="#roadmap">Implementation Phases</a>
+    <a href="#files-create">Files to Create</a>
+    <a href="#files-modify">Files to Modify</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Platform Admin</div>
+    <a href="#admin">Platform Admin Dashboard</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Planned</div>
+    <a href="#kiosk">Web Kiosk Clock-In</a>
+  </div>
+
+  <div class="nav-footer">
+    <span class="badge">Internal Document</span>
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="overline">Product &amp; Engineering Specification</div>
+    <h1>SaaS Tier Subscription Design</h1>
+    <p class="lead">
+      Transforming KasamaHR into a tiered SaaS product with subscription-based billing.
+      Tiers are differentiated by the number of modules, employee count limits, and usage quotas &mdash;
+      powered by PayMongo.
+    </p>
+    <div class="state-cards">
+      <div class="state-card">
+        <div class="label">Current State</div>
+        <p>All tenants have unrestricted access to all 20 modules. No billing or subscription system exists.</p>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="state-card target">
+        <div class="label">Target State</div>
+        <p>3 subscription tiers (Starter, Professional, Enterprise) with module-based gating, per-employee pricing, and PayMongo billing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- PART 1: BUSINESS DESIGN                      -->
+  <!-- ============================================ -->
+
+  <h2 id="modules"><span class="part-num">Part 1 &mdash; Business Design</span>Module Inventory</h2>
+  <p>KasamaHR consists of 20 distinct functional modules:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th style="width:30px">#</th><th style="width:200px">Module</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td class="module-name">HR Management</td><td>Employee records, HR analytics dashboard, company documents, announcements, certifications, document requests</td></tr>
+        <tr><td>2</td><td class="module-name">Organization Management</td><td>Departments, positions, salary grades, work locations, org chart, work schedules, holidays, competencies</td></tr>
+        <tr><td>3</td><td class="module-name">Time &amp; Attendance</td><td>Attendance logs, daily time records (DTR), device management</td></tr>
+        <tr><td>4</td><td class="module-name">Leave Management</td><td>Leave applications, approvals, calendar, leave types, balances, adjustments</td></tr>
+        <tr><td>5</td><td class="module-name">Payroll</td><td>Payroll entries, periods, adjustments, loans, government contributions (SSS, PhilHealth, Pag-IBIG, Tax), payslips</td></tr>
+        <tr><td>6</td><td class="module-name">HR Compliance &amp; Reporting</td><td>SSS, PhilHealth, Pag-IBIG, BIR reports, BIR 2316 certificates</td></tr>
+        <tr><td>7</td><td class="module-name">Employee Self-Service</td><td>Personal dashboard, DTR, payslips, documents, loans, leaves, goals, evaluations, training, compliance, onboarding</td></tr>
+        <tr><td>8</td><td class="module-name">User &amp; Access Management</td><td>User CRUD, roles, invitations, profile settings, password management, 2FA</td></tr>
+        <tr><td>9</td><td class="module-name">Recruitment</td><td>Job requisitions, postings, candidates, applications, interviews, offer templates, offers, analytics</td></tr>
+        <tr><td>10</td><td class="module-name">Onboarding &amp; Pre-boarding</td><td>Pre-boarding/onboarding checklists, templates, tasks, self-service</td></tr>
+        <tr><td>11</td><td class="module-name">Training &amp; Development</td><td>Course catalog, training sessions, calendar, enrollments, history, categories, materials</td></tr>
+        <tr><td>12</td><td class="module-name">Performance Management</td><td>Performance cycles, goals, KPIs, 360-degree evaluations, competency evaluations, development plans, analytics</td></tr>
+        <tr><td>13</td><td class="module-name">Probationary Management</td><td>Criteria templates, evaluations, approvals, status tracking</td></tr>
+        <tr><td>14</td><td class="module-name">Manager / Supervisor Module</td><td>Team goals management, probationary evaluations, team compliance tracking, leave approvals</td></tr>
+        <tr><td>15</td><td class="module-name">Help Center</td><td>Help articles, categories, search, admin CMS</td></tr>
+        <tr><td>16</td><td class="module-name">Compliance Training</td><td>Compliance dashboard, courses, assignments/rules, reports, assessments, certificates</td></tr>
+        <tr><td>17</td><td class="module-name">Biometric Integration</td><td>Biometric device management, employee sync, sync logs, MQTT commands</td></tr>
+        <tr><td>18</td><td class="module-name">Background Check &amp; Reference</td><td>Background checks, documents, reference checks</td></tr>
+        <tr><td>19</td><td class="module-name">Audit &amp; Security</td><td>Audit logs (model change tracking), password confirmation</td></tr>
+        <tr><td>20</td><td class="module-name">Careers / Public Portal</td><td>Public careers page, job listings, public applications, offer response portal</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- TIERS -->
+  <h3 id="tiers">Subscription Tiers</h3>
+
+  <div class="tier-cards">
+    <!-- STARTER -->
+    <div class="tier-card starter">
+      <span class="tier-badge">Starter</span>
+      <div class="tier-name">Starter</div>
+      <div class="tier-desc">Core HR operations for small companies</div>
+      <div class="tier-price">
+        <span class="amount">&peso;99</span>
+        <span class="period">/employee/mo</span>
+        <div class="min">Min 5 employees</div>
+      </div>
+      <div class="tier-modules-label">9 Modules Included</div>
+      <div class="tier-module"><span class="check">&#10003;</span> HR Management</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Organization Management</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Time &amp; Attendance</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Leave Management</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Payroll</div>
+      <div class="tier-module"><span class="check">&#10003;</span> HR Compliance &amp; Reporting</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Employee Self-Service (Basic)</div>
+      <div class="tier-module"><span class="check">&#10003;</span> User &amp; Access Management</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Biometric Integration (2 devices)</div>
+      <div class="tier-module planned"><span class="check">&#10003;</span> Web Kiosk Clock-In (1 kiosk) <span class="planned-tag">Planned</span></div>
+    </div>
+
+    <!-- PROFESSIONAL -->
+    <div class="tier-card pro">
+      <span class="tier-badge">Professional</span>
+      <div class="tier-name">Professional</div>
+      <div class="tier-desc">Strategic HR for growing companies</div>
+      <div class="tier-price">
+        <span class="amount">&peso;199</span>
+        <span class="period">/employee/mo</span>
+        <div class="min">Min 10 employees</div>
+      </div>
+      <div class="tier-modules-label">Everything in Starter, plus</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Recruitment &amp; Hiring</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Onboarding &amp; Pre-boarding</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Training &amp; Development</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Performance Management</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Probationary Management</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Manager / Supervisor Tools</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Help Center</div>
+      <div class="tier-divider">+ Extended Self-Service &amp; HR Analytics</div>
+      <div class="tier-divider">Up to 10 biometric devices</div>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="tier-card enterprise">
+      <span class="tier-badge">Enterprise</span>
+      <div class="tier-name">Enterprise</div>
+      <div class="tier-desc">Full platform for large organizations</div>
+      <div class="tier-price">
+        <span class="amount">&peso;349</span>
+        <span class="period">/employee/mo</span>
+        <div class="min">Min 25 employees</div>
+      </div>
+      <div class="tier-modules-label">Everything in Professional, plus</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Compliance Training</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Background &amp; Reference Checks</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Audit &amp; Security</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Public Careers Portal</div>
+      <div class="tier-divider">Unlimited biometric devices &amp; kiosks</div>
+      <div class="tier-divider">Full API access &amp; SSO/SAML</div>
+      <div class="tier-divider">Dedicated account manager</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <p><strong>Why Biometric is in Starter:</strong> Biometric devices are currently the sole method of recording attendance. Without this module, Time &amp; Attendance would have no data source. Tiers are differentiated by device count limits instead.</p>
+  </div>
+
+  <!-- COMPARISON MATRIX -->
+  <h3 id="comparison">Feature Comparison Matrix</h3>
+
+  <div class="table-wrap">
+    <table class="matrix-table">
+      <thead>
+        <tr><th>Capability</th><th>Starter</th><th>Professional</th><th>Enterprise</th></tr>
+      </thead>
+      <tbody>
+        <tr class="section-row"><td colspan="4">Core HR</td></tr>
+        <tr><td>Employee Records</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Organization Management</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Time &amp; Attendance</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Biometric Integration</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Web Kiosk Clock-In <span class="planned-tag">Planned</span></td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Leave Management</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Payroll Processing</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Government Compliance Reports</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Employee Self-Service (Basic)</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+
+        <tr class="section-row"><td colspan="4">Strategic HR</td></tr>
+        <tr><td>Recruitment &amp; Hiring</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Onboarding &amp; Pre-boarding</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Training &amp; Development</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Performance Management</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Probationary Management</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Manager / Supervisor Tools</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Help Center</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>HR Analytics Dashboard</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+
+        <tr class="section-row"><td colspan="4">Enterprise</td></tr>
+        <tr><td>Compliance Training</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Background &amp; Reference Checks</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Audit Logs</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Public Careers Portal</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
+
+        <tr class="section-row"><td colspan="4">Limits</td></tr>
+        <tr><td>Max Employees</td><td class="limit-val">50</td><td class="limit-val">250</td><td class="limit-val">Unlimited</td></tr>
+        <tr><td>Max Admin / HR Users</td><td class="limit-val">3</td><td class="limit-val">10</td><td class="limit-val">Unlimited</td></tr>
+        <tr><td>Max Departments</td><td class="limit-val">5</td><td class="limit-val">Unlimited</td><td class="limit-val">Unlimited</td></tr>
+        <tr><td>Max Biometric Devices</td><td class="limit-val">2</td><td class="limit-val">10</td><td class="limit-val">Unlimited</td></tr>
+        <tr><td>Storage</td><td class="limit-val">1 GB</td><td class="limit-val">10 GB</td><td class="limit-val">100 GB</td></tr>
+
+        <tr class="section-row"><td colspan="4">Extras</td></tr>
+        <tr><td>API Access</td><td class="dash">&mdash;</td><td class="limit-val">Read-only</td><td class="limit-val">Full</td></tr>
+        <tr><td>Custom Branding</td><td class="limit-val">Logo only</td><td class="limit-val">Logo + Colors</td><td class="limit-val">Full White-Label</td></tr>
+        <tr><td>SSO / SAML</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
+        <tr><td>Support</td><td class="limit-val">Email</td><td class="limit-val">Priority Email</td><td class="limit-val">Dedicated AM</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PRICING -->
+  <h3 id="pricing">Pricing Strategy</h3>
+  <p><strong>Model:</strong> Per-employee, per-month pricing with annual discount.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Tier</th><th>Monthly (per employee)</th><th>Annual (per employee)</th><th>Savings</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="module-name">Starter</td><td>&peso;99/mo</td><td>&peso;990/yr</td><td>~17%</td></tr>
+        <tr><td class="module-name">Professional</td><td>&peso;199/mo</td><td>&peso;1,990/yr</td><td>~17%</td></tr>
+        <tr><td class="module-name">Enterprise</td><td>&peso;349/mo</td><td>&peso;3,490/yr</td><td>~17%</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Minimums:</strong> Starter &mdash; 5 employees (&peso;495/mo), Professional &mdash; 10 employees (&peso;1,990/mo), Enterprise &mdash; 25 employees (&peso;8,725/mo).</p>
+  <p><strong>PayMongo implementation:</strong> Each tier has a base price per employee. PayMongo does not support per-seat <code>quantity</code> on subscriptions, so we use <strong>per-tenant dynamic plans</strong> where each tenant gets a unique PayMongo plan with <code>amount = unit_price x employee_count</code>, updated via API when employees are added or removed.</p>
+
+  <!-- TRIAL -->
+  <h3 id="trial">Trial Period</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:180px">Setting</th><th>Value</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">Duration</td><td>14 days</td></tr>
+        <tr><td class="module-name">Tier</td><td>Professional (gives users the strategic HR experience)</td></tr>
+        <tr><td class="module-name">Credit card required</td><td>No</td></tr>
+        <tr><td class="module-name">Expiration</td><td>Auto-downgrades to locked state requiring plan selection</td></tr>
+        <tr><td class="module-name">Enterprise trial</td><td>Available by request (sales-assisted, 30 days)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>PayMongo Limitations:</strong> No proration (plan changes take effect next billing cycle). 24-hour payment window for first subscription. Cards + Maya only. No customer portal (billing UI built in-app). No native per-seat billing (uses per-tenant dynamic plans).</p>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PART 2: TECHNICAL IMPLEMENTATION             -->
+  <!-- ============================================ -->
+
+  <h2 id="architecture"><span class="part-num">Part 2 &mdash; Technical Implementation</span>Architecture Decisions</h2>
+
+  <div class="table-wrap">
+    <table class="decision-table">
+      <thead><tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr></thead>
+      <tbody>
+        <tr><td>Billable entity</td><td>Tenant model</td><td>Billing is per-organization, not per-user</td></tr>
+        <tr><td>Billing DB</td><td>Platform database</td><td>Billing data is cross-tenant; must survive tenant DB operations</td></tr>
+        <tr><td>Module gating</td><td>Middleware + Inertia shared props</td><td>Matches existing <code>EnsureRole</code> pattern; gates both backend and frontend</td></tr>
+        <tr><td>Plan-module mapping</td><td>Database table (plan_modules)</td><td>Allows plan customization at runtime without code deploys</td></tr>
+        <tr><td>Employee billing</td><td>Per-tenant dynamic plans</td><td>PayMongo has no per-seat quantity; each tenant gets a unique plan with amount = unit_price x employee_count</td></tr>
+        <tr><td>Trial tracking</td><td>trial_ends_at on tenant</td><td>Allows trial without payment method upfront</td></tr>
+        <tr><td>Data on downgrade</td><td>Preserved, access restricted</td><td>Never delete customer data; reduces churn friction</td></tr>
+        <tr><td>Webhook endpoint</td><td>Main domain (/paymongo/webhook)</td><td>Webhooks are application-wide, not tenant-specific</td></tr>
+        <tr><td>Frontend gating</td><td>useSubscription composable</td><td>Follows existing <code>useTenant</code> composable pattern</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MODULE ENUM -->
+  <h3>Module Enum</h3>
+  <p>A new enum to define canonical, gatable module identifiers. Distinct from the existing <code>Permission</code> enum which handles CRUD actions within modules.</p>
+
+  <div class="code-block">
+    <div class="code-label">app/Enums/Module.php</div>
+    <pre><span class="kw">enum</span> Module: <span class="kw">string</span>
+{
+    <span class="cm">// Starter (always available on any paid plan)</span>
+    <span class="kw">case</span> HrManagement = <span class="str">'hr_management'</span>;
+    <span class="kw">case</span> OrganizationManagement = <span class="str">'organization_management'</span>;
+    <span class="kw">case</span> TimeAttendance = <span class="str">'time_attendance'</span>;
+    <span class="kw">case</span> BiometricIntegration = <span class="str">'biometric_integration'</span>;
+    <span class="kw">case</span> LeaveManagement = <span class="str">'leave_management'</span>;
+    <span class="kw">case</span> Payroll = <span class="str">'payroll'</span>;
+    <span class="kw">case</span> HrCompliance = <span class="str">'hr_compliance'</span>;
+    <span class="kw">case</span> EmployeeSelfService = <span class="str">'employee_self_service'</span>;
+    <span class="kw">case</span> UserAccessManagement = <span class="str">'user_access_management'</span>;
+
+    <span class="cm">// Professional</span>
+    <span class="kw">case</span> Recruitment = <span class="str">'recruitment'</span>;
+    <span class="kw">case</span> OnboardingPreboarding = <span class="str">'onboarding_preboarding'</span>;
+    <span class="kw">case</span> TrainingDevelopment = <span class="str">'training_development'</span>;
+    <span class="kw">case</span> PerformanceManagement = <span class="str">'performance_management'</span>;
+    <span class="kw">case</span> ProbationaryManagement = <span class="str">'probationary_management'</span>;
+    <span class="kw">case</span> ManagerSupervisor = <span class="str">'manager_supervisor'</span>;
+    <span class="kw">case</span> HelpCenter = <span class="str">'help_center'</span>;
+    <span class="kw">case</span> HrAnalytics = <span class="str">'hr_analytics'</span>;
+
+    <span class="cm">// Enterprise</span>
+    <span class="kw">case</span> ComplianceTraining = <span class="str">'compliance_training'</span>;
+    <span class="kw">case</span> BackgroundCheckReference = <span class="str">'background_check_reference'</span>;
+    <span class="kw">case</span> AuditSecurity = <span class="str">'audit_security'</span>;
+    <span class="kw">case</span> CareersPortal = <span class="str">'careers_portal'</span>;
+}</pre>
+  </div>
+
+  <!-- SCHEMA -->
+  <h3 id="schema">Database Schema</h3>
+  <p>All billing tables live in the <strong>platform database</strong> alongside <code>tenants</code> and <code>users</code>.</p>
+
+  <h4>plans table</h4>
+  <div class="code-block">
+    <pre>Schema::<span class="fn">create</span>(<span class="str">'plans'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">id</span>();
+    $table-><span class="fn">string</span>(<span class="str">'name'</span>);                    <span class="cm">// "Starter", "Professional", "Enterprise"</span>
+    $table-><span class="fn">string</span>(<span class="str">'slug'</span>)-><span class="fn">unique</span>();
+    $table-><span class="fn">text</span>(<span class="str">'description'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">boolean</span>(<span class="str">'is_active'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+    $table-><span class="fn">integer</span>(<span class="str">'sort_order'</span>)-><span class="fn">default</span>(<span class="num">0</span>);
+    $table-><span class="fn">json</span>(<span class="str">'limits'</span>);                    <span class="cm">// {"max_employees": 50, ...}</span>
+    $table-><span class="fn">timestamps</span>();
+});</pre>
+  </div>
+
+  <h4>limits JSON structure</h4>
+  <div class="code-block">
+    <pre>{
+    <span class="str">"max_employees"</span>: <span class="num">50</span>,
+    <span class="str">"max_admin_users"</span>: <span class="num">3</span>,
+    <span class="str">"max_departments"</span>: <span class="num">5</span>,
+    <span class="str">"max_biometric_devices"</span>: <span class="num">2</span>,
+    <span class="str">"storage_gb"</span>: <span class="num">1</span>,
+    <span class="str">"api_access"</span>: <span class="kw">false</span>
+}</pre>
+  </div>
+
+  <h4>plan_prices table</h4>
+  <div class="code-block">
+    <pre>Schema::<span class="fn">create</span>(<span class="str">'plan_prices'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">id</span>();
+    $table-><span class="fn">foreignId</span>(<span class="str">'plan_id'</span>)-><span class="fn">constrained</span>()-><span class="fn">cascadeOnDelete</span>();
+    $table-><span class="fn">string</span>(<span class="str">'billing_interval'</span>);        <span class="cm">// "monthly" or "yearly"</span>
+    $table-><span class="fn">integer</span>(<span class="str">'price_per_unit'</span>);          <span class="cm">// in centavos</span>
+    $table-><span class="fn">string</span>(<span class="str">'currency'</span>)-><span class="fn">default</span>(<span class="str">'PHP'</span>);
+    $table-><span class="fn">boolean</span>(<span class="str">'is_active'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+    $table-><span class="fn">timestamps</span>();
+});</pre>
+  </div>
+
+  <h4>plan_modules table (pivot)</h4>
+  <div class="code-block">
+    <pre>Schema::<span class="fn">create</span>(<span class="str">'plan_modules'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">id</span>();
+    $table-><span class="fn">foreignId</span>(<span class="str">'plan_id'</span>)-><span class="fn">constrained</span>()-><span class="fn">cascadeOnDelete</span>();
+    $table-><span class="fn">string</span>(<span class="str">'module'</span>);                  <span class="cm">// Module enum value</span>
+    $table-><span class="fn">timestamps</span>();
+
+    $table-><span class="fn">unique</span>([<span class="str">'plan_id'</span>, <span class="str">'module'</span>]);
+});</pre>
+  </div>
+
+  <h4>subscriptions table</h4>
+  <div class="code-block">
+    <pre>Schema::<span class="fn">create</span>(<span class="str">'subscriptions'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">id</span>();
+    $table-><span class="fn">foreignId</span>(<span class="str">'tenant_id'</span>)-><span class="fn">constrained</span>()-><span class="fn">cascadeOnDelete</span>();
+    $table-><span class="fn">foreignId</span>(<span class="str">'plan_id'</span>)-><span class="fn">constrained</span>();
+    $table-><span class="fn">foreignId</span>(<span class="str">'plan_price_id'</span>)-><span class="fn">constrained</span>();
+    $table-><span class="fn">string</span>(<span class="str">'paymongo_subscription_id'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">string</span>(<span class="str">'status'</span>);                   <span class="cm">// SubscriptionStatus enum</span>
+    $table-><span class="fn">integer</span>(<span class="str">'quantity'</span>);                <span class="cm">// employee count</span>
+    $table-><span class="fn">integer</span>(<span class="str">'amount'</span>);                  <span class="cm">// total in centavos</span>
+    $table-><span class="fn">timestamp</span>(<span class="str">'current_period_start'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">timestamp</span>(<span class="str">'current_period_end'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">timestamp</span>(<span class="str">'cancelled_at'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">timestamps</span>();
+});</pre>
+  </div>
+
+  <h4>Additions to tenants table</h4>
+  <div class="code-block">
+    <pre>Schema::<span class="fn">table</span>(<span class="str">'tenants'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">foreignId</span>(<span class="str">'plan_id'</span>)-><span class="fn">nullable</span>()-><span class="fn">constrained</span>()-><span class="fn">nullOnDelete</span>();
+    $table-><span class="fn">string</span>(<span class="str">'paymongo_customer_id'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">timestamp</span>(<span class="str">'trial_ends_at'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">integer</span>(<span class="str">'employee_count_cache'</span>)-><span class="fn">default</span>(<span class="num">0</span>);
+});</pre>
+  </div>
+
+  <div class="callout info">
+    <p><strong>Subscriptions table:</strong> Unlike Stripe/Cashier which manages its own subscriptions table, we maintain our own <code>subscriptions</code> table to track PayMongo subscription state. The <code>paymongo_subscription_id</code> column links to the PayMongo subscription resource, and <code>paymongo_customer_id</code> on tenants links to the PayMongo customer resource.</p>
+  </div>
+
+  <!-- MODELS -->
+  <h3 id="models">New Models</h3>
+
+  <h4>Plan model</h4>
+  <div class="code-block">
+    <div class="code-label">app/Models/Plan.php</div>
+    <pre><span class="kw">class</span> Plan <span class="kw">extends</span> Model
+{
+    <span class="kw">protected</span> $connection = <span class="str">'platform'</span>;
+
+    <span class="kw">protected</span> $fillable = [<span class="str">'name'</span>, <span class="str">'slug'</span>, <span class="str">'description'</span>,
+                           <span class="str">'is_active'</span>, <span class="str">'sort_order'</span>, <span class="str">'limits'</span>];
+
+    <span class="kw">protected function</span> <span class="fn">casts</span>(): <span class="kw">array</span> {
+        <span class="kw">return</span> [<span class="str">'limits'</span> => <span class="str">'array'</span>, <span class="str">'is_active'</span> => <span class="str">'boolean'</span>];
+    }
+
+    <span class="kw">public function</span> <span class="fn">prices</span>(): HasMany       { <span class="kw">return</span> $this-><span class="fn">hasMany</span>(PlanPrice::class); }
+    <span class="kw">public function</span> <span class="fn">modules</span>(): HasMany      { <span class="kw">return</span> $this-><span class="fn">hasMany</span>(PlanModule::class); }
+    <span class="kw">public function</span> <span class="fn">tenants</span>(): HasMany      { <span class="kw">return</span> $this-><span class="fn">hasMany</span>(Tenant::class); }
+
+    <span class="kw">public function</span> <span class="fn">hasModule</span>(Module $module): <span class="kw">bool</span> {
+        <span class="kw">return</span> $this->modules-><span class="fn">contains</span>(<span class="str">'module'</span>, $module->value);
+    }
+
+    <span class="kw">public function</span> <span class="fn">getLimit</span>(<span class="kw">string</span> $key, mixed $default = <span class="kw">null</span>): mixed {
+        <span class="kw">return</span> <span class="fn">data_get</span>($this->limits, $key, $default);
+    }
+}</pre>
+  </div>
+
+  <!-- GATING -->
+  <h3 id="gating">Feature Gate Service</h3>
+  <p>Centralized service for all module and limit access checks.</p>
+
+  <div class="code-block">
+    <div class="code-label">app/Services/FeatureGateService.php</div>
+    <pre><span class="kw">class</span> FeatureGateService
+{
+    <span class="kw">public function</span> <span class="fn">__construct</span>(<span class="kw">private</span> ?Tenant $tenant = <span class="kw">null</span>) {
+        $this->tenant = $tenant ?? <span class="fn">app</span>(<span class="str">'currentTenant'</span>);
+    }
+
+    <span class="kw">public function</span> <span class="fn">hasModule</span>(Module $module): <span class="kw">bool</span>
+    <span class="kw">public function</span> <span class="fn">hasAnyModule</span>(Module ...$modules): <span class="kw">bool</span>
+    <span class="kw">public function</span> <span class="fn">availableModules</span>(): <span class="kw">array</span>
+    <span class="kw">public function</span> <span class="fn">isWithinEmployeeLimit</span>(): <span class="kw">bool</span>
+    <span class="kw">public function</span> <span class="fn">isWithinUserLimit</span>(): <span class="kw">bool</span>
+    <span class="kw">public function</span> <span class="fn">isWithinDeviceLimit</span>(): <span class="kw">bool</span>
+    <span class="kw">public function</span> <span class="fn">getLimit</span>(<span class="kw">string</span> $key, mixed $default = <span class="kw">null</span>): mixed
+}</pre>
+  </div>
+
+  <!-- MIDDLEWARE -->
+  <h3 id="middleware">Module Gating Middleware</h3>
+
+  <div class="code-block">
+    <div class="code-label">app/Http/Middleware/EnsureModuleAccess.php</div>
+    <pre><span class="cm">// Usage: ->middleware('module:recruitment')</span>
+
+<span class="kw">public function</span> <span class="fn">handle</span>(Request $request, Closure $next, <span class="kw">string</span> ...$modules): Response
+{
+    $tenant = <span class="fn">app</span>(<span class="str">'currentTenant'</span>);
+    <span class="kw">if</span> (! $tenant) <span class="kw">return</span> $next($request);              <span class="cm">// non-tenant routes</span>
+    <span class="kw">if</span> ($request-><span class="fn">user</span>()?-><span class="fn">isSuperAdmin</span>()) <span class="kw">return</span> $next($request);  <span class="cm">// bypass</span>
+
+    $gate = <span class="fn">app</span>(FeatureGateService::class);
+
+    <span class="kw">foreach</span> ($modules <span class="kw">as</span> $moduleValue) {
+        $module = Module::<span class="fn">tryFrom</span>($moduleValue);
+        <span class="kw">if</span> ($module && $gate-><span class="fn">hasModule</span>($module)) <span class="kw">return</span> $next($request);
+    }
+
+    <span class="kw">if</span> ($request-><span class="fn">expectsJson</span>()) <span class="fn">abort</span>(<span class="num">403</span>, <span class="str">'Requires plan upgrade.'</span>);
+    <span class="kw">return</span> <span class="fn">redirect</span>()-><span class="fn">route</span>(<span class="str">'tenant.billing.upgrade'</span>);
+}</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">bootstrap/app.php &mdash; Register middleware aliases</div>
+    <pre>$middleware-><span class="fn">alias</span>([
+    <span class="str">'ensure-role'</span> => EnsureRole::class,
+    <span class="str">'module'</span>      => EnsureModuleAccess::class,
+    <span class="str">'subscribed'</span>  => EnsureActiveSubscription::class,
+]);</pre>
+  </div>
+
+  <h4>Modules requiring <code>module</code> middleware</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Module Enum Value</th><th>Route Prefix / File</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">recruitment</td><td>routes/tenant/web-recruitment.php, api-recruitment.php</td></tr>
+        <tr><td class="module-name">onboarding_preboarding</td><td>Onboarding route groups</td></tr>
+        <tr><td class="module-name">training_development</td><td>Training route groups</td></tr>
+        <tr><td class="module-name">performance_management</td><td>Performance route groups</td></tr>
+        <tr><td class="module-name">probationary_management</td><td>Probationary route groups</td></tr>
+        <tr><td class="module-name">manager_supervisor</td><td>Manager-specific route groups</td></tr>
+        <tr><td class="module-name">help_center</td><td>Help center route groups</td></tr>
+        <tr><td class="module-name">compliance_training</td><td>Compliance route groups</td></tr>
+        <tr><td class="module-name">background_check_reference</td><td>Background check route groups</td></tr>
+        <tr><td class="module-name">audit_security</td><td>Audit log route groups</td></tr>
+        <tr><td class="module-name">careers_portal</td><td>Careers/public portal route groups</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FRONTEND -->
+  <h3 id="frontend">Frontend Gating</h3>
+
+  <h4>Inertia Shared Props</h4>
+  <div class="code-block">
+    <div class="code-label">HandleInertiaRequests.php &mdash; getTenantContext()</div>
+    <pre><span class="kw">return</span> [
+    <span class="cm">// ... existing props</span>
+    <span class="str">'plan'</span> => [
+        <span class="str">'name'</span> => $tenant->plan?->name,
+        <span class="str">'slug'</span> => $tenant->plan?->slug,
+    ],
+    <span class="str">'subscription'</span> => [
+        <span class="str">'status'</span>       => $this-><span class="fn">getSubscriptionStatus</span>($tenant),
+        <span class="str">'is_on_trial'</span>  => $tenant-><span class="fn">onTrial</span>(),
+        <span class="str">'trial_ends_at'</span> => $tenant->trial_ends_at?-><span class="fn">toIso8601String</span>(),
+        <span class="str">'is_subscribed'</span> => $tenant-><span class="fn">subscribed</span>(<span class="str">'default'</span>),
+    ],
+    <span class="str">'available_modules'</span> => <span class="fn">app</span>(FeatureGateService::class)-><span class="fn">availableModules</span>(),
+];</pre>
+  </div>
+
+  <h4>Vue Composable</h4>
+  <div class="code-block">
+    <div class="code-label">resources/js/composables/useSubscription.ts</div>
+    <pre><span class="kw">export function</span> <span class="fn">useSubscription</span>() {
+    <span class="kw">const</span> page = <span class="fn">usePage</span>()
+    <span class="kw">const</span> availableModules = <span class="fn">computed</span>(() => page.props.tenant?.available_modules ?? [])
+    <span class="kw">const</span> <span class="fn">hasModule</span> = (module: <span class="kw">string</span>): <span class="kw">boolean</span> =>
+        availableModules.value.<span class="fn">includes</span>(module)
+    <span class="kw">const</span> isSubscribed = <span class="fn">computed</span>(() => page.props.tenant?.subscription?.is_subscribed ?? <span class="kw">false</span>)
+    <span class="kw">const</span> isOnTrial = <span class="fn">computed</span>(() => page.props.tenant?.subscription?.is_on_trial ?? <span class="kw">false</span>)
+    <span class="kw">const</span> planName = <span class="fn">computed</span>(() => page.props.tenant?.plan?.name ?? <span class="kw">null</span>)
+
+    <span class="kw">return</span> { availableModules, hasModule, isSubscribed, isOnTrial, planName }
+}</pre>
+  </div>
+
+  <h4>Sidebar Gating Example</h4>
+  <div class="code-block">
+    <div class="code-label">TenantSidebar.vue</div>
+    <pre><span class="cm">&lt;!-- Starter modules: always visible --&gt;</span>
+&lt;SidebarSection title=<span class="str">"HR Management"</span>&gt;...&lt;/SidebarSection&gt;
+&lt;SidebarSection title=<span class="str">"Time &amp; Attendance"</span>&gt;...&lt;/SidebarSection&gt;
+
+<span class="cm">&lt;!-- Professional modules: gated --&gt;</span>
+&lt;SidebarSection <span class="kw">v-if</span>=<span class="str">"hasModule('recruitment')"</span> title=<span class="str">"Recruitment"</span>&gt;
+    ...
+&lt;/SidebarSection&gt;
+
+<span class="cm">&lt;!-- Enterprise modules: gated --&gt;</span>
+&lt;SidebarSection <span class="kw">v-if</span>=<span class="str">"hasModule('compliance_training')"</span> title=<span class="str">"Compliance"</span>&gt;
+    ...
+&lt;/SidebarSection&gt;</pre>
+  </div>
+
+  <!-- PAYMONGO -->
+  <h3 id="paymongo">PayMongo Setup</h3>
+
+  <div class="code-block">
+    <div class="code-label">Installation</div>
+    <pre>composer require paymongo/paymongo-php</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">config/paymongo.php</div>
+    <pre><span class="kw">return</span> [
+    <span class="str">'secret_key'</span>  => <span class="fn">env</span>(<span class="str">'PAYMONGO_SECRET_KEY'</span>),
+    <span class="str">'public_key'</span>  => <span class="fn">env</span>(<span class="str">'PAYMONGO_PUBLIC_KEY'</span>),
+    <span class="str">'webhook_secret'</span> => <span class="fn">env</span>(<span class="str">'PAYMONGO_WEBHOOK_SECRET'</span>),
+    <span class="str">'currency'</span>    => <span class="str">'PHP'</span>,
+];</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">.env</div>
+    <pre>PAYMONGO_SECRET_KEY=sk_live_...
+PAYMONGO_PUBLIC_KEY=pk_live_...
+PAYMONGO_WEBHOOK_SECRET=whsec_...</pre>
+  </div>
+
+  <!-- BILLING ROUTES -->
+  <h3 id="billing-routes">Billing Routes &amp; Controller</h3>
+
+  <div class="code-block">
+    <div class="code-label">routes/tenant/web-billing.php</div>
+    <pre>Route::<span class="fn">prefix</span>(<span class="str">'billing'</span>)-><span class="fn">middleware</span>(<span class="str">'ensure-role:admin'</span>)-><span class="fn">group</span>(<span class="kw">function</span> () {
+    Route::<span class="fn">get</span>(<span class="str">'/'</span>,              [BillingController::class, <span class="str">'index'</span>]);
+    Route::<span class="fn">get</span>(<span class="str">'/plans'</span>,         [BillingController::class, <span class="str">'plans'</span>]);
+    Route::<span class="fn">get</span>(<span class="str">'/upgrade'</span>,       [BillingController::class, <span class="str">'upgrade'</span>]);
+    Route::<span class="fn">post</span>(<span class="str">'/subscribe/{planPrice}'</span>, [BillingController::class, <span class="str">'subscribe'</span>]);
+    Route::<span class="fn">post</span>(<span class="str">'/change-plan/{planPrice}'</span>, [BillingController::class, <span class="str">'changePlan'</span>]);
+    Route::<span class="fn">post</span>(<span class="str">'/cancel'</span>,      [BillingController::class, <span class="str">'cancel'</span>]);
+    Route::<span class="fn">get</span>(<span class="str">'/success'</span>,      [BillingController::class, <span class="str">'success'</span>]);
+    Route::<span class="fn">get</span>(<span class="str">'/invoices'</span>,     [BillingController::class, <span class="str">'invoices'</span>]);
+});</pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Action</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">index</td><td>Billing dashboard &mdash; current plan, usage, next invoice</td></tr>
+        <tr><td class="module-name">plans</td><td>Plan comparison page with pricing</td></tr>
+        <tr><td class="module-name">upgrade</td><td>Upgrade prompt shown when accessing locked modules</td></tr>
+        <tr><td class="module-name">subscribe</td><td>Create new subscription via PayMongo checkout</td></tr>
+        <tr><td class="module-name">changePlan</td><td>Change plan (upgrade or downgrade, takes effect next billing cycle)</td></tr>
+        <tr><td class="module-name">cancel</td><td>Cancel subscription (takes effect at period end)</td></tr>
+        <tr><td class="module-name">success</td><td>Post-checkout success page after PayMongo payment</td></tr>
+        <tr><td class="module-name">invoices</td><td>List all invoices with PDF download</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- WEBHOOKS -->
+  <h3 id="webhooks">PayMongo Webhook Handling</h3>
+  <p>Webhooks are received on the <strong>main domain</strong>, not tenant subdomains.</p>
+
+  <div class="code-block">
+    <div class="code-label">Handled events (route: /paymongo/webhook)</div>
+    <pre><span class="fn">subscription.activated</span>    &rarr;  Activate plan for tenant, set period dates
+<span class="fn">subscription.past_due</span>     &rarr;  Notify tenant admin, start grace period
+<span class="fn">subscription.cancelled</span>    &rarr;  Handle cancellation, restrict access at period end
+<span class="fn">subscription.expired</span>      &rarr;  Lock tenant, prompt re-subscription
+<span class="fn">payment.paid</span>              &rarr;  Record payment, update subscription period</pre>
+  </div>
+
+  <!-- REGISTRATION -->
+  <h3 id="registration">Tenant Registration Changes</h3>
+  <div class="code-block">
+    <div class="code-label">TenantRegistrationController::store()</div>
+    <pre><span class="cm">// After Tenant::create()</span>
+$professionalPlan = Plan::<span class="fn">where</span>(<span class="str">'slug'</span>, <span class="str">'professional'</span>)-><span class="fn">first</span>();
+
+$tenant-><span class="fn">update</span>([
+    <span class="str">'plan_id'</span>       => $professionalPlan->id,
+    <span class="str">'trial_ends_at'</span> => <span class="fn">now</span>()-><span class="fn">addDays</span>(<span class="fn">config</span>(<span class="str">'billing.trial_days'</span>, <span class="num">14</span>)),
+]);
+
+<span class="cm">// Create PayMongo customer for later subscription</span>
+PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
+  </div>
+
+  <!-- UPGRADE/DOWNGRADE -->
+  <h3 id="upgrade-downgrade">Upgrade / Downgrade Flow</h3>
+  <h4>Upgrade</h4>
+  <p>1. Tenant admin navigates to billing plans &rarr; 2. Selects higher plan &rarr; 3. If no active subscription, redirect to PayMongo checkout &rarr; 4. If subscription exists, <code>changePlan()</code> queues the change for next billing cycle &rarr; 5. PayMongo does not prorate; change takes effect at period end &rarr; 6. Webhook updates <code>plan_id</code> &rarr; 7. New modules available after period rolls over (or immediately for new subscriptions).</p>
+
+  <h4>Downgrade</h4>
+  <p>1. Tenant admin selects lower plan &rarr; 2. System validates limits (employees, users, storage) &rarr; 3. If over limits, show warnings &rarr; 4. If within limits, <code>changePlan()</code> takes effect at period end &rarr; 5. Modules remain accessible until billing period ends &rarr; 6. Webhook triggers plan change.</p>
+
+  <div class="callout">
+    <p><strong>Data preservation:</strong> On downgrade, data is never deleted &mdash; only access is restricted. This reduces churn friction and maintains trust.</p>
+  </div>
+
+  <!-- SYNC -->
+  <h3 id="sync">Employee Count Synchronization</h3>
+  <p>The subscription amount must track the billable employee count. Since PayMongo has no native per-seat quantity, the plan amount is recalculated and updated via <code>PayMongoSubscriptionService::updateQuantity()</code>.</p>
+
+  <div class="code-block">
+    <div class="code-label">app/Jobs/UpdateBillingQuantity.php</div>
+    <pre><span class="kw">class</span> UpdateBillingQuantity <span class="kw">implements</span> ShouldQueue
+{
+    <span class="kw">public function</span> <span class="fn">handle</span>(): <span class="kw">void</span> {
+        TenantDatabaseManager::<span class="fn">switchConnection</span>($this->tenant);
+        $activeCount = Employee::<span class="fn">where</span>(<span class="str">'status'</span>, <span class="str">'active'</span>)-><span class="fn">count</span>();
+        $this->tenant-><span class="fn">update</span>([<span class="str">'employee_count_cache'</span> => $activeCount]);
+
+        $subscription = $this->tenant-><span class="fn">activeSubscription</span>();
+        <span class="kw">if</span> ($subscription) {
+            $quantity = <span class="fn">max</span>($activeCount, $minimumForPlan);
+            PayMongoSubscriptionService::<span class="fn">updateQuantity</span>($subscription, $quantity);
+        }
+    }
+}</pre>
+  </div>
+
+  <p><strong>Dispatch triggers:</strong> Employee created, status changed, or deleted (via <code>EmployeeObserver</code>). <strong>Safety net:</strong> Nightly <code>billing:sync-quantities</code> command.</p>
+
+  <!-- LIMITS -->
+  <h3 id="limits">Limit Enforcement</h3>
+
+  <div class="code-block">
+    <div class="code-label">Employee limit &mdash; EmployeeController::store()</div>
+    <pre><span class="kw">if</span> (! $gate-><span class="fn">isWithinEmployeeLimit</span>()) {
+    <span class="kw">return</span> <span class="fn">back</span>()-><span class="fn">withErrors</span>([
+        <span class="str">'limit'</span> => <span class="str">"You've reached your plan's employee limit. Please upgrade."</span>
+    ]);
+}</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">Biometric device limit</div>
+    <pre><span class="kw">if</span> (! $gate-><span class="fn">isWithinDeviceLimit</span>()) {
+    <span class="kw">return</span> <span class="fn">back</span>()-><span class="fn">withErrors</span>([
+        <span class="str">'limit'</span> => <span class="str">"You've reached your plan's biometric device limit. Please upgrade."</span>
+    ]);
+}</pre>
+  </div>
+
+  <p>Similar checks for <strong>user limit</strong> (invitation/user creation flows) and <strong>storage limit</strong> (document upload controllers).</p>
+
+  <!-- TRIAL TECH -->
+  <h3 id="trial-tech">Trial Expiration Handling</h3>
+
+  <div class="code-block">
+    <div class="code-label">config/billing.php</div>
+    <pre><span class="kw">return</span> [
+    <span class="str">'trial_days'</span>            => <span class="fn">env</span>(<span class="str">'BILLING_TRIAL_DAYS'</span>, <span class="num">14</span>),
+    <span class="str">'trial_plan'</span>            => <span class="fn">env</span>(<span class="str">'BILLING_TRIAL_PLAN'</span>, <span class="str">'professional'</span>),
+    <span class="str">'grace_period_days'</span>     => <span class="fn">env</span>(<span class="str">'BILLING_GRACE_PERIOD_DAYS'</span>, <span class="num">30</span>),
+    <span class="str">'default_plan'</span>          => <span class="fn">env</span>(<span class="str">'BILLING_DEFAULT_PLAN'</span>, <span class="str">'starter'</span>),
+    <span class="str">'require_card_for_trial'</span> => <span class="fn">env</span>(<span class="str">'BILLING_REQUIRE_CARD_FOR_TRIAL'</span>, <span class="kw">false</span>),
+];</pre>
+  </div>
+
+  <p>Scheduled command <code>billing:check-trials</code> runs daily to notify admins of expired trials.</p>
+
+  <!-- ============================================ -->
+  <!-- PART 3: ROADMAP                              -->
+  <!-- ============================================ -->
+
+  <h2 id="roadmap"><span class="part-num">Part 3 &mdash; Implementation Roadmap</span>Implementation Phases</h2>
+
+  <div class="roadmap">
+    <div class="roadmap-phase">
+      <div class="phase-badge">
+        <span class="num">Phase 1</span>
+        <span class="week">Week 1&ndash;2</span>
+      </div>
+      <div class="phase-content">
+        <h4>Foundation</h4>
+        <ul>
+          <li>Install PayMongo PHP SDK</li>
+          <li>Create platform migrations for plans, plan_prices, plan_modules, subscriptions</li>
+          <li>Create Module and SubscriptionStatus enums</li>
+          <li>Create migration to add billing columns to tenants table (plan_id, paymongo_customer_id, trial_ends_at, employee_count_cache)</li>
+          <li>Create Plan, PlanPrice, PlanModule, Subscription models</li>
+          <li>Add plan relationship to Tenant model</li>
+          <li>Create config/billing.php, config/paymongo.php, and PlanSeeder</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="phase-badge">
+        <span class="num">Phase 2</span>
+        <span class="week">Week 2&ndash;3</span>
+      </div>
+      <div class="phase-content">
+        <h4>Feature Gating</h4>
+        <ul>
+          <li>Create FeatureGateService</li>
+          <li>Create EnsureModuleAccess and EnsureActiveSubscription middleware</li>
+          <li>Register middlewares in bootstrap/app.php</li>
+          <li>Apply module middleware to Professional and Enterprise route groups</li>
+          <li>Extend HandleInertiaRequests with subscription/module shared props</li>
+          <li>Create useSubscription composable</li>
+          <li>Update TenantSidebar.vue with hasModule() visibility checks</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="phase-badge">
+        <span class="num">Phase 3</span>
+        <span class="week">Week 3&ndash;4</span>
+      </div>
+      <div class="phase-content">
+        <h4>Billing UI &amp; PayMongo</h4>
+        <ul>
+          <li>Create BillingController with Inertia pages (Plans, Dashboard, Upgrade, Success)</li>
+          <li>Create PayMongoWebhookController</li>
+          <li>Create PayMongo service classes (PayMongoService, PayMongoCustomerService, PayMongoSubscriptionService, PayMongoWebhookService)</li>
+          <li>Add billing and webhook routes</li>
+          <li>Modify TenantRegistrationController for trial provisioning</li>
+          <li>Create UpdateBillingQuantity job and EmployeeObserver</li>
+          <li>Create scheduled commands (billing:sync-quantities, billing:check-trials)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="phase-badge">
+        <span class="num">Phase 4</span>
+        <span class="week">Week 4&ndash;5</span>
+      </div>
+      <div class="phase-content">
+        <h4>Limit Enforcement &amp; Polish</h4>
+        <ul>
+          <li>Add employee, user, device, and storage limit checks</li>
+          <li>Create upgrade prompt Vue components (banner, modal)</li>
+          <li>Add trial expiration banner to tenant layout</li>
+          <li>Implement downgrade validation logic</li>
+          <li>Create notification classes (TrialExpired, PaymentFailed, SubscriptionCancelled)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="phase-badge">
+        <span class="num">Phase 5</span>
+        <span class="week">Week 5&ndash;6</span>
+      </div>
+      <div class="phase-content">
+        <h4>Testing &amp; Hardening</h4>
+        <ul>
+          <li>Feature tests for FeatureGateService, middleware, and billing controller</li>
+          <li>Feature tests for upgrade/downgrade, trial expiration, and employee sync</li>
+          <li>Integration tests for PayMongo webhooks (test mode)</li>
+          <li>Browser tests for billing UI</li>
+          <li>Test all modules are correctly gated per tier</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="phase-badge">
+        <span class="num">Phase 6</span>
+        <span class="week">Week 6&ndash;7</span>
+      </div>
+      <div class="phase-content">
+        <h4>Platform Admin Dashboard</h4>
+        <ul>
+          <li>Create PlatformAdminController with dashboard, tenant list, tenant detail</li>
+          <li>Create Admin Vue pages (Dashboard, Tenants/Index, Tenants/Show)</li>
+          <li>Create admin layout (layouts/admin/Layout.vue)</li>
+          <li>Add /admin/* route group to routes/platform.php</li>
+          <li>Implement tenant management actions (extend trial, assign plan, cancel subscription)</li>
+          <li>Implement impersonation via secure redirect token</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="phase-badge">
+        <span class="num">Phase 7</span>
+        <span class="week">Week 7&ndash;8</span>
+      </div>
+      <div class="phase-content">
+        <h4>Admin Testing &amp; Integration</h4>
+        <ul>
+          <li>Feature tests for PlatformAdminController (authorization, CRUD, actions)</li>
+          <li>Browser tests for admin dashboard and tenant management UI</li>
+          <li>End-to-end tests for impersonation flow</li>
+          <li>Integration tests for subscription management from admin</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="roadmap-phase">
+      <div class="phase-badge">
+        <span class="num">Phase 8</span>
+        <span class="week">Week 9&ndash;10</span>
+      </div>
+      <div class="phase-content">
+        <h4>Web Kiosk Clock-In <span class="planned-tag">Planned</span></h4>
+        <ul>
+          <li>Kiosk terminal model, controllers, and middleware</li>
+          <li>Full-screen kiosk terminal UI (Vue)</li>
+          <li>Self-service clock-in feature</li>
+          <li>Anti-fraud measures (IP whitelist, geofencing, photo capture)</li>
+          <li>Add source column to attendance_logs</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILES TO CREATE -->
+  <h3 id="files-create">Files to Create</h3>
+
+  <div class="table-wrap">
+    <table class="file-table">
+      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>app/Enums/Module.php</td><td>Module identifiers for gating</td></tr>
+        <tr><td>app/Enums/SubscriptionStatus.php</td><td>Subscription status enum (active, past_due, cancelled, expired)</td></tr>
+        <tr><td>app/Models/Plan.php</td><td>Subscription plan model</td></tr>
+        <tr><td>app/Models/PlanPrice.php</td><td>Plan pricing per billing interval</td></tr>
+        <tr><td>app/Models/PlanModule.php</td><td>Plan-to-module pivot</td></tr>
+        <tr><td>app/Models/Subscription.php</td><td>Tenant subscription model</td></tr>
+        <tr><td>app/Services/FeatureGateService.php</td><td>Centralized module/limit checks</td></tr>
+        <tr><td>app/Services/Billing/PayMongoService.php</td><td>Core PayMongo API client wrapper</td></tr>
+        <tr><td>app/Services/Billing/PayMongoCustomerService.php</td><td>PayMongo customer creation and management</td></tr>
+        <tr><td>app/Services/Billing/PayMongoSubscriptionService.php</td><td>PayMongo subscription lifecycle management</td></tr>
+        <tr><td>app/Services/Billing/PayMongoWebhookService.php</td><td>PayMongo webhook event processing</td></tr>
+        <tr><td>app/Providers/PayMongoServiceProvider.php</td><td>PayMongo service provider registration</td></tr>
+        <tr><td>app/Http/Middleware/EnsureModuleAccess.php</td><td>Route-level module gating</td></tr>
+        <tr><td>app/Http/Middleware/EnsureActiveSubscription.php</td><td>Subscription status check</td></tr>
+        <tr><td>app/Http/Controllers/BillingController.php</td><td>Billing management UI</td></tr>
+        <tr><td>app/Http/Controllers/PayMongoWebhookController.php</td><td>PayMongo webhook handler</td></tr>
+        <tr><td>app/Http/Controllers/PlatformAdminController.php</td><td>Platform admin dashboard and tenant management</td></tr>
+        <tr><td>app/Jobs/UpdateBillingQuantity.php</td><td>Sync employee count to PayMongo plan amount</td></tr>
+        <tr><td>app/Console/Commands/SyncBillingQuantities.php</td><td>Nightly billing quantity sync</td></tr>
+        <tr><td>app/Console/Commands/CheckExpiredTrials.php</td><td>Trial expiration handler</td></tr>
+        <tr><td>app/Observers/EmployeeObserver.php</td><td>Trigger billing sync on employee changes</td></tr>
+        <tr><td>app/Notifications/TrialExpiredNotification.php</td><td>Trial expiry notice</td></tr>
+        <tr><td>app/Notifications/PaymentFailedNotification.php</td><td>Failed payment notice</td></tr>
+        <tr><td>app/Notifications/SubscriptionCancelledNotification.php</td><td>Cancellation notice</td></tr>
+        <tr><td>config/billing.php</td><td>Billing configuration</td></tr>
+        <tr><td>config/paymongo.php</td><td>PayMongo API keys and settings</td></tr>
+        <tr><td>database/seeders/PlanSeeder.php</td><td>Seed default plans with modules</td></tr>
+        <tr><td>database/factories/PlanFactory.php</td><td>Plan model factory for testing</td></tr>
+        <tr><td>database/factories/SubscriptionFactory.php</td><td>Subscription model factory for testing</td></tr>
+        <tr><td>resources/js/composables/useSubscription.ts</td><td>Frontend subscription composable</td></tr>
+        <tr><td>resources/js/pages/Billing/Index.vue</td><td>Billing dashboard page</td></tr>
+        <tr><td>resources/js/pages/Billing/Plans.vue</td><td>Plan comparison page</td></tr>
+        <tr><td>resources/js/pages/Billing/Upgrade.vue</td><td>Upgrade prompt page</td></tr>
+        <tr><td>resources/js/pages/Billing/Success.vue</td><td>Post-checkout success page</td></tr>
+        <tr><td>resources/js/pages/Admin/Dashboard.vue</td><td>Platform admin overview dashboard</td></tr>
+        <tr><td>resources/js/pages/Admin/Tenants/Index.vue</td><td>Searchable/filterable tenant list</td></tr>
+        <tr><td>resources/js/pages/Admin/Tenants/Show.vue</td><td>Tenant detail with subscription history</td></tr>
+        <tr><td>resources/js/layouts/admin/Layout.vue</td><td>Admin layout wrapper</td></tr>
+        <tr><td>routes/tenant/web-billing.php</td><td>Billing routes</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FILES TO MODIFY -->
+  <h3 id="files-modify">Files to Modify</h3>
+
+  <div class="table-wrap">
+    <table class="file-table">
+      <thead><tr><th>File</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td>app/Models/Tenant.php</td><td>Add plan relationship, trial methods, paymongo_customer_id, fillable fields</td></tr>
+        <tr><td>app/Http/Middleware/HandleInertiaRequests.php</td><td>Share subscription/module data in tenant context</td></tr>
+        <tr><td>resources/js/components/TenantSidebar.vue</td><td>Add hasModule() checks to sidebar sections</td></tr>
+        <tr><td>bootstrap/app.php</td><td>Register module and subscribed middleware aliases</td></tr>
+        <tr><td>app/Http/Controllers/TenantRegistrationController.php</td><td>Assign plan + trial on registration</td></tr>
+        <tr><td>app/Http/Controllers/EmployeeController.php</td><td>Add employee limit check</td></tr>
+        <tr><td>config/paymongo.php</td><td>PayMongo API configuration</td></tr>
+        <tr><td>routes/tenant.php</td><td>Include billing routes file</td></tr>
+        <tr><td>routes/platform.php</td><td>Add webhook route + /admin/* route group</td></tr>
+        <tr><td>routes/console.php</td><td>Register billing scheduled commands</td></tr>
+        <tr><td>app/Providers/AppServiceProvider.php</td><td>Register PayMongo service provider bindings</td></tr>
+        <tr><td>Route files in routes/tenant/</td><td>Apply module middleware to gated route groups</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PART 6: PLATFORM ADMIN                       -->
+  <!-- ============================================ -->
+
+  <h2 id="admin"><span class="part-num">Part 6 &mdash; Platform Admin</span>Platform Admin Dashboard</h2>
+
+  <p>A super-admin-only centralized dashboard on the main domain for managing all tenants, subscriptions, and platform-wide metrics. Only users with the super admin role can access this area.</p>
+
+  <h3>Routes</h3>
+  <div class="code-block">
+    <div class="code-label">routes/platform.php &mdash; Admin route group</div>
+    <pre>Route::<span class="fn">prefix</span>(<span class="str">'admin'</span>)-><span class="fn">middleware</span>([<span class="str">'auth'</span>, <span class="str">'ensure-role:super_admin'</span>])-><span class="fn">group</span>(<span class="kw">function</span> () {
+    Route::<span class="fn">get</span>(<span class="str">'/'</span>,                    [PlatformAdminController::class, <span class="str">'dashboard'</span>]);
+    Route::<span class="fn">get</span>(<span class="str">'/tenants'</span>,             [PlatformAdminController::class, <span class="str">'tenants'</span>]);
+    Route::<span class="fn">get</span>(<span class="str">'/tenants/{tenant}'</span>,    [PlatformAdminController::class, <span class="str">'show'</span>]);
+    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/extend-trial'</span>,       [PlatformAdminController::class, <span class="str">'extendTrial'</span>]);
+    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/assign-plan'</span>,        [PlatformAdminController::class, <span class="str">'assignPlan'</span>]);
+    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/cancel-subscription'</span>, [PlatformAdminController::class, <span class="str">'cancelSubscription'</span>]);
+    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/impersonate'</span>,        [PlatformAdminController::class, <span class="str">'impersonate'</span>]);
+});</pre>
+  </div>
+
+  <h3>Admin Actions</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Action</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">Dashboard</td><td>Overview stats: Total Tenants, Active Subscriptions, Active Trials, MRR, Subscriptions by Plan, Trial Conversion Rate</td></tr>
+        <tr><td class="module-name">Tenant List</td><td>Searchable and filterable list of all tenants with plan, status, and employee count</td></tr>
+        <tr><td class="module-name">Tenant Detail</td><td>Full tenant info including subscription history, billing events, and usage metrics</td></tr>
+        <tr><td class="module-name">Extend Trial</td><td>Extend a tenant's trial period by a specified number of days</td></tr>
+        <tr><td class="module-name">Assign Plan</td><td>Manually assign or change a tenant's plan (for sales-assisted onboarding or custom deals)</td></tr>
+        <tr><td class="module-name">Cancel Subscription</td><td>Administratively cancel a tenant's subscription</td></tr>
+        <tr><td class="module-name">Impersonate</td><td>Access a tenant's dashboard as if logged in as their admin user</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Dashboard Overview Stats</h3>
+  <p>The admin dashboard overview page displays the following platform-wide metrics:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Metric</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">Total Tenants</td><td>Count of all registered tenant organizations</td></tr>
+        <tr><td class="module-name">Active Subscriptions</td><td>Count of tenants with an active paid subscription</td></tr>
+        <tr><td class="module-name">Active Trials</td><td>Count of tenants currently on a trial period</td></tr>
+        <tr><td class="module-name">MRR</td><td>Monthly Recurring Revenue calculated from all active subscriptions</td></tr>
+        <tr><td class="module-name">Subscriptions by Plan</td><td>Breakdown of active subscriptions grouped by plan tier</td></tr>
+        <tr><td class="module-name">Trial Conversion Rate</td><td>Percentage of expired trials that converted to paid subscriptions</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout info">
+    <p><strong>Impersonation:</strong> Super admins can already access any tenant via the existing permission bypass in the application. The impersonation feature uses the secure redirect token pattern from <code>TenantRegistrationController</code> to seamlessly switch into a tenant's dashboard context.</p>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- PART 7: KIOSK                                -->
+  <!-- ============================================ -->
+
+  <h2 id="kiosk"><span class="part-num">Part 7 &mdash; Planned Feature</span>Web Kiosk Clock-In</h2>
+
+  <p>A browser-based clock-in/clock-out terminal that provides a software-only alternative to biometric hardware for recording attendance. Designed for companies without biometric devices, remote/satellite offices, or as a fallback when devices are offline.</p>
+
+  <p><strong>Available on:</strong> All tiers (Starter, Professional, Enterprise)</p>
+
+  <h3>Use Cases</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Scenario</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">Small companies</td><td>Starter tier companies that don't want to invest in biometric hardware</td></tr>
+        <tr><td class="module-name">Remote workers</td><td>Employees who can't access a physical biometric device</td></tr>
+        <tr><td class="module-name">Satellite offices</td><td>Locations with few employees where a dedicated device isn't cost-effective</td></tr>
+        <tr><td class="module-name">Device downtime</td><td>Fallback when biometric hardware is offline or being serviced</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Kiosk Terminal Mode</h3>
+  <p>A dedicated full-screen web page designed to run on a shared tablet or computer at an office entrance.</p>
+  <p><strong>URL:</strong> <code>https://{tenant}.kasamahr.com/kiosk</code> (or unique kiosk token URL)</p>
+  <p><strong>Flow:</strong> Employee enters PIN/code &rarr; System shows name + photo &rarr; Employee taps "Clock In" or "Clock Out" &rarr; <code>AttendanceLog</code> created with <code>source = 'kiosk'</code> &rarr; Confirmation shown &rarr; Returns to PIN screen.</p>
+
+  <h3>Self-Service Clock-In (Optional Enhancement)</h3>
+  <p>Allow employees to clock in/out from their own device via the Employee Self-Service dashboard. Optionally restricted by IP whitelist or geolocation. Creates <code>AttendanceLog</code> with <code>source = 'self_service'</code>.</p>
+
+  <h3>Anti-Fraud Measures</h3>
+  <div class="measure-grid">
+    <div class="measure-card">
+      <div class="measure-icon">&#128274;</div>
+      <div class="measure-name">IP Whitelisting</div>
+      <div class="measure-desc">Restrict kiosk clock-in to specific office IP addresses</div>
+    </div>
+    <div class="measure-card">
+      <div class="measure-icon">&#128205;</div>
+      <div class="measure-name">Geofencing</div>
+      <div class="measure-desc">Require GPS location within a radius of the office for self-service</div>
+    </div>
+    <div class="measure-card">
+      <div class="measure-icon">&#128247;</div>
+      <div class="measure-name">Photo Capture</div>
+      <div class="measure-desc">Take webcam photo on clock-in for verification</div>
+    </div>
+    <div class="measure-card">
+      <div class="measure-icon">&#9202;</div>
+      <div class="measure-name">Cooldown Period</div>
+      <div class="measure-desc">Prevent duplicate clock-ins within configurable window (e.g., 5 min)</div>
+    </div>
+    <div class="measure-card">
+      <div class="measure-icon">&#128269;</div>
+      <div class="measure-name">Admin Audit</div>
+      <div class="measure-desc">All kiosk entries flagged with source for easy audit filtering</div>
+    </div>
+    <div class="measure-card">
+      <div class="measure-icon">&#128241;</div>
+      <div class="measure-name">Device Binding</div>
+      <div class="measure-desc">Bind kiosk sessions to specific device fingerprints</div>
+    </div>
+  </div>
+
+  <h3>Kiosk Limits per Tier</h3>
+  <div class="kiosk-limits">
+    <div class="kiosk-limit-card">
+      <div class="tier-label" style="color: var(--starter);">Starter</div>
+      <div class="limit-value">1</div>
+      <p style="font-size:0.75rem; color:var(--ink-muted); margin:0">kiosk</p>
+    </div>
+    <div class="kiosk-limit-card">
+      <div class="tier-label" style="color: var(--pro);">Professional</div>
+      <div class="limit-value">5</div>
+      <p style="font-size:0.75rem; color:var(--ink-muted); margin:0">kiosks</p>
+    </div>
+    <div class="kiosk-limit-card">
+      <div class="tier-label" style="color: var(--enterprise);">Enterprise</div>
+      <div class="limit-value">&infin;</div>
+      <p style="font-size:0.75rem; color:var(--ink-muted); margin:0">unlimited</p>
+    </div>
+  </div>
+
+  <h3>Technical Changes</h3>
+  <h4>Database</h4>
+  <div class="code-block">
+    <div class="code-label">Add source column to attendance_logs</div>
+    <pre>Schema::<span class="fn">table</span>(<span class="str">'attendance_logs'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">string</span>(<span class="str">'source'</span>)-><span class="fn">default</span>(<span class="str">'biometric'</span>)-><span class="fn">after</span>(<span class="str">'direction'</span>);
+    <span class="cm">// Values: 'biometric', 'kiosk', 'self_service', 'manual'</span>
+});</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">Create kiosks table</div>
+    <pre>Schema::<span class="fn">create</span>(<span class="str">'kiosks'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">id</span>();
+    $table-><span class="fn">string</span>(<span class="str">'name'</span>);                    <span class="cm">// "Main Entrance", "2nd Floor"</span>
+    $table-><span class="fn">string</span>(<span class="str">'token'</span>)-><span class="fn">unique</span>();         <span class="cm">// unique access token</span>
+    $table-><span class="fn">string</span>(<span class="str">'location'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">json</span>(<span class="str">'ip_whitelist'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">json</span>(<span class="str">'settings'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">boolean</span>(<span class="str">'is_active'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+    $table-><span class="fn">timestamp</span>(<span class="str">'last_activity_at'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">timestamps</span>();
+});</pre>
+  </div>
+
+  <h4>New Files</h4>
+  <div class="table-wrap">
+    <table class="file-table">
+      <thead><tr><th>File</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td>app/Models/Kiosk.php</td><td>Kiosk terminal model</td></tr>
+        <tr><td>app/Http/Controllers/KioskController.php</td><td>Kiosk management (admin CRUD)</td></tr>
+        <tr><td>app/Http/Controllers/KioskTerminalController.php</td><td>Kiosk terminal UI and clock-in/out logic</td></tr>
+        <tr><td>app/Http/Middleware/ValidateKioskToken.php</td><td>Authenticate kiosk sessions via token</td></tr>
+        <tr><td>resources/js/pages/Kiosk/Terminal.vue</td><td>Full-screen kiosk clock-in UI</td></tr>
+        <tr><td>resources/js/pages/Kiosk/Index.vue</td><td>Admin kiosk management page</td></tr>
+        <tr><td>resources/js/pages/Kiosk/Create.vue</td><td>Admin kiosk registration form</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>Implementation priority:</strong> This feature should be implemented after the core SaaS billing system and platform admin dashboard (Phases 1&ndash;7) are complete. Suggested timeline: Phase 8, Week 9&ndash;10.</p>
+  </div>
+
+</main>
+
+</body>
+</html>
