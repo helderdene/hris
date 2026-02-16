@@ -266,8 +266,9 @@ class PunchPairProcessor
         );
         $allNullDirection = $nullDirLogs->count() === $sortedLogs->count();
 
-        if ($allNullDirection && $nullDirLogs->isNotEmpty()) {
+        if ($allNullDirection && $nullDirLogs->count() > 1) {
             // Boundary-first: first punch = clock-in, last punch = clock-out
+            // Only applies with 2+ punches; single punches use proximity matching
             $this->matchBoundaryEvents($sortedLogs, $scheduleEvents, $matchedIds, $consumedEventIndexes);
         }
 
@@ -304,8 +305,33 @@ class PunchPairProcessor
             }
         }
 
-        // Infer direction for remaining unmatched null-direction punches via alternating
+        // Handle remaining unmatched null-direction punches.
+        // If all schedule events are consumed, these are extra scans that should
+        // be dropped to avoid breaking matched IN/OUT pairs.
+        // If schedule events remain unconsumed, infer via alternating as fallback.
+        $allEventsConsumed = count($consumedEventIndexes) === count($scheduleEvents);
         $unmatchedCount = 0;
+
+        if ($allEventsConsumed) {
+            // Drop unmatched punches — they are extra mid-shift scans
+            $droppedIds = [];
+
+            foreach ($sortedLogs as $log) {
+                if ($this->normalizeDirection($log->direction) === null) {
+                    $droppedIds[] = $log->id;
+                    $unmatchedCount++;
+                }
+            }
+
+            $filteredLogs = $logs->filter(fn (AttendanceLog $log) => ! in_array($log->id, $droppedIds))->values();
+
+            return [
+                'logs' => $filteredLogs,
+                'droppedCount' => $unmatchedCount,
+            ];
+        }
+
+        // Fallback: infer direction via alternating when schedule events couldn't all be matched
         $expectingIn = true;
 
         foreach ($sortedLogs as $log) {

@@ -438,7 +438,7 @@ describe('DtrCalculationService integration', function () {
         expect($dtr->status)->toBe(DtrStatus::Present)
             ->and($dtr->punches)->toHaveCount(4)       // 08:28 dropped
             ->and($dtr->needs_review)->toBeTrue()
-            ->and($dtr->review_reason)->toContain('unmatched');
+            ->and($dtr->review_reason)->toContain('could not be matched');
     });
 
     it('collapses duplicate scans before matching to schedule', function () {
