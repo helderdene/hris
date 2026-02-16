@@ -25,7 +25,7 @@ class StoreOvertimeRequestRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'employee_id' => ['required', 'integer', 'exists:employees,id'],
+            'employee_id' => ['required', 'integer', 'exists:tenant.employees,id'],
             'overtime_date' => ['required', 'date'],
             'expected_start_time' => ['nullable', 'date_format:H:i'],
             'expected_end_time' => ['nullable', 'date_format:H:i'],
