@@ -293,7 +293,7 @@ describe('PayrollPeriod API', function () {
 
             $controller = app(PayrollPeriodController::class);
             $updateRequest = createUpdatePayrollPeriodRequest($updateData, $hrManager);
-            $response = $controller->update($updateRequest, $tenant->slug, $period);
+            $response = $controller->update($updateRequest, $period);
 
             $data = $response->toArray(request());
             expect($data['name'])->toBe('Updated Name');
@@ -320,7 +320,7 @@ describe('PayrollPeriod API', function () {
 
             $controller = app(PayrollPeriodController::class);
             $updateRequest = createUpdatePayrollPeriodRequest($updateData, $hrManager);
-            $response = $controller->update($updateRequest, $tenant->slug, $period);
+            $response = $controller->update($updateRequest, $period);
 
             expect($response->getStatusCode())->toBe(422);
 
@@ -341,7 +341,7 @@ describe('PayrollPeriod API', function () {
             $period = PayrollPeriod::factory()->forCycle($cycle)->draft()->create();
 
             $controller = app(PayrollPeriodController::class);
-            $response = $controller->destroy($tenant->slug, $period);
+            $response = $controller->destroy($period);
 
             expect($response->getStatusCode())->toBe(200);
 
@@ -361,7 +361,7 @@ describe('PayrollPeriod API', function () {
             $period = PayrollPeriod::factory()->forCycle($cycle)->open()->create();
 
             $controller = app(PayrollPeriodController::class);
-            $response = $controller->destroy($tenant->slug, $period);
+            $response = $controller->destroy($period);
 
             expect($response->getStatusCode())->toBe(422);
 
@@ -506,7 +506,7 @@ describe('PayrollPeriod API', function () {
 
             $controller = app(PayrollPeriodController::class);
             $statusRequest = createUpdatePayrollPeriodStatusRequest($statusData, $hrManager);
-            $response = $controller->updateStatus($statusRequest, $tenant->slug, $period);
+            $response = $controller->updateStatus($statusRequest, $period);
 
             expect($response)->toBeInstanceOf(\App\Http\Resources\PayrollPeriodResource::class);
 
@@ -529,7 +529,7 @@ describe('PayrollPeriod API', function () {
 
             $controller = app(PayrollPeriodController::class);
             $statusRequest = createUpdatePayrollPeriodStatusRequest($statusData, $hrManager);
-            $response = $controller->updateStatus($statusRequest, $tenant->slug, $period);
+            $response = $controller->updateStatus($statusRequest, $period);
 
             expect($response)->toBeInstanceOf(\App\Http\Resources\PayrollPeriodResource::class);
 
@@ -551,7 +551,7 @@ describe('PayrollPeriod API', function () {
 
             $controller = app(PayrollPeriodController::class);
             $statusRequest = createUpdatePayrollPeriodStatusRequest($statusData, $hrManager);
-            $response = $controller->updateStatus($statusRequest, $tenant->slug, $period);
+            $response = $controller->updateStatus($statusRequest, $period);
 
             expect($response)->toBeInstanceOf(\App\Http\Resources\PayrollPeriodResource::class);
 
@@ -576,7 +576,7 @@ describe('PayrollPeriod API', function () {
 
             $controller = app(PayrollPeriodController::class);
             $statusRequest = createUpdatePayrollPeriodStatusRequest($statusData, $hrManager);
-            $response = $controller->updateStatus($statusRequest, $tenant->slug, $period);
+            $response = $controller->updateStatus($statusRequest, $period);
 
             expect($response->getStatusCode())->toBe(422);
 
@@ -603,7 +603,7 @@ describe('PayrollPeriod API', function () {
 
             $controller = app(PayrollPeriodController::class);
             $statusRequest = createUpdatePayrollPeriodStatusRequest($statusData, $hrManager);
-            $response = $controller->updateStatus($statusRequest, $tenant->slug, $period);
+            $response = $controller->updateStatus($statusRequest, $period);
 
             expect($response->getStatusCode())->toBe(422);
 

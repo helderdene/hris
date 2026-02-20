@@ -180,7 +180,7 @@ describe('Competency CRUD', function () {
         $request = createUpdateCompetencyRequest($data, $admin);
 
         $controller = new CompetencyController;
-        $response = $controller->update($request, $this->tenant->slug, $competency);
+        $response = $controller->update($request, $competency);
 
         $this->assertDatabaseHas('competencies', [
             'id' => $competency->id,
@@ -197,7 +197,7 @@ describe('Competency CRUD', function () {
         $competency = Competency::factory()->create();
 
         $controller = new CompetencyController;
-        $response = $controller->destroy($this->tenant->slug, $competency);
+        $response = $controller->destroy($competency);
 
         $this->assertSoftDeleted('competencies', ['id' => $competency->id]);
     });
@@ -350,7 +350,7 @@ describe('Competency Evaluation', function () {
         $request->setUserResolver(fn () => $admin);
 
         $controller = new CompetencyEvaluationController;
-        $response = $controller->submitSelfRating($request, $this->tenant->slug, $evaluation);
+        $response = $controller->submitSelfRating($request, $evaluation);
 
         $evaluation->refresh();
         expect($evaluation->self_rating)->toBe(4);
@@ -375,7 +375,7 @@ describe('Competency Evaluation', function () {
         $request->setUserResolver(fn () => $admin);
 
         $controller = new CompetencyEvaluationController;
-        $response = $controller->submitManagerRating($request, $this->tenant->slug, $evaluation);
+        $response = $controller->submitManagerRating($request, $evaluation);
 
         $evaluation->refresh();
         expect($evaluation->manager_rating)->toBe(4);

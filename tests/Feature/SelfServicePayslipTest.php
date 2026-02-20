@@ -145,7 +145,7 @@ describe('Self-Service Payslip Show', function () {
         $request->setUserResolver(fn () => $user);
         app()->instance('request', $request);
 
-        $response = $controller->show($request, $tenant->slug, $entry);
+        $response = $controller->show($request, $entry);
 
         expect($response)->toBeInstanceOf(\Inertia\Response::class);
         expect(getInertiaComponentForPayslip($response))->toBe('My/Payslips/Show');
@@ -170,7 +170,7 @@ describe('Self-Service Payslip Show', function () {
         $request->setUserResolver(fn () => $user);
         app()->instance('request', $request);
 
-        $controller->show($request, $tenant->slug, $entry);
+        $controller->show($request, $entry);
     })->throws(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
     it('forbids viewing a draft payslip', function () {
@@ -188,7 +188,7 @@ describe('Self-Service Payslip Show', function () {
         $request->setUserResolver(fn () => $user);
         app()->instance('request', $request);
 
-        $controller->show($request, $tenant->slug, $entry);
+        $controller->show($request, $entry);
     })->throws(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 });
 
@@ -214,7 +214,7 @@ describe('Self-Service Payslip PDF Download', function () {
         $request->setUserResolver(fn () => $user);
         app()->instance('request', $request);
 
-        $response = $controller->downloadPdf($request, $tenant->slug, $entry);
+        $response = $controller->downloadPdf($request, $entry);
 
         expect($response->getStatusCode())->toBe(200);
         expect($response->headers->get('Content-Type'))->toBe('application/pdf');
@@ -236,6 +236,6 @@ describe('Self-Service Payslip PDF Download', function () {
         $request->setUserResolver(fn () => $user);
         app()->instance('request', $request);
 
-        $controller->downloadPdf($request, $tenant->slug, $entry);
+        $controller->downloadPdf($request, $entry);
     })->throws(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 });

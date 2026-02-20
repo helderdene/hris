@@ -101,7 +101,7 @@ describe('Employee Assignment Management Full Integration Flow', function () {
 
         // Test the controller directly (passing tenant slug as first argument for subdomain route)
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         // Use reflection to access protected properties
         $reflection = new ReflectionClass($inertiaResponse);
@@ -468,7 +468,7 @@ describe('Employee Profile Page Integration', function () {
 
         // Test the controller directly
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         // Use reflection to access protected properties
         $reflection = new ReflectionClass($inertiaResponse);

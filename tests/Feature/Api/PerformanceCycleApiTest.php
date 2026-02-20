@@ -312,7 +312,7 @@ describe('PerformanceCycle API', function () {
         ]);
 
         $controller = new PerformanceCycleController;
-        $response = $controller->show($tenant->slug, $cycle);
+        $response = $controller->show($cycle);
         $data = $response->toArray(request());
 
         expect($data['name'])->toBe('Annual Review');
@@ -346,7 +346,7 @@ describe('PerformanceCycle API', function () {
         ];
 
         $updateRequest = createUpdatePerformanceCycleRequest($updateData, $admin, $cycle->id);
-        $response = $controller->update($updateRequest, $tenant->slug, $cycle);
+        $response = $controller->update($updateRequest, $cycle);
 
         $data = $response->toArray(request());
         expect($data['name'])->toBe('Updated Name');
@@ -374,7 +374,7 @@ describe('PerformanceCycle API', function () {
             'code' => 'DEL-001',
         ]);
 
-        $response = $controller->destroy($tenant->slug, $cycle);
+        $response = $controller->destroy($cycle);
 
         expect($response->getStatusCode())->toBe(200);
 

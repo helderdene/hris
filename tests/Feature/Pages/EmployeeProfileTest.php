@@ -79,7 +79,7 @@ it('renders employee profile page with all employee data', function () {
 
     // Test the controller directly (passing tenant slug as first argument for subdomain route)
     $controller = new EmployeeController;
-    $inertiaResponse = $controller->show($tenant->slug, $employee);
+    $inertiaResponse = $controller->show($employee);
 
     // Use reflection to access protected properties
     $reflection = new ReflectionClass($inertiaResponse);
@@ -126,7 +126,7 @@ it('displays personal info fields correctly', function () {
 
     // Test the controller directly (passing tenant slug as first argument for subdomain route)
     $controller = new EmployeeController;
-    $inertiaResponse = $controller->show($tenant->slug, $employee);
+    $inertiaResponse = $controller->show($employee);
 
     // Use reflection to access protected properties
     $reflection = new ReflectionClass($inertiaResponse);
@@ -172,7 +172,7 @@ it('displays employment details correctly', function () {
 
     // Test the controller directly (passing tenant slug as first argument for subdomain route)
     $controller = new EmployeeController;
-    $inertiaResponse = $controller->show($tenant->slug, $employee);
+    $inertiaResponse = $controller->show($employee);
 
     // Use reflection to access protected properties
     $reflection = new ReflectionClass($inertiaResponse);
@@ -215,7 +215,7 @@ it('displays government IDs correctly', function () {
 
     // Test the controller directly (passing tenant slug as first argument for subdomain route)
     $controller = new EmployeeController;
-    $inertiaResponse = $controller->show($tenant->slug, $employee);
+    $inertiaResponse = $controller->show($employee);
 
     // Use reflection to access protected properties
     $reflection = new ReflectionClass($inertiaResponse);

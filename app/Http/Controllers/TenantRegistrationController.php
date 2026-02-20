@@ -3,12 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TenantRegistrationRequest;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\TenantRedirectToken;
+use App\Services\Billing\PayMongoCustomerService;
 use App\Services\Tenant\TenantDatabaseManager;
 use Database\Seeders\DocumentCategorySeeder;
 use Database\Seeders\GovernmentContributionSeeder;
 use Database\Seeders\HelpContentSeeder;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -57,6 +60,24 @@ class TenantRegistrationController extends Controller
 
         // Add current user as tenant admin
         $tenant->users()->attach($user->id, ['role' => 'admin']);
+
+        // Assign trial plan and create PayMongo customer
+        $trialPlan = Plan::where('slug', config('billing.trial_plan', 'professional'))->first();
+        if ($trialPlan) {
+            $tenant->update([
+                'plan_id' => $trialPlan->id,
+                'trial_ends_at' => now()->addDays(config('billing.trial_days', 14)),
+            ]);
+        }
+
+        try {
+            app(PayMongoCustomerService::class)->createOrGet($tenant);
+        } catch (\Throwable $e) {
+            Log::warning('Failed to create PayMongo customer during registration', [
+                'tenant_id' => $tenant->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
 
         // Generate secure redirect token for cross-subdomain authentication
         $token = $this->createRedirectToken($user->id, $tenant->id);

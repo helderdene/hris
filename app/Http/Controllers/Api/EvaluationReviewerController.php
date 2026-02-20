@@ -34,7 +34,7 @@ class EvaluationReviewerController extends Controller
 
         $query = $participant->evaluationReviewers()
             ->with(['reviewerEmployee.position', 'reviewerEmployee.department', 'evaluationResponse'])
-            ->orderByRaw("FIELD(reviewer_type, 'self', 'manager', 'peer', 'direct_report')")
+            ->orderByRaw("CASE reviewer_type WHEN 'self' THEN 1 WHEN 'manager' THEN 2 WHEN 'peer' THEN 3 WHEN 'direct_report' THEN 4 ELSE 5 END")
             ->orderBy('created_at');
 
         // Filter by type

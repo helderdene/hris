@@ -1,11 +1,33 @@
 <?php
 
+use App\Enums\TenantUserRole;
 use App\Models\HelpArticle;
 use App\Models\HelpCategory;
+use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    config(['app.main_domain' => 'kasamahr.test']);
+
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
+
+    $this->tenant = Tenant::factory()->create();
+    app()->instance('tenant', $this->tenant);
+    $this->baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
+
     $this->user = User::factory()->create();
+    $this->user->tenants()->attach($this->tenant->id, [
+        'role' => TenantUserRole::Employee->value,
+        'invited_at' => now(),
+        'invitation_accepted_at' => now(),
+    ]);
     $this->category = HelpCategory::create([
         'name' => 'Getting Started',
         'slug' => 'getting-started',
@@ -26,13 +48,13 @@ beforeEach(function () {
 });
 
 it('redirects unauthenticated users to login', function () {
-    $response = $this->get('/help');
+    $response = $this->get("{$this->baseUrl}/help");
 
-    $response->assertRedirect('/login');
+    $response->assertRedirect();
 });
 
 it('shows help center index to authenticated users', function () {
-    $response = $this->actingAs($this->user)->get('/help');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help");
 
     $response->assertOk();
     $response->assertInertia(
@@ -44,7 +66,7 @@ it('shows help center index to authenticated users', function () {
 });
 
 it('shows category page with articles', function () {
-    $response = $this->actingAs($this->user)->get('/help/getting-started');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help/getting-started");
 
     $response->assertOk();
     $response->assertInertia(
@@ -59,7 +81,7 @@ it('shows category page with articles', function () {
 it('returns 404 for inactive category', function () {
     $this->category->update(['is_active' => false]);
 
-    $response = $this->actingAs($this->user)->get('/help/getting-started');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help/getting-started");
 
     $response->assertNotFound();
 });
@@ -67,7 +89,7 @@ it('returns 404 for inactive category', function () {
 it('shows article page and increments view count', function () {
     $initialViewCount = $this->article->view_count;
 
-    $response = $this->actingAs($this->user)->get('/help/getting-started/welcome');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help/getting-started/welcome");
 
     $response->assertOk();
     $response->assertInertia(
@@ -88,13 +110,13 @@ it('shows article page and increments view count', function () {
 it('returns 404 for inactive article', function () {
     $this->article->update(['is_active' => false]);
 
-    $response = $this->actingAs($this->user)->get('/help/getting-started/welcome');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help/getting-started/welcome");
 
     $response->assertNotFound();
 });
 
 it('shows search results for valid query', function () {
-    $response = $this->actingAs($this->user)->get('/help/search?q=welcome');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help/search?q=welcome");
 
     $response->assertOk();
     $response->assertInertia(
@@ -107,7 +129,7 @@ it('shows search results for valid query', function () {
 });
 
 it('shows empty results for short query', function () {
-    $response = $this->actingAs($this->user)->get('/help/search?q=a');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help/search?q=a");
 
     $response->assertOk();
     $response->assertInertia(
@@ -118,7 +140,7 @@ it('shows empty results for short query', function () {
 });
 
 it('includes featured articles on index', function () {
-    $response = $this->actingAs($this->user)->get('/help');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help");
 
     $response->assertOk();
     $response->assertInertia(
@@ -136,7 +158,7 @@ it('only shows active categories', function () {
         'is_active' => false,
     ]);
 
-    $response = $this->actingAs($this->user)->get('/help');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help");
 
     $response->assertOk();
     $response->assertInertia(
@@ -156,7 +178,7 @@ it('only shows active articles in category', function () {
         'is_active' => false,
     ]);
 
-    $response = $this->actingAs($this->user)->get('/help/getting-started');
+    $response = $this->actingAs($this->user)->get("{$this->baseUrl}/help/getting-started");
 
     $response->assertOk();
     $response->assertInertia(

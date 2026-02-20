@@ -182,11 +182,14 @@ describe('BulkSyncEmployeesToDeviceJob', function () {
             'work_location_id' => $workLocation->id,
         ]);
 
-        // Mock the DeviceCommandService
+        // Mock the DeviceCommandService - immediate sync uses editPersonAndWaitForAck
         $mockDeviceCommandService = mock(DeviceCommandService::class);
         $mockSyncLog = new DeviceSyncLog;
         $mockSyncLog->message_id = 'test-message';
-        $mockDeviceCommandService->shouldReceive('editPerson')
+        $mockSyncLog->status = DeviceSyncLog::STATUS_ACKNOWLEDGED;
+        $mockDeviceCommandService->shouldReceive('searchPerson')
+            ->andReturn(['exists' => false]);
+        $mockDeviceCommandService->shouldReceive('editPersonAndWaitForAck')
             ->times(2)  // Should be called for 2 active employees
             ->andReturn($mockSyncLog);
         app()->instance(DeviceCommandService::class, $mockDeviceCommandService);
@@ -223,11 +226,14 @@ describe('BulkSyncEmployeesToDeviceJob', function () {
             'work_location_id' => $workLocation->id,
         ]);
 
-        // Mock the DeviceCommandService
+        // Mock the DeviceCommandService - immediate sync uses editPersonAndWaitForAck
         $mockDeviceCommandService = mock(DeviceCommandService::class);
         $mockSyncLog = new DeviceSyncLog;
         $mockSyncLog->message_id = 'test-message';
-        $mockDeviceCommandService->shouldReceive('editPerson')
+        $mockSyncLog->status = DeviceSyncLog::STATUS_ACKNOWLEDGED;
+        $mockDeviceCommandService->shouldReceive('searchPerson')
+            ->andReturn(['exists' => false]);
+        $mockDeviceCommandService->shouldReceive('editPersonAndWaitForAck')
             ->times(2)  // Should be called for 2 specified employees
             ->andReturn($mockSyncLog);
         app()->instance(DeviceCommandService::class, $mockDeviceCommandService);

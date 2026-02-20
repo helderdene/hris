@@ -9,7 +9,7 @@ use App\Http\Requests\RejectPreboardingItemRequest;
 use App\Models\PreboardingChecklist;
 use App\Models\PreboardingChecklistItem;
 use App\Services\PreboardingService;
-use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 
 class PreboardingReviewController extends Controller
@@ -21,42 +21,25 @@ class PreboardingReviewController extends Controller
     /**
      * Approve a preboarding checklist item.
      */
-    public function approve(PreboardingChecklistItem $item): JsonResponse
+    public function approve(PreboardingChecklistItem $item): RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 
-        $item = $this->preboardingService->approveItem($item);
+        $this->preboardingService->approveItem($item);
 
-        return response()->json([
-            'message' => 'Item approved successfully.',
-            'item' => [
-                'id' => $item->id,
-                'status' => $item->status->value,
-                'status_label' => $item->status->label(),
-                'reviewed_at' => $item->reviewed_at?->format('M d, Y H:i'),
-            ],
-        ]);
+        return back();
     }
 
     /**
      * Reject a preboarding checklist item.
      */
-    public function reject(RejectPreboardingItemRequest $request, PreboardingChecklistItem $item): JsonResponse
+    public function reject(RejectPreboardingItemRequest $request, PreboardingChecklistItem $item): RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 
-        $item = $this->preboardingService->rejectItem($item, $request->validated('rejection_reason'));
+        $this->preboardingService->rejectItem($item, $request->validated('rejection_reason'));
 
-        return response()->json([
-            'message' => 'Item rejected.',
-            'item' => [
-                'id' => $item->id,
-                'status' => $item->status->value,
-                'status_label' => $item->status->label(),
-                'rejection_reason' => $item->rejection_reason,
-                'reviewed_at' => $item->reviewed_at?->format('M d, Y H:i'),
-            ],
-        ]);
+        return back();
     }
 
     /**

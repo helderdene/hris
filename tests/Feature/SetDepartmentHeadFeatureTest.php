@@ -93,7 +93,7 @@ it('sets employee as department head when checkbox is checked', function () {
 
     $request = createStoreAssignmentRequestForDeptHead($requestData, $this->user);
     $controller = new EmployeeAssignmentController(new AssignmentService);
-    $response = $controller->store($request, $this->tenant->slug, $employee);
+    $response = $controller->store($request, $employee);
 
     expect($response->getStatusCode())->toBe(201);
 
@@ -128,7 +128,7 @@ it('does not set department head when checkbox is unchecked', function () {
 
     $request = createStoreAssignmentRequestForDeptHead($requestData, $this->user);
     $controller = new EmployeeAssignmentController(new AssignmentService);
-    $response = $controller->store($request, $this->tenant->slug, $employee);
+    $response = $controller->store($request, $employee);
 
     expect($response->getStatusCode())->toBe(201);
 
@@ -161,7 +161,7 @@ it('does not set department head when checkbox is not provided', function () {
 
     $request = createStoreAssignmentRequestForDeptHead($requestData, $this->user);
     $controller = new EmployeeAssignmentController(new AssignmentService);
-    $response = $controller->store($request, $this->tenant->slug, $employee);
+    $response = $controller->store($request, $employee);
 
     expect($response->getStatusCode())->toBe(201);
 
@@ -194,7 +194,7 @@ it('replaces previous department head when new one is assigned', function () {
 
     $request = createStoreAssignmentRequestForDeptHead($requestData, $this->user);
     $controller = new EmployeeAssignmentController(new AssignmentService);
-    $response = $controller->store($request, $this->tenant->slug, $newHead);
+    $response = $controller->store($request, $newHead);
 
     expect($response->getStatusCode())->toBe(201);
 
@@ -231,7 +231,7 @@ it('only applies department head setting for department assignment type', functi
 
     $request = createStoreAssignmentRequestForDeptHead($requestData, $this->user);
     $controller = new EmployeeAssignmentController(new AssignmentService);
-    $response = $controller->store($request, $this->tenant->slug, $employee);
+    $response = $controller->store($request, $employee);
 
     expect($response->getStatusCode())->toBe(201);
 
@@ -254,7 +254,7 @@ it('creates assignment history regardless of department head setting', function 
 
     $request = createStoreAssignmentRequestForDeptHead($requestData, $this->user);
     $controller = new EmployeeAssignmentController(new AssignmentService);
-    $controller->store($request, $this->tenant->slug, $employee);
+    $controller->store($request, $employee);
 
     // Verify assignment history is created
     $assignmentHistory = EmployeeAssignmentHistory::where('employee_id', $employee->id)
@@ -284,7 +284,7 @@ it('org chart reflects the new department head', function () {
 
     $request = createStoreAssignmentRequestForDeptHead($requestData, $this->user);
     $controller = new EmployeeAssignmentController(new AssignmentService);
-    $controller->store($request, $this->tenant->slug, $employee);
+    $controller->store($request, $employee);
 
     // Access org chart via controller
     $orgController = new OrganizationController;

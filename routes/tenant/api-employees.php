@@ -56,6 +56,21 @@ Route::prefix('employees/{employee}')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Employee Kiosk PIN Management API
+|--------------------------------------------------------------------------
+|
+| These endpoints allow authorized users to generate and reset employee
+| kiosk PINs for PIN-based attendance at kiosk terminals.
+|
+*/
+
+Route::post('/employees/{employee}/pin/generate', [\App\Http\Controllers\Api\EmployeePinController::class, 'generate'])
+    ->name('api.employees.pin.generate');
+Route::post('/employees/{employee}/pin/reset', [\App\Http\Controllers\Api\EmployeePinController::class, 'reset'])
+    ->name('api.employees.pin.reset');
+
+/*
+|--------------------------------------------------------------------------
 | Employee Assignment Management API
 |--------------------------------------------------------------------------
 |

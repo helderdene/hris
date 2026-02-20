@@ -74,7 +74,7 @@ describe('Course Material CRUD', function () {
         CourseMaterial::factory()->count(3)->forCourse($course)->create();
 
         $controller = new CourseMaterialController;
-        $response = $controller->index($this->tenant->slug, $course);
+        $response = $controller->index($course);
 
         expect($response->count())->toBe(3);
     });
@@ -92,7 +92,7 @@ describe('Course Material CRUD', function () {
         $material3 = CourseMaterial::factory()->forCourse($course)->withSortOrder(2)->create(['title' => 'Second']);
 
         $controller = new CourseMaterialController;
-        $response = $controller->index($this->tenant->slug, $course);
+        $response = $controller->index($course);
 
         $titles = $response->collection->pluck('title')->toArray();
         expect($titles)->toBe(['First', 'Second', 'Third']);
@@ -177,7 +177,7 @@ describe('Course Material CRUD', function () {
             'description' => 'Updated description',
         ]);
 
-        $response = $controller->update($request, $this->tenant->slug, $course, $material);
+        $response = $controller->update($request, $course, $material);
 
         $material->refresh();
         expect($material->title)->toBe('Updated Title');
@@ -194,7 +194,7 @@ describe('Course Material CRUD', function () {
         $material = CourseMaterial::factory()->forCourse($course)->create();
 
         $controller = new CourseMaterialController;
-        $response = $controller->destroy($this->tenant->slug, $course, $material);
+        $response = $controller->destroy($course, $material);
 
         $this->assertSoftDeleted('course_materials', ['id' => $material->id]);
     });
@@ -217,7 +217,7 @@ describe('Course Material Reordering', function () {
             'material_ids' => [$material3->id, $material1->id, $material2->id],
         ]);
 
-        $response = $controller->reorder($request, $this->tenant->slug, $course);
+        $response = $controller->reorder($request, $course);
 
         $material1->refresh();
         $material2->refresh();
@@ -244,7 +244,7 @@ describe('Course Material Reordering', function () {
             'material_ids' => [$material1->id, $material2->id],
         ]);
 
-        $response = $controller->reorder($request, $this->tenant->slug, $course1);
+        $response = $controller->reorder($request, $course1);
 
         expect($response->status())->toBe(422);
     });
@@ -262,7 +262,7 @@ describe('Course Material Access Control', function () {
         CourseMaterial::factory()->count(2)->forCourse($course)->create();
 
         $controller = new CourseMaterialController;
-        $response = $controller->index($this->tenant->slug, $course);
+        $response = $controller->index($course);
 
         expect($response->count())->toBe(2);
     });
@@ -279,7 +279,7 @@ describe('Course Material Access Control', function () {
 
         $controller = new CourseMaterialController;
 
-        expect(fn () => $controller->index($this->tenant->slug, $course))
+        expect(fn () => $controller->index($course))
             ->toThrow(\Symfony\Component\HttpKernel\Exception\HttpException::class);
     });
 

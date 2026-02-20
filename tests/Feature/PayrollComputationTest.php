@@ -323,8 +323,7 @@ describe('EarningsCalculator', function () {
         createDtrRecordsForPeriod($employee, $period, daysWorked: 11);
 
         $dtrService = new DtrAggregationService;
-        $rateCalculator = new PayrollRateCalculator;
-        $calculator = new EarningsCalculator($rateCalculator, $dtrService);
+        $calculator = app(EarningsCalculator::class);
 
         $dtrSummary = $dtrService->aggregateForPeriod($employee, $period);
         $result = $calculator->calculate($employee, $period, $dtrSummary);
@@ -343,8 +342,7 @@ describe('EarningsCalculator', function () {
         createDtrRecordsForPeriod($employee, $period, daysWorked: 10);
 
         $dtrService = new DtrAggregationService;
-        $rateCalculator = new PayrollRateCalculator;
-        $calculator = new EarningsCalculator($rateCalculator, $dtrService);
+        $calculator = app(EarningsCalculator::class);
 
         $dtrSummary = $dtrService->aggregateForPeriod($employee, $period);
         $result = $calculator->calculate($employee, $period, $dtrSummary);
@@ -362,8 +360,7 @@ describe('EarningsCalculator', function () {
         createDtrRecordsForPeriod($employee, $period, daysWorked: 10, overtimeMinutes: 120);
 
         $dtrService = new DtrAggregationService;
-        $rateCalculator = new PayrollRateCalculator;
-        $calculator = new EarningsCalculator($rateCalculator, $dtrService);
+        $calculator = app(EarningsCalculator::class);
 
         $dtrSummary = $dtrService->aggregateForPeriod($employee, $period);
         $result = $calculator->calculate($employee, $period, $dtrSummary);
@@ -381,8 +378,7 @@ describe('EarningsCalculator', function () {
         createDtrRecordsForPeriod($employee, $period, daysWorked: 10, nightDiffMinutes: 120);
 
         $dtrService = new DtrAggregationService;
-        $rateCalculator = new PayrollRateCalculator;
-        $calculator = new EarningsCalculator($rateCalculator, $dtrService);
+        $calculator = app(EarningsCalculator::class);
 
         $dtrSummary = $dtrService->aggregateForPeriod($employee, $period);
         $result = $calculator->calculate($employee, $period, $dtrSummary);
@@ -400,8 +396,7 @@ describe('EarningsCalculator', function () {
         createDtrRecordsForPeriod($employee, $period, daysWorked: 9, absentDays: 1);
 
         $dtrService = new DtrAggregationService;
-        $rateCalculator = new PayrollRateCalculator;
-        $calculator = new EarningsCalculator($rateCalculator, $dtrService);
+        $calculator = app(EarningsCalculator::class);
 
         $dtrSummary = $dtrService->aggregateForPeriod($employee, $period);
         $result = $calculator->calculate($employee, $period, $dtrSummary);
@@ -419,8 +414,7 @@ describe('EarningsCalculator', function () {
         createDtrRecordsForPeriod($employee, $period, daysWorked: 10, overtimeMinutes: 60);
 
         $dtrService = new DtrAggregationService;
-        $rateCalculator = new PayrollRateCalculator;
-        $calculator = new EarningsCalculator($rateCalculator, $dtrService);
+        $calculator = app(EarningsCalculator::class);
 
         $dtrSummary = $dtrService->aggregateForPeriod($employee, $period);
         $result = $calculator->calculate($employee, $period, $dtrSummary);

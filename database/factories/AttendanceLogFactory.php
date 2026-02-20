@@ -2,8 +2,10 @@
 
 namespace Database\Factories;
 
+use App\Enums\AttendanceSource;
 use App\Models\BiometricDevice;
 use App\Models\Employee;
+use App\Models\Kiosk;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -85,6 +87,38 @@ class AttendanceLogFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'direction' => 'out',
+        ]);
+    }
+
+    /**
+     * Create a log from a kiosk source.
+     */
+    public function fromKiosk(?Kiosk $kiosk = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'source' => AttendanceSource::Kiosk,
+            'kiosk_id' => $kiosk?->id ?? Kiosk::factory(),
+            'biometric_device_id' => null,
+            'confidence' => null,
+            'device_person_id' => null,
+            'device_record_id' => null,
+            'raw_payload' => null,
+        ]);
+    }
+
+    /**
+     * Create a log from self-service source.
+     */
+    public function fromSelfService(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'source' => AttendanceSource::SelfService,
+            'biometric_device_id' => null,
+            'kiosk_id' => null,
+            'confidence' => null,
+            'device_person_id' => null,
+            'device_record_id' => null,
+            'raw_payload' => null,
         ]);
     }
 }

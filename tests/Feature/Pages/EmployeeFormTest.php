@@ -282,7 +282,7 @@ it('renders edit employee page with employee data pre-populated', function () {
 
     // Test the controller directly (passing tenant slug as first argument for subdomain route)
     $controller = new EmployeeController;
-    $inertiaResponse = $controller->edit($tenant->slug, $employee);
+    $inertiaResponse = $controller->edit($employee);
 
     // Use reflection to access protected properties
     $reflection = new ReflectionClass($inertiaResponse);
@@ -503,7 +503,7 @@ it('returns all employees for supervisor dropdown in edit', function () {
 
     // Test the controller directly (passing tenant slug as first argument for subdomain route)
     $controller = new EmployeeController;
-    $inertiaResponse = $controller->edit($tenant->slug, $employee);
+    $inertiaResponse = $controller->edit($employee);
 
     $reflection = new ReflectionClass($inertiaResponse);
     $propsProperty = $reflection->getProperty('props');

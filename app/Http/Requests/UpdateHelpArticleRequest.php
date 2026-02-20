@@ -68,14 +68,20 @@ class UpdateHelpArticleRequest extends FormRequest
     }
 
     /**
-     * Handle a passed validation attempt and sanitize HTML content.
+     * Get the validated data with sanitized HTML content.
+     *
+     * @param  array|int|string|null  $key
+     * @param  mixed  $default
+     * @return mixed
      */
-    protected function passedValidation(): void
+    public function validated($key = null, $default = null)
     {
-        if ($this->has('content')) {
-            $this->merge([
-                'content' => app(HtmlSanitizerService::class)->sanitize($this->input('content')),
-            ]);
+        $validated = parent::validated($key, $default);
+
+        if ($key === null && is_array($validated) && isset($validated['content'])) {
+            $validated['content'] = app(HtmlSanitizerService::class)->sanitize($validated['content']);
         }
+
+        return $validated;
     }
 }

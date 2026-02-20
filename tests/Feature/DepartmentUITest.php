@@ -226,8 +226,8 @@ describe('Department Form UI', function () {
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
-        expect($data['data']['name'])->toBe('New Department');
-        expect($data['data']['code'])->toBe('NEW');
+        expect($data['name'])->toBe('New Department');
+        expect($data['code'])->toBe('NEW');
 
         // Verify in database
         $this->assertDatabaseHas('departments', [

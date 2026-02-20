@@ -23,7 +23,9 @@ use App\Listeners\SyncProfilePhotoToDevices;
 use App\Models\Employee;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Observers\EmployeeObserver;
 use App\Policies\TenantPolicy;
+use App\Services\FeatureGateService;
 use App\Services\Tenant\TenantDatabaseManager;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Event;
@@ -40,6 +42,10 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(TenantDatabaseManager::class, function ($app) {
             return new TenantDatabaseManager;
         });
+
+        $this->app->bind(FeatureGateService::class, function ($app) {
+            return new FeatureGateService(tenant() ?? new Tenant);
+        });
     }
 
     /**
@@ -49,6 +55,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Disable data wrapping for API resources (required for Inertia)
         JsonResource::withoutWrapping();
+
+        Employee::observe(EmployeeObserver::class);
 
         $this->registerGates();
         $this->registerPolicies();
@@ -121,6 +129,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Gate: super-admin - checks is_super_admin flag on user
         Gate::define('super-admin', function (User $user): bool {
+            return $user->isSuperAdmin();
+        });
+
+        // Alias: is-super-admin - same check as super-admin
+        Gate::define('is-super-admin', function (User $user): bool {
             return $user->isSuperAdmin();
         });
 

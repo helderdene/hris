@@ -131,7 +131,7 @@ describe('POST /api/document-categories', function () {
         $request = createValidatedCategoryRequest($requestData);
 
         $controller = new DocumentCategoryController;
-        $response = $controller->store($request, 'test-tenant');
+        $response = $controller->store($request);
 
         expect($response->getStatusCode())->toBe(201);
 

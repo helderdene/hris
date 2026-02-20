@@ -7,6 +7,7 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
+import axios from 'axios';
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
@@ -85,6 +86,13 @@ const props = defineProps<{
     summary: DtrSummary | null;
     currentMonth: string;
     hasEmployeeProfile: boolean;
+    selfServiceEnabled?: boolean;
+    clockStatus?: {
+        direction: string;
+        logged_at: string;
+        logged_at_human: string;
+    } | null;
+    locationCheck?: string;
 }>();
 
 const { tenantName } = useTenant();
@@ -116,6 +124,71 @@ function navigateMonth(direction: -1 | 1): void {
     const newMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
     router.get('/my/dtr', { month: newMonth }, { preserveState: true, preserveScroll: true });
 }
+
+// Log current GPS location on page load
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+        (position) => {
+            console.log('Current GPS Location:', {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: `${position.coords.accuracy}m`,
+            });
+        },
+        (error) => {
+            console.warn('GPS error:', error.message);
+        },
+        { enableHighAccuracy: true, timeout: 10000 },
+    );
+}
+
+// Self-service clock-in
+const clockLoading = ref(false);
+const clockError = ref('');
+const clockSuccess = ref('');
+const suggestedDirection = computed(() => props.clockStatus?.direction === 'in' ? 'out' : 'in');
+
+async function selfServiceClock(direction: 'in' | 'out'): Promise<void> {
+    clockLoading.value = true;
+    clockError.value = '';
+    clockSuccess.value = '';
+
+    try {
+        const payload: Record<string, any> = { direction };
+
+        // Request GPS if location check requires it
+        if (props.locationCheck && ['gps', 'both', 'any'].includes(props.locationCheck)) {
+            try {
+                const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+                    navigator.geolocation.getCurrentPosition(resolve, reject, {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                    });
+                });
+                payload.latitude = position.coords.latitude;
+                payload.longitude = position.coords.longitude;
+                payload.accuracy = position.coords.accuracy;
+            } catch {
+                clockError.value = 'Unable to get your location. Please allow GPS access.';
+                clockLoading.value = false;
+                return;
+            }
+        }
+
+        const response = await axios.post('/api/clock', payload);
+        clockSuccess.value = response.data.message;
+
+        // Reload page after brief delay to update status
+        setTimeout(() => {
+            router.reload({ only: ['clockStatus'] });
+            clockSuccess.value = '';
+        }, 3000);
+    } catch (error: any) {
+        clockError.value = error.response?.data?.message || 'Failed to record clock event.';
+    } finally {
+        clockLoading.value = false;
+    }
+}
 </script>
 
 <template>
@@ -123,6 +196,42 @@ function navigateMonth(direction: -1 | 1): void {
 
     <TenantLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6">
+            <!-- Self-Service Clock-In Section -->
+            <div v-if="selfServiceEnabled && hasEmployeeProfile" class="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-800">
+                <div class="flex flex-col items-center gap-4 sm:flex-row sm:justify-between">
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">Quick Clock</h3>
+                        <p v-if="clockStatus" class="text-sm text-slate-500 dark:text-slate-400">
+                            Last: Clock {{ clockStatus.direction === 'in' ? 'In' : 'Out' }}
+                            <span class="text-slate-400 dark:text-slate-500">{{ clockStatus.logged_at_human }}</span>
+                        </p>
+                        <p v-else class="text-sm text-slate-500 dark:text-slate-400">No clock events today</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <p v-if="clockSuccess" class="text-sm font-medium text-green-600 dark:text-green-400">{{ clockSuccess }}</p>
+                        <p v-if="clockError" class="text-sm text-red-600 dark:text-red-400">{{ clockError }}</p>
+                        <Button
+                            :disabled="clockLoading"
+                            :variant="suggestedDirection === 'in' ? 'default' : 'outline'"
+                            size="sm"
+                            class="min-w-[100px]"
+                            @click="selfServiceClock('in')"
+                        >
+                            {{ clockLoading ? '...' : 'Clock In' }}
+                        </Button>
+                        <Button
+                            :disabled="clockLoading"
+                            :variant="suggestedDirection === 'out' ? 'destructive' : 'outline'"
+                            size="sm"
+                            class="min-w-[100px]"
+                            @click="selfServiceClock('out')"
+                        >
+                            {{ clockLoading ? '...' : 'Clock Out' }}
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
             <!-- No Employee Profile -->
             <div v-if="!hasEmployeeProfile" class="px-6 py-12 text-center">
                 <svg

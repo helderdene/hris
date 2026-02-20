@@ -1,12 +1,39 @@
 <?php
 
+use App\Enums\TenantUserRole;
 use App\Models\HelpArticle;
 use App\Models\HelpCategory;
+use App\Models\Tenant;
 use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
+
+uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    config(['app.main_domain' => 'kasamahr.test']);
+
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
+
+    $this->tenant = Tenant::factory()->create();
+    app()->instance('tenant', $this->tenant);
+    $this->baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
+
     $this->regularUser = User::factory()->create(['is_super_admin' => false]);
+    $this->regularUser->tenants()->attach($this->tenant->id, [
+        'role' => TenantUserRole::Employee->value,
+        'invited_at' => now(),
+        'invitation_accepted_at' => now(),
+    ]);
     $this->superAdmin = User::factory()->create(['is_super_admin' => true]);
+    $this->superAdmin->tenants()->attach($this->tenant->id, [
+        'role' => TenantUserRole::Admin->value,
+        'invited_at' => now(),
+        'invitation_accepted_at' => now(),
+    ]);
     $this->category = HelpCategory::create([
         'name' => 'Test Category',
         'slug' => 'test-category',
@@ -18,13 +45,13 @@ beforeEach(function () {
 
 describe('Help Admin Page Access', function () {
     it('denies access to regular users', function () {
-        $response = $this->actingAs($this->regularUser)->get('/settings/help-admin');
+        $response = $this->actingAs($this->regularUser)->get("{$this->baseUrl}/settings/help-admin");
 
         $response->assertForbidden();
     });
 
     it('allows access to super admins', function () {
-        $response = $this->actingAs($this->superAdmin)->get('/settings/help-admin');
+        $response = $this->actingAs($this->superAdmin)->get("{$this->baseUrl}/settings/help-admin");
 
         $response->assertOk();
         $response->assertInertia(
@@ -39,20 +66,20 @@ describe('Help Admin Page Access', function () {
 
 describe('Category API', function () {
     it('denies category list to regular users', function () {
-        $response = $this->actingAs($this->regularUser)->getJson('/api/help/categories');
+        $response = $this->actingAs($this->regularUser)->getJson("{$this->baseUrl}/api/help/categories");
 
         $response->assertForbidden();
     });
 
     it('allows super admin to list categories', function () {
-        $response = $this->actingAs($this->superAdmin)->getJson('/api/help/categories');
+        $response = $this->actingAs($this->superAdmin)->getJson("{$this->baseUrl}/api/help/categories");
 
         $response->assertOk();
-        $response->assertJsonCount(1, 'data');
+        $response->assertJsonCount(1);
     });
 
     it('allows super admin to create category', function () {
-        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/categories', [
+        $response = $this->actingAs($this->superAdmin)->postJson("{$this->baseUrl}/api/help/categories", [
             'name' => 'New Category',
             'slug' => 'new-category',
             'description' => 'New description',
@@ -60,12 +87,12 @@ describe('Category API', function () {
         ]);
 
         $response->assertCreated();
-        $response->assertJsonPath('data.name', 'New Category');
+        $response->assertJsonPath('name', 'New Category');
         $this->assertDatabaseHas('help_categories', ['slug' => 'new-category']);
     });
 
     it('validates category creation', function () {
-        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/categories', [
+        $response = $this->actingAs($this->superAdmin)->postJson("{$this->baseUrl}/api/help/categories", [
             'name' => '',
             'slug' => '',
         ]);
@@ -75,7 +102,7 @@ describe('Category API', function () {
     });
 
     it('prevents duplicate category slugs', function () {
-        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/categories', [
+        $response = $this->actingAs($this->superAdmin)->postJson("{$this->baseUrl}/api/help/categories", [
             'name' => 'Duplicate',
             'slug' => 'test-category',
         ]);
@@ -85,16 +112,16 @@ describe('Category API', function () {
     });
 
     it('allows super admin to update category', function () {
-        $response = $this->actingAs($this->superAdmin)->putJson("/api/help/categories/{$this->category->id}", [
+        $response = $this->actingAs($this->superAdmin)->putJson("{$this->baseUrl}/api/help/categories/{$this->category->id}", [
             'name' => 'Updated Category',
         ]);
 
         $response->assertOk();
-        $response->assertJsonPath('data.name', 'Updated Category');
+        $response->assertJsonPath('name', 'Updated Category');
     });
 
     it('allows super admin to delete empty category', function () {
-        $response = $this->actingAs($this->superAdmin)->deleteJson("/api/help/categories/{$this->category->id}");
+        $response = $this->actingAs($this->superAdmin)->deleteJson("{$this->baseUrl}/api/help/categories/{$this->category->id}");
 
         $response->assertOk();
         $this->assertDatabaseMissing('help_categories', ['id' => $this->category->id]);
@@ -110,7 +137,7 @@ describe('Category API', function () {
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->superAdmin)->deleteJson("/api/help/categories/{$this->category->id}");
+        $response = $this->actingAs($this->superAdmin)->deleteJson("{$this->baseUrl}/api/help/categories/{$this->category->id}");
 
         $response->assertUnprocessable();
         $this->assertDatabaseHas('help_categories', ['id' => $this->category->id]);
@@ -119,19 +146,19 @@ describe('Category API', function () {
 
 describe('Article API', function () {
     it('denies article list to regular users', function () {
-        $response = $this->actingAs($this->regularUser)->getJson('/api/help/articles');
+        $response = $this->actingAs($this->regularUser)->getJson("{$this->baseUrl}/api/help/articles");
 
         $response->assertForbidden();
     });
 
     it('allows super admin to list articles', function () {
-        $response = $this->actingAs($this->superAdmin)->getJson('/api/help/articles');
+        $response = $this->actingAs($this->superAdmin)->getJson("{$this->baseUrl}/api/help/articles");
 
         $response->assertOk();
     });
 
     it('allows super admin to create article', function () {
-        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/articles', [
+        $response = $this->actingAs($this->superAdmin)->postJson("{$this->baseUrl}/api/help/articles", [
             'help_category_id' => $this->category->id,
             'title' => 'New Article',
             'slug' => 'new-article',
@@ -140,12 +167,12 @@ describe('Article API', function () {
         ]);
 
         $response->assertCreated();
-        $response->assertJsonPath('data.title', 'New Article');
+        $response->assertJsonPath('title', 'New Article');
         $this->assertDatabaseHas('help_articles', ['slug' => 'new-article']);
     });
 
     it('validates article creation', function () {
-        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/articles', [
+        $response = $this->actingAs($this->superAdmin)->postJson("{$this->baseUrl}/api/help/articles", [
             'title' => '',
             'content' => '',
         ]);
@@ -164,7 +191,7 @@ describe('Article API', function () {
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/articles', [
+        $response = $this->actingAs($this->superAdmin)->postJson("{$this->baseUrl}/api/help/articles", [
             'help_category_id' => $this->category->id,
             'title' => 'Duplicate Article',
             'slug' => 'existing-article',
@@ -192,7 +219,7 @@ describe('Article API', function () {
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/articles', [
+        $response = $this->actingAs($this->superAdmin)->postJson("{$this->baseUrl}/api/help/articles", [
             'help_category_id' => $otherCategory->id,
             'title' => 'Article 2',
             'slug' => 'same-slug',
@@ -212,12 +239,12 @@ describe('Article API', function () {
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->superAdmin)->putJson("/api/help/articles/{$article->id}", [
+        $response = $this->actingAs($this->superAdmin)->putJson("{$this->baseUrl}/api/help/articles/{$article->id}", [
             'title' => 'Updated Title',
         ]);
 
         $response->assertOk();
-        $response->assertJsonPath('data.title', 'Updated Title');
+        $response->assertJsonPath('title', 'Updated Title');
     });
 
     it('allows super admin to delete article', function () {
@@ -230,7 +257,7 @@ describe('Article API', function () {
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->superAdmin)->deleteJson("/api/help/articles/{$article->id}");
+        $response = $this->actingAs($this->superAdmin)->deleteJson("{$this->baseUrl}/api/help/articles/{$article->id}");
 
         $response->assertOk();
         $this->assertDatabaseMissing('help_articles', ['id' => $article->id]);
@@ -247,14 +274,14 @@ describe('Article API', function () {
         ]);
 
         $response = $this->actingAs($this->superAdmin)
-            ->getJson("/api/help/articles?category_id={$this->category->id}");
+            ->getJson("{$this->baseUrl}/api/help/articles?category_id={$this->category->id}");
 
         $response->assertOk();
         $response->assertJsonCount(1, 'data');
     });
 
     it('sanitizes HTML content when creating article', function () {
-        $response = $this->actingAs($this->superAdmin)->postJson('/api/help/articles', [
+        $response = $this->actingAs($this->superAdmin)->postJson("{$this->baseUrl}/api/help/articles", [
             'help_category_id' => $this->category->id,
             'title' => 'Sanitize Test',
             'slug' => 'sanitize-test',
@@ -280,7 +307,7 @@ describe('Article API', function () {
             'is_active' => true,
         ]);
 
-        $response = $this->actingAs($this->superAdmin)->putJson("/api/help/articles/{$article->id}", [
+        $response = $this->actingAs($this->superAdmin)->putJson("{$this->baseUrl}/api/help/articles/{$article->id}", [
             'content' => '<p>Updated</p><script>alert("xss")</script><img src="x" onerror="alert(1)">',
         ]);
 
@@ -303,7 +330,7 @@ describe('Article API', function () {
         ]);
 
         $response = $this->actingAs($this->superAdmin)
-            ->getJson('/api/help/articles?search=Unique');
+            ->getJson("{$this->baseUrl}/api/help/articles?search=Unique");
 
         $response->assertOk();
         $response->assertJsonCount(1, 'data');

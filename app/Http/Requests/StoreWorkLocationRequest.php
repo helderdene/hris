@@ -37,6 +37,13 @@ class StoreWorkLocationRequest extends FormRequest
             'timezone' => ['nullable', 'string', 'max:100'],
             'metadata' => ['nullable', 'array'],
             'status' => ['required', 'string', Rule::in(['active', 'inactive'])],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180'],
+            'geofence_radius' => ['nullable', 'integer', 'min:10', 'max:50000'],
+            'ip_whitelist' => ['nullable', 'array'],
+            'ip_whitelist.*' => ['string', 'max:45'],
+            'location_check' => ['nullable', 'string', Rule::in(['none', 'ip', 'gps', 'both', 'any'])],
+            'self_service_clockin_enabled' => ['boolean'],
         ];
     }
 

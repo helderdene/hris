@@ -54,6 +54,7 @@ class HandleInertiaRequests extends Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'is_super_admin' => fn () => $request->user()?->isSuperAdmin() ?? false,
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
             'features' => [
                 'twoFactorAuthentication' => Features::enabled(Features::twoFactorAuthentication()),
@@ -132,6 +133,14 @@ class HandleInertiaRequests extends Middleware
             'can_manage_organization' => $canManageOrganization,
             'can_manage_employees' => $canManageEmployees,
             'can_view_audit_logs' => $canViewAuditLogs,
+            'visitor_registration_url' => url('/visit/register'),
+            'subscription' => [
+                'plan' => $tenant->plan?->slug,
+                'status' => $tenant->subscription('default')?->paymongo_status?->value,
+                'is_on_trial' => $tenant->onTrial(),
+                'trial_ends_at' => $tenant->trial_ends_at?->toISOString(),
+                'available_modules' => $tenant->availableModules(),
+            ],
         ];
     }
 

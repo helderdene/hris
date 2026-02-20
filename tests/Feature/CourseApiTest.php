@@ -201,7 +201,7 @@ describe('Course CRUD', function () {
         $course = Course::factory()->create();
 
         $controller = new CourseController;
-        $response = $controller->destroy($this->tenant->slug, $course);
+        $response = $controller->destroy($course);
 
         $this->assertSoftDeleted('courses', ['id' => $course->id]);
     });
@@ -217,7 +217,7 @@ describe('Course Status Workflow', function () {
         $course = Course::factory()->draft()->create();
 
         $controller = new CourseController;
-        $response = $controller->publish($this->tenant->slug, $course);
+        $response = $controller->publish($course);
 
         $course->refresh();
         expect($course->status)->toBe(CourseStatus::Published);
@@ -232,7 +232,7 @@ describe('Course Status Workflow', function () {
         $course = Course::factory()->published()->create();
 
         $controller = new CourseController;
-        $response = $controller->archive($this->tenant->slug, $course);
+        $response = $controller->archive($course);
 
         $course->refresh();
         expect($course->status)->toBe(CourseStatus::Archived);

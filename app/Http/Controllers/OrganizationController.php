@@ -206,6 +206,27 @@ class OrganizationController extends Controller
     }
 
     /**
+     * Display the kiosks index page.
+     */
+    public function kiosksIndex(): Response
+    {
+        Gate::authorize('can-manage-organization');
+
+        $workLocations = WorkLocation::query()
+            ->where('status', 'active')
+            ->orderBy('name')
+            ->get(['id', 'name', 'code']);
+
+        return Inertia::render('Organization/Kiosks', [
+            'workLocations' => $workLocations->map(fn (WorkLocation $loc) => [
+                'id' => $loc->id,
+                'name' => $loc->name,
+                'code' => $loc->code,
+            ])->all(),
+        ]);
+    }
+
+    /**
      * Display the holidays index page.
      */
     public function holidaysIndex(): Response

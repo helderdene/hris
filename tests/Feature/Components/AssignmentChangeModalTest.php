@@ -101,7 +101,7 @@ describe('Assignment Change Modal - Controller Data Loading', function () {
 
         // Test the controller directly
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         // Use reflection to access protected properties
         $reflection = new ReflectionClass($inertiaResponse);
@@ -293,7 +293,7 @@ describe('Assignment Change Modal - Dropdown Options', function () {
         $employee = Employee::factory()->create();
 
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         $reflection = new ReflectionClass($inertiaResponse);
         $propsProperty = $reflection->getProperty('props');

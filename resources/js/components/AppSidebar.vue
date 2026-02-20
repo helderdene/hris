@@ -13,17 +13,33 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, Folder, LayoutGrid, ShieldCheck } from 'lucide-vue-next';
+import { computed } from 'vue';
 import AppLogo from './AppLogo.vue';
 
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
+const page = usePage();
+const isSuperAdmin = computed(() => (page.props as Record<string, unknown>).is_super_admin === true);
+
+const mainNavItems = computed<NavItem[]>(() => {
+    const items: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboard(),
+            icon: LayoutGrid,
+        },
+    ];
+
+    if (isSuperAdmin.value) {
+        items.push({
+            title: 'Platform Admin',
+            href: '/admin',
+            icon: ShieldCheck,
+        });
+    }
+
+    return items;
+});
 
 const footerNavItems: NavItem[] = [
     {

@@ -28,6 +28,12 @@ interface WorkLocation {
     timezone: string | null;
     metadata: Record<string, unknown> | null;
     status: string;
+    self_service_clockin_enabled: boolean;
+    location_check: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    geofence_radius: number | null;
+    ip_whitelist: string[] | null;
 }
 
 interface EnumOption {
@@ -62,6 +68,12 @@ const form = ref({
     location_type: '',
     timezone: '',
     status: 'active',
+    self_service_clockin_enabled: false,
+    location_check: 'none',
+    latitude: '' as string | number,
+    longitude: '' as string | number,
+    geofence_radius: '' as string | number,
+    ip_whitelist: '' as string,
 });
 
 const metadataEntries = ref<MetadataEntry[]>([]);
@@ -73,6 +85,14 @@ const isEditing = computed(() => !!props.location);
 const statusOptions: EnumOption[] = [
     { value: 'active', label: 'Active' },
     { value: 'inactive', label: 'Inactive' },
+];
+
+const locationCheckOptions: EnumOption[] = [
+    { value: 'none', label: 'None' },
+    { value: 'ip', label: 'IP Address' },
+    { value: 'gps', label: 'GPS Location' },
+    { value: 'both', label: 'Both (IP + GPS)' },
+    { value: 'any', label: 'Any (IP or GPS)' },
 ];
 
 const commonTimezones: EnumOption[] = [
@@ -121,6 +141,12 @@ watch(
                 location_type: newLocation.location_type,
                 timezone: newLocation.timezone || '',
                 status: newLocation.status,
+                self_service_clockin_enabled: newLocation.self_service_clockin_enabled ?? false,
+                location_check: newLocation.location_check || 'none',
+                latitude: newLocation.latitude ?? '',
+                longitude: newLocation.longitude ?? '',
+                geofence_radius: newLocation.geofence_radius ?? '',
+                ip_whitelist: newLocation.ip_whitelist?.join(', ') ?? '',
             };
             // Convert metadata object to array of entries
             if (
@@ -162,6 +188,12 @@ function resetForm() {
         location_type: '',
         timezone: '',
         status: 'active',
+        self_service_clockin_enabled: false,
+        location_check: 'none',
+        latitude: '',
+        longitude: '',
+        geofence_radius: '',
+        ip_whitelist: '',
     };
     metadataEntries.value = [];
     errors.value = {};
@@ -212,6 +244,14 @@ async function handleSubmit() {
         }
     });
 
+    // Parse IP whitelist from comma-separated string
+    const ipWhitelist = form.value.ip_whitelist
+        ? String(form.value.ip_whitelist)
+              .split(',')
+              .map((ip) => ip.trim())
+              .filter(Boolean)
+        : null;
+
     const payload = {
         ...form.value,
         address: form.value.address || null,
@@ -221,6 +261,11 @@ async function handleSubmit() {
         postal_code: form.value.postal_code || null,
         timezone: form.value.timezone || null,
         metadata: Object.keys(metadata).length > 0 ? metadata : null,
+        latitude: form.value.latitude !== '' ? Number(form.value.latitude) : null,
+        longitude: form.value.longitude !== '' ? Number(form.value.longitude) : null,
+        geofence_radius: form.value.geofence_radius !== '' ? Number(form.value.geofence_radius) : null,
+        ip_whitelist: ipWhitelist && ipWhitelist.length > 0 ? ipWhitelist : null,
+        location_check: form.value.location_check || 'none',
     };
 
     try {
@@ -435,6 +480,123 @@ async function handleSubmit() {
                     <p v-if="errors.status" class="text-sm text-red-500">
                         {{ errors.status }}
                     </p>
+                </div>
+
+                <!-- Clock-In Settings -->
+                <div class="space-y-4 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
+                    <div>
+                        <Label class="text-base">Clock-In Settings</Label>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Configure self-service clock-in and location verification.
+                        </p>
+                    </div>
+
+                    <!-- Self-Service Toggle -->
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="shrink">
+                            <Label for="self_service_clockin_enabled">Self-Service Clock-In</Label>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">
+                                Allow employees to clock in/out from their own devices.
+                            </p>
+                        </div>
+                        <button
+                            id="self_service_clockin_enabled"
+                            type="button"
+                            role="switch"
+                            :aria-checked="form.self_service_clockin_enabled"
+                            class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-slate-950 focus:ring-offset-2 dark:focus:ring-slate-300 dark:focus:ring-offset-slate-950"
+                            :class="form.self_service_clockin_enabled ? 'bg-slate-900 dark:bg-slate-50' : 'bg-slate-200 dark:bg-slate-700'"
+                            @click="form.self_service_clockin_enabled = !form.self_service_clockin_enabled"
+                        >
+                            <span
+                                class="pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg ring-0 transition-transform duration-200 ease-in-out dark:bg-slate-950"
+                                :class="form.self_service_clockin_enabled ? 'translate-x-5' : 'translate-x-0'"
+                            />
+                        </button>
+                    </div>
+
+                    <!-- Location Check Mode -->
+                    <div v-if="form.self_service_clockin_enabled" class="space-y-4">
+                        <div class="space-y-2">
+                            <Label for="location_check">Location Verification</Label>
+                            <EnumSelect
+                                id="location_check"
+                                v-model="form.location_check"
+                                :options="locationCheckOptions"
+                                placeholder="Select verification mode"
+                            />
+                            <p v-if="errors.location_check" class="text-sm text-red-500">
+                                {{ errors.location_check }}
+                            </p>
+                        </div>
+
+                        <!-- GPS Fields -->
+                        <div v-if="['gps', 'both', 'any'].includes(form.location_check)" class="space-y-4">
+                            <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                                <div class="space-y-2">
+                                    <Label for="latitude">Latitude</Label>
+                                    <Input
+                                        id="latitude"
+                                        v-model="form.latitude"
+                                        type="number"
+                                        step="0.0000001"
+                                        placeholder="e.g., 14.5547"
+                                        :class="{ 'border-red-500': errors.latitude }"
+                                    />
+                                    <p v-if="errors.latitude" class="text-sm text-red-500">
+                                        {{ errors.latitude }}
+                                    </p>
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="longitude">Longitude</Label>
+                                    <Input
+                                        id="longitude"
+                                        v-model="form.longitude"
+                                        type="number"
+                                        step="0.0000001"
+                                        placeholder="e.g., 121.0244"
+                                        :class="{ 'border-red-500': errors.longitude }"
+                                    />
+                                    <p v-if="errors.longitude" class="text-sm text-red-500">
+                                        {{ errors.longitude }}
+                                    </p>
+                                </div>
+                                <div class="space-y-2">
+                                    <Label for="geofence_radius">Radius (m)</Label>
+                                    <Input
+                                        id="geofence_radius"
+                                        v-model="form.geofence_radius"
+                                        type="number"
+                                        min="10"
+                                        max="50000"
+                                        placeholder="e.g., 200"
+                                        :class="{ 'border-red-500': errors.geofence_radius }"
+                                    />
+                                    <p v-if="errors.geofence_radius" class="text-sm text-red-500">
+                                        {{ errors.geofence_radius }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- IP Whitelist -->
+                        <div v-if="['ip', 'both', 'any'].includes(form.location_check)" class="space-y-2">
+                            <Label for="ip_whitelist">IP Whitelist</Label>
+                            <Input
+                                id="ip_whitelist"
+                                v-model="form.ip_whitelist"
+                                type="text"
+                                placeholder="e.g., 192.168.1.0/24, 10.0.0.1"
+                                :class="{ 'border-red-500': errors.ip_whitelist }"
+                            />
+                            <p class="text-xs text-slate-500 dark:text-slate-400">
+                                Comma-separated IPs or CIDR ranges.
+                            </p>
+                            <p v-if="errors.ip_whitelist" class="text-sm text-red-500">
+                                {{ errors.ip_whitelist }}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Metadata Section -->

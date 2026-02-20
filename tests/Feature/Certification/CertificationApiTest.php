@@ -161,7 +161,7 @@ describe('Certification Approval Workflow', function () {
         ]);
 
         $controller = new CertificationController;
-        $response = $controller->approve($this->tenant->slug, $certification);
+        $response = $controller->approve($certification);
 
         expect($response->getStatusCode())->toBe(200);
         expect($certification->fresh()->status)->toBe(CertificationStatus::Active);
@@ -187,7 +187,7 @@ describe('Certification Approval Workflow', function () {
 
         $request = request()->merge(['reason' => 'Document is illegible']);
         $controller = new CertificationController;
-        $response = $controller->reject($request, $this->tenant->slug, $certification);
+        $response = $controller->reject($request, $certification);
 
         expect($response->getStatusCode())->toBe(200);
         expect($certification->fresh()->status)->toBe(CertificationStatus::Draft);
@@ -210,7 +210,7 @@ describe('Certification Approval Workflow', function () {
 
         $request = request()->merge(['reason' => 'Employee terminated']);
         $controller = new CertificationController;
-        $response = $controller->revoke($request, $this->tenant->slug, $certification);
+        $response = $controller->revoke($request, $certification);
 
         expect($response->getStatusCode())->toBe(200);
         expect($certification->fresh()->status)->toBe(CertificationStatus::Revoked);
@@ -229,7 +229,7 @@ describe('Certification Approval Workflow', function () {
         ]);
 
         $controller = new CertificationController;
-        $response = $controller->approve($this->tenant->slug, $certification);
+        $response = $controller->approve($certification);
 
         expect($response->getStatusCode())->toBe(422);
     });
@@ -248,7 +248,7 @@ describe('Certification Files', function () {
         CertificationFile::factory()->count(2)->create(['certification_id' => $certification->id]);
 
         $controller = new CertificationController;
-        $response = $controller->show($this->tenant->slug, $certification);
+        $response = $controller->show($certification);
         $data = $response->toArray(request());
 
         expect($data['files'])->toHaveCount(2);

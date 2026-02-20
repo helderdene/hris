@@ -8,6 +8,7 @@ use App\Models\BiometricDevice;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WorkLocation;
+use App\Services\Biometric\EmployeeSyncService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
@@ -132,7 +133,8 @@ describe('BiometricDevice API', function () {
             'is_active' => true,
         ], $admin);
 
-        $response = $controller->store($storeRequest);
+        $syncService = app(EmployeeSyncService::class);
+        $response = $controller->store($storeRequest, $syncService);
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
@@ -228,7 +230,12 @@ describe('BiometricDevice API', function () {
             'is_active' => false,
         ], $admin, $device->id);
 
-        $response = $controller->update($updateRequest, $device);
+        // Controller gets device from route parameter via $request->route('deviceId')
+        $route = new \Illuminate\Routing\Route('PUT', '/api/organization/devices/{deviceId}', []);
+        $route->parameters = ['deviceId' => $device->id];
+        $updateRequest->setRouteResolver(fn () => $route);
+
+        $response = $controller->update($updateRequest);
         $data = $response->toArray(request());
 
         expect($data['name'])->toBe('Updated Name');
@@ -261,7 +268,12 @@ describe('BiometricDevice API', function () {
         $deviceId = $device->id;
 
         $controller = new BiometricDeviceController;
-        $response = $controller->destroy($device);
+        $destroyRequest = \Illuminate\Http\Request::create("/api/organization/devices/{$device->id}", 'DELETE');
+        $route = new \Illuminate\Routing\Route('DELETE', '/api/organization/devices/{deviceId}', []);
+        $route->parameters = ['deviceId' => $device->id];
+        $destroyRequest->setRouteResolver(fn () => $route);
+
+        $response = $controller->destroy($destroyRequest);
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(200);

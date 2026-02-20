@@ -17,12 +17,19 @@ use App\Services\Tenant\TenantDatabaseManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     config(['app.main_domain' => 'kasamahr.test']);
+
+    // Run tenant-specific migrations for testing (needed by seeders during registration)
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
 });
 
 afterEach(function () {

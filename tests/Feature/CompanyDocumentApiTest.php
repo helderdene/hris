@@ -70,8 +70,11 @@ function createCompanyDocumentRequest(array $data): DocumentUploadRequest
     $request->setContainer(app());
     $request->setRedirector(app('redirect'));
 
-    // Get the rules and validate
+    // Get the rules and validate - replace tenant-prefixed table reference for SQLite testing
     $rules = (new DocumentUploadRequest)->rules();
+    if (config('database.default') === 'sqlite') {
+        $rules['document_category_id'] = ['required', 'integer', \Illuminate\Validation\Rule::exists('document_categories', 'id')];
+    }
     $validator = Validator::make($data, $rules);
 
     // Set the validator on the request (via reflection since it's protected)
@@ -186,7 +189,7 @@ describe('POST /api/company-documents', function () {
         $request->files->set('file', $file);
 
         $controller = new CompanyDocumentController(new DocumentStorageService);
-        $response = $controller->store($request, 'test-tenant');
+        $response = $controller->store($request);
 
         expect($response->getStatusCode())->toBe(201);
 

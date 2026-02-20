@@ -146,6 +146,10 @@ Route::prefix('my')->group(function () {
     Route::get('/training/calendar.ics', [\App\Http\Controllers\My\MyTrainingSessionsController::class, 'exportIcal'])
         ->name('my.training.calendar.ical');
 
+    // Visitors Self-Service
+    Route::get('/visitors', \App\Http\Controllers\My\MyVisitorController::class)
+        ->name('my.visitors');
+
     // Compliance Training Self-Service
     Route::get('/compliance', [\App\Http\Controllers\My\MyComplianceController::class, 'index'])
         ->name('my.compliance.index');

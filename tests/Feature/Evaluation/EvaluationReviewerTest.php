@@ -16,11 +16,6 @@ use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
 
-function bindTenantContextForEvaluationReviewer(Tenant $tenant): void
-{
-    app()->instance('tenant', $tenant);
-}
-
 function createTenantUserForEvaluationReviewer(Tenant $tenant, TenantUserRole $role): User
 {
     $user = User::factory()->create();
@@ -39,12 +34,15 @@ beforeEach(function () {
         '--path' => 'database/migrations/tenant',
         '--realpath' => false,
     ]);
+
+    $this->tenant = Tenant::factory()->create();
+    app()->instance('tenant', $this->tenant);
+    $this->baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
 });
 
 describe('EvaluationReviewer Model', function () {
     it('creates an evaluation reviewer with correct attributes', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create();
         $reviewer = Employee::factory()->create();
@@ -65,8 +63,7 @@ describe('EvaluationReviewer Model', function () {
     });
 
     it('belongs to a participant', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create();
         $evaluationReviewer = EvaluationReviewer::factory()->create([
@@ -78,8 +75,7 @@ describe('EvaluationReviewer Model', function () {
     });
 
     it('belongs to a reviewer employee', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $reviewer = Employee::factory()->create();
         $evaluationReviewer = EvaluationReviewer::factory()->create([
@@ -91,8 +87,7 @@ describe('EvaluationReviewer Model', function () {
     });
 
     it('can start a review', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $evaluationReviewer = EvaluationReviewer::factory()->create([
             'status' => EvaluationReviewerStatus::Pending,
@@ -106,8 +101,7 @@ describe('EvaluationReviewer Model', function () {
     });
 
     it('can submit a review', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $evaluationReviewer = EvaluationReviewer::factory()->inProgress()->create();
 
@@ -118,8 +112,7 @@ describe('EvaluationReviewer Model', function () {
     });
 
     it('can decline a review', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $evaluationReviewer = EvaluationReviewer::factory()->create([
             'status' => EvaluationReviewerStatus::Pending,
@@ -133,8 +126,7 @@ describe('EvaluationReviewer Model', function () {
     });
 
     it('correctly determines if reviewer can view KPIs', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $selfReviewer = EvaluationReviewer::factory()->self()->create();
         $managerReviewer = EvaluationReviewer::factory()->manager()->create();
@@ -148,8 +140,7 @@ describe('EvaluationReviewer Model', function () {
     });
 
     it('scopes by reviewer type', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create();
 
@@ -163,8 +154,7 @@ describe('EvaluationReviewer Model', function () {
     });
 
     it('scopes by status', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         EvaluationReviewer::factory()->count(2)->create(['status' => EvaluationReviewerStatus::Pending]);
         EvaluationReviewer::factory()->inProgress()->count(3)->create();
@@ -177,8 +167,7 @@ describe('EvaluationReviewer Model', function () {
 
 describe('EvaluationService - Reviewer Assignment', function () {
     it('assigns self reviewer to participant', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $employee = Employee::factory()->create();
         $participant = PerformanceCycleParticipant::factory()->create([
@@ -195,8 +184,7 @@ describe('EvaluationService - Reviewer Assignment', function () {
     });
 
     it('assigns manager reviewer when participant has manager', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $manager = Employee::factory()->create();
         $participant = PerformanceCycleParticipant::factory()->create([
@@ -212,8 +200,7 @@ describe('EvaluationService - Reviewer Assignment', function () {
     });
 
     it('returns null when assigning manager reviewer without manager', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->withoutManager()->create();
 
@@ -224,8 +211,7 @@ describe('EvaluationService - Reviewer Assignment', function () {
     });
 
     it('assigns peer reviewers from same department', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $department = Department::factory()->create();
         $employee = Employee::factory()->create(['department_id' => $department->id]);
@@ -256,8 +242,7 @@ describe('EvaluationService - Reviewer Assignment', function () {
     });
 
     it('does not duplicate reviewers on repeated assignment', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $employee = Employee::factory()->create();
         $participant = PerformanceCycleParticipant::factory()->create([
@@ -279,8 +264,7 @@ describe('EvaluationService - Reviewer Assignment', function () {
 
 describe('Evaluation Reviewer API', function () {
     it('lists reviewers for a participant', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $admin = createTenantUserForEvaluationReviewer($tenant, TenantUserRole::Admin);
         $participant = PerformanceCycleParticipant::factory()->create();
@@ -290,22 +274,21 @@ describe('Evaluation Reviewer API', function () {
         EvaluationReviewer::factory()->peer()->count(3)->create(['performance_cycle_participant_id' => $participant->id]);
 
         $response = $this->actingAs($admin)
-            ->getJson("/api/organization/participants/{$participant->id}/reviewers");
+            ->getJson("{$this->baseUrl}/api/organization/participants/{$participant->id}/reviewers");
 
         $response->assertSuccessful()
-            ->assertJsonCount(5, 'data');
+            ->assertJsonCount(5);
     });
 
     it('creates a new reviewer for a participant', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $admin = createTenantUserForEvaluationReviewer($tenant, TenantUserRole::Admin);
         $participant = PerformanceCycleParticipant::factory()->create();
         $reviewer = Employee::factory()->create();
 
         $response = $this->actingAs($admin)
-            ->postJson("/api/organization/participants/{$participant->id}/reviewers", [
+            ->postJson("{$this->baseUrl}/api/organization/participants/{$participant->id}/reviewers", [
                 'reviewer_employee_id' => $reviewer->id,
                 'reviewer_type' => 'peer',
             ]);
@@ -318,8 +301,7 @@ describe('Evaluation Reviewer API', function () {
     });
 
     it('deletes a reviewer that has not submitted', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $admin = createTenantUserForEvaluationReviewer($tenant, TenantUserRole::Admin);
         $evaluationReviewer = EvaluationReviewer::factory()->create([
@@ -327,21 +309,20 @@ describe('Evaluation Reviewer API', function () {
         ]);
 
         $response = $this->actingAs($admin)
-            ->deleteJson("/api/organization/participants/{$evaluationReviewer->performance_cycle_participant_id}/reviewers/{$evaluationReviewer->id}");
+            ->deleteJson("{$this->baseUrl}/api/organization/participants/{$evaluationReviewer->performance_cycle_participant_id}/reviewers/{$evaluationReviewer->id}");
 
         $response->assertSuccessful();
         expect(EvaluationReviewer::find($evaluationReviewer->id))->toBeNull();
     });
 
     it('cannot delete a reviewer that has submitted', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationReviewer($tenant);
+        $tenant = $this->tenant;
 
         $admin = createTenantUserForEvaluationReviewer($tenant, TenantUserRole::Admin);
         $evaluationReviewer = EvaluationReviewer::factory()->submitted()->create();
 
         $response = $this->actingAs($admin)
-            ->deleteJson("/api/organization/participants/{$evaluationReviewer->performance_cycle_participant_id}/reviewers/{$evaluationReviewer->id}");
+            ->deleteJson("{$this->baseUrl}/api/organization/participants/{$evaluationReviewer->performance_cycle_participant_id}/reviewers/{$evaluationReviewer->id}");
 
         $response->assertStatus(422);
         expect(EvaluationReviewer::find($evaluationReviewer->id))->not->toBeNull();

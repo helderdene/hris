@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateBiometricDeviceRequest;
 use App\Http\Resources\BiometricDeviceResource;
 use App\Models\BiometricDevice;
 use App\Services\Biometric\EmployeeSyncService;
+use App\Services\FeatureGateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -47,6 +48,14 @@ class BiometricDeviceController extends Controller
     public function store(StoreBiometricDeviceRequest $request, EmployeeSyncService $syncService): JsonResponse
     {
         Gate::authorize('can-manage-organization');
+
+        $gate = app(FeatureGateService::class);
+        if (! $gate->isWithinDeviceLimit()) {
+            return response()->json([
+                'message' => "You've reached your biometric device limit ({$gate->getEffectiveLimit('max_biometric_devices')}). "
+                    .'You can purchase additional device slots or upgrade your plan.',
+            ], 422);
+        }
 
         $device = BiometricDevice::create($request->validated());
         $device->load('workLocation');

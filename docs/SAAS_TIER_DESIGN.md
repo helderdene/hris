@@ -101,43 +101,43 @@ Extended Self-Service additions: My compliance training, compliance certificates
 
 ### 1.3 Feature Comparison Matrix
 
-| Capability | Starter | Professional | Enterprise |
-|------------|:-------:|:------------:|:----------:|
-| **Core HR** | | | |
-| Employee Records | ✓ | ✓ | ✓ |
-| Organization Management | ✓ | ✓ | ✓ |
-| Time & Attendance | ✓ | ✓ | ✓ |
-| Biometric Integration | ✓ | ✓ | ✓ |
-| Web Kiosk Clock-In *(planned)* | ✓ | ✓ | ✓ |
-| Leave Management | ✓ | ✓ | ✓ |
-| Payroll Processing | ✓ | ✓ | ✓ |
-| Government Compliance Reports | ✓ | ✓ | ✓ |
-| Employee Self-Service (Basic) | ✓ | ✓ | ✓ |
-| **Strategic HR** | | | |
-| Recruitment & Hiring | — | ✓ | ✓ |
-| Onboarding & Pre-boarding | — | ✓ | ✓ |
-| Training & Development | — | ✓ | ✓ |
-| Performance Management | — | ✓ | ✓ |
-| Probationary Management | — | ✓ | ✓ |
-| Manager/Supervisor Tools | — | ✓ | ✓ |
-| Help Center | — | ✓ | ✓ |
-| HR Analytics Dashboard | — | ✓ | ✓ |
-| **Enterprise** | | | |
-| Compliance Training | — | — | ✓ |
-| Background & Reference Checks | — | — | ✓ |
-| Audit Logs | — | — | ✓ |
-| Public Careers Portal | — | — | ✓ |
-| **Limits** | | | |
-| Max Employees | 50 | 250 | Unlimited |
-| Max Admin/HR Users | 3 | 10 | Unlimited |
-| Max Departments | 5 | Unlimited | Unlimited |
-| Max Biometric Devices | 2 | 10 | Unlimited |
-| Storage | 1 GB | 10 GB | 100 GB |
-| **Extras** | | | |
-| API Access | — | Read-only | Full |
-| Custom Branding | Logo only | Logo + Colors | Full White-Label |
-| SSO / SAML | — | — | ✓ |
-| Support | Email | Priority Email | Dedicated Account Manager |
+| Capability | Starter | Professional | Enterprise | Custom |
+|------------|:-------:|:------------:|:----------:|:------:|
+| **Core HR** | | | | |
+| Employee Records | ✓ | ✓ | ✓ | Pick & choose |
+| Organization Management | ✓ | ✓ | ✓ | Pick & choose |
+| Time & Attendance | ✓ | ✓ | ✓ | Pick & choose |
+| Biometric Integration | ✓ | ✓ | ✓ | Pick & choose |
+| Web Kiosk Clock-In *(planned)* | ✓ | ✓ | ✓ | Pick & choose |
+| Leave Management | ✓ | ✓ | ✓ | Pick & choose |
+| Payroll Processing | ✓ | ✓ | ✓ | Pick & choose |
+| Government Compliance Reports | ✓ | ✓ | ✓ | Pick & choose |
+| Employee Self-Service (Basic) | ✓ | ✓ | ✓ | Pick & choose |
+| **Strategic HR** | | | | |
+| Recruitment & Hiring | — | ✓ | ✓ | Pick & choose |
+| Onboarding & Pre-boarding | — | ✓ | ✓ | Pick & choose |
+| Training & Development | — | ✓ | ✓ | Pick & choose |
+| Performance Management | — | ✓ | ✓ | Pick & choose |
+| Probationary Management | — | ✓ | ✓ | Pick & choose |
+| Manager/Supervisor Tools | — | ✓ | ✓ | Pick & choose |
+| Help Center | — | ✓ | ✓ | Pick & choose |
+| HR Analytics Dashboard | — | ✓ | ✓ | Pick & choose |
+| **Enterprise** | | | | |
+| Compliance Training | — | — | ✓ | Pick & choose |
+| Background & Reference Checks | — | — | ✓ | Pick & choose |
+| Audit Logs | — | — | ✓ | Pick & choose |
+| Public Careers Portal | — | — | ✓ | Pick & choose |
+| **Limits** | | | | |
+| Max Employees | 50 | 250 | Unlimited | Negotiated |
+| Max Admin/HR Users | 3 | 10 | Unlimited | Negotiated |
+| Max Departments | 5 | Unlimited | Unlimited | Negotiated |
+| Max Biometric Devices | 2 | 10 | Unlimited | Negotiated |
+| Storage | 1 GB | 10 GB | 100 GB | Negotiated |
+| **Extras** | | | | |
+| API Access | — | Read-only | Full | Negotiated |
+| Custom Branding | Logo only | Logo + Colors | Full White-Label | Negotiated |
+| SSO / SAML | — | — | ✓ | Negotiated |
+| Support | Email | Priority Email | Dedicated Account Manager | Dedicated AM |
 
 ### 1.4 Pricing Strategy
 
@@ -145,18 +145,101 @@ Extended Self-Service additions: My compliance training, compliance certificates
 
 | Tier | Monthly (per employee) | Annual (per employee) | Savings |
 |------|:----------------------:|:---------------------:|:-------:|
-| Starter | ₱99/mo | ₱990/yr | ~17% |
-| Professional | ₱199/mo | ₱1,990/yr | ~17% |
-| Enterprise | ₱349/mo | ₱3,490/yr | ~17% |
+| Starter | ₱50/mo | ₱500/yr | ~17% |
+| Professional | ₱100/mo | ₱1,000/yr | ~17% |
+| Enterprise | ₱150/mo | ₱1,500/yr | ~17% |
+| Custom | Negotiated | Negotiated | Per-deal |
 
 **Minimums:**
-- Starter: 5 employees minimum (₱495/mo minimum)
-- Professional: 10 employees minimum (₱1,990/mo minimum)
-- Enterprise: 25 employees minimum (₱8,725/mo minimum)
+- Starter: 5 employees minimum (₱250/mo minimum)
+- Professional: 10 employees minimum (₱1,000/mo minimum)
+- Enterprise: 25 employees minimum (₱3,750/mo minimum)
 
 **PayMongo implementation:** Each tenant gets a unique PayMongo plan with `amount = price_per_unit × max(employee_count, tier_minimum)`. When employee count changes, the plan amount is updated via `PUT /v1/subscriptions/plans/{plan_id}`, and future invoices reflect the new amount.
 
-### 1.5 Trial Period
+### 1.5 Add-On Slots
+
+Tenants can purchase additional capacity beyond their plan's included limits without upgrading to a higher tier. Add-ons are billed monthly on top of the base subscription.
+
+#### Available Add-Ons
+
+| Add-On | Unit | Price (per unit/mo) | Available On |
+|--------|------|:-------------------:|:------------:|
+| Extra Employee Slots | Pack of 10 employees | ₱25/mo | Starter, Professional |
+| Extra Biometric Devices | 1 device | ₱50/mo | Starter, Professional |
+
+> **Enterprise:** Does not need add-ons — employees and biometric devices are already unlimited.
+
+#### How It Works
+
+1. Tenant admin navigates to **Billing → Add-Ons** page
+2. Selects the add-on type and quantity (e.g., 2 packs of 10 employees = 20 extra slots)
+3. System creates a one-time PayMongo payment or adds the amount to the next billing cycle
+4. On successful payment, the tenant's effective limit increases immediately
+5. Add-ons renew automatically with the subscription each billing cycle
+6. Add-ons can be removed at any time — takes effect on the next billing cycle
+
+#### Effective Limit Calculation
+
+```
+effective_max_employees = plan.max_employees + (extra_employee_packs × 10)
+effective_max_devices   = plan.max_biometric_devices + extra_device_count
+```
+
+**Example:** Starter plan (50 employees, 2 devices) + 3 employee packs + 1 extra device = 80 employees, 3 devices.
+
+#### Downgrade Validation
+
+When removing add-ons or downgrading plans, the system validates that current usage fits within the new effective limits. If not, the tenant is shown specific warnings (e.g., "You currently have 65 employees but the new limit would be 50. Please deactivate employees before removing this add-on.").
+
+### 1.6 Custom Plan (Sales-Assisted)
+
+For organizations that need specific modules at scale but don't fit neatly into Starter, Professional, or Enterprise — e.g., a production plant with 2,000 employees that only needs core HR, payroll, and attendance.
+
+#### How It Works
+
+1. Client contacts sales or requests a custom quote via the billing page
+2. Sales team creates a **Custom plan** via the Platform Admin Dashboard
+3. The plan includes a hand-picked set of modules and a negotiated per-employee rate
+4. Employee limits, device limits, and other constraints are set per-deal
+5. Billing is handled through PayMongo (same per-tenant dynamic plan) or via invoice for large contracts
+
+#### Custom Plan Configuration (Admin Dashboard)
+
+| Setting | Description |
+|---------|-------------|
+| Plan Name | Custom label (e.g., "Starter XL — Acme Manufacturing") |
+| Modules | Cherry-picked from the full 21-module list |
+| Per-Employee Rate | Negotiated price (e.g., ₱35/mo for high-volume Starter-only) |
+| Employee Limit | Set per-deal (e.g., 5,000) or unlimited |
+| Biometric Device Limit | Set per-deal or unlimited |
+| Billing Method | PayMongo subscription or manual invoice |
+| Contract Term | Monthly, annual, or custom (e.g., 2-year contract) |
+
+#### Example Scenario
+
+> **Acme Manufacturing** — 2,000 factory workers. They only need: HR Management, Organization Management, Time & Attendance, Biometric Integration, Leave Management, Payroll, HR Compliance, Employee Self-Service, User & Access Management (9 Starter modules).
+>
+> **Custom deal:** ₱35/employee/mo × 2,000 = **₱70,000/mo** (vs ₱100,000/mo on standard Starter, or ₱200,000/mo on Professional for modules they don't need).
+
+#### Technical Implementation
+
+- Custom plans use the same `plans` table with `is_custom = true` flag
+- Modules are assigned via `plan_modules` pivot (same as standard plans)
+- `limits` JSON is fully configurable per-plan
+- Custom plans are **not shown** on the public pricing page — only assignable by super admins
+- Platform Admin Dashboard gets a "Create Custom Plan" action (see Part 6)
+
+#### Database Change
+
+Add to `plans` table:
+
+```php
+$table->boolean('is_custom')->default(false);    // true for sales-assisted custom plans
+$table->foreignId('tenant_id')->nullable();       // if set, plan is exclusive to this tenant
+```
+
+### 1.7 Trial Period
 
 - **Duration:** 14 days
 - **Tier:** Professional (gives users the strategic HR experience)
@@ -164,7 +247,7 @@ Extended Self-Service additions: My compliance training, compliance certificates
 - **Expiration behavior:** Auto-locks access, requiring plan selection to continue
 - **Enterprise trial:** Available by request (sales-assisted, 30 days)
 
-### 1.6 PayMongo Limitations
+### 1.8 PayMongo Limitations
 
 | Limitation | Impact |
 |------------|--------|
@@ -300,7 +383,38 @@ enum SubscriptionStatus: string
 }
 ```
 
-### 2.5 Database Schema
+### 2.5 Add-On Type Enum
+
+```php
+// app/Enums/AddonType.php
+enum AddonType: string
+{
+    case EmployeeSlots = 'employee_slots';
+    case BiometricDevices = 'biometric_devices';
+
+    public function label(): string { /* human-readable label */ }
+
+    /** Number of units granted per quantity */
+    public function unitsPerQuantity(): int
+    {
+        return match ($this) {
+            self::EmployeeSlots => 10,
+            self::BiometricDevices => 1,
+        };
+    }
+
+    /** Default price per unit in centavos */
+    public function defaultPrice(): int
+    {
+        return match ($this) {
+            self::EmployeeSlots => 2500,      // ₱25/mo per pack of 10
+            self::BiometricDevices => 5000,   // ₱50/mo per device
+        };
+    }
+}
+```
+
+### 2.6 Database Schema
 
 All billing tables live in the **platform database** alongside `tenants` and `users`.
 
@@ -313,6 +427,8 @@ Schema::create('plans', function (Blueprint $table) {
     $table->string('slug')->unique();          // "starter", "professional", "enterprise"
     $table->text('description')->nullable();
     $table->boolean('is_active')->default(true);
+    $table->boolean('is_custom')->default(false);  // true for sales-assisted custom plans
+    $table->foreignId('tenant_id')->nullable()->constrained()->nullOnDelete(); // exclusive to this tenant if set
     $table->integer('sort_order')->default(0);
     $table->json('limits');                    // {"max_employees": 50, "max_users": 3, ...}
     $table->timestamps();
@@ -378,6 +494,30 @@ Schema::create('subscriptions', function (Blueprint $table) {
 });
 ```
 
+#### `tenant_addons` table
+
+```php
+Schema::create('tenant_addons', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('tenant_id')->constrained()->cascadeOnDelete();
+    $table->string('type');                    // "employee_slots", "biometric_devices"
+    $table->integer('quantity')->default(1);   // number of units purchased
+    $table->integer('price_per_unit');         // in centavos per unit/mo
+    $table->string('currency')->default('PHP');
+    $table->boolean('is_active')->default(true);
+    $table->timestamp('expires_at')->nullable(); // null = renews with subscription
+    $table->timestamps();
+
+    $table->index(['tenant_id', 'type', 'is_active']);
+});
+```
+
+**`type` values and their units:**
+| Type | Unit per Quantity | Effect |
+|------|-------------------|--------|
+| `employee_slots` | 10 employees | Adds `quantity × 10` to max_employees |
+| `biometric_devices` | 1 device | Adds `quantity` to max_biometric_devices |
+
 #### Additions to `tenants` table
 
 ```php
@@ -389,7 +529,7 @@ Schema::table('tenants', function (Blueprint $table) {
 });
 ```
 
-### 2.6 New Models
+### 2.7 New Models
 
 #### `Plan` model
 
@@ -399,13 +539,14 @@ class Plan extends Model
 {
     // Uses getConnectionName() pattern from Tenant model
 
-    protected $fillable = ['name', 'slug', 'description', 'is_active', 'sort_order', 'limits'];
+    protected $fillable = ['name', 'slug', 'description', 'is_active', 'is_custom', 'tenant_id', 'sort_order', 'limits'];
 
     protected function casts(): array
     {
         return [
             'limits' => 'array',
             'is_active' => 'boolean',
+            'is_custom' => 'boolean',
         ];
     }
 
@@ -491,7 +632,51 @@ class Subscription extends Model
 }
 ```
 
-### 2.7 Tenant Model Changes
+#### `TenantAddon` model
+
+```php
+// app/Models/TenantAddon.php
+class TenantAddon extends Model
+{
+    // Uses getConnectionName() pattern from Tenant model
+
+    protected $fillable = [
+        'tenant_id', 'type', 'quantity', 'price_per_unit',
+        'currency', 'is_active', 'expires_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'type' => AddonType::class,
+            'is_active' => 'boolean',
+            'expires_at' => 'datetime',
+        ];
+    }
+
+    public function tenant(): BelongsTo { /* ... */ }
+
+    /** Total extra units this add-on provides */
+    public function extraUnits(): int
+    {
+        return $this->quantity * $this->type->unitsPerQuantity();
+    }
+
+    /** Monthly cost of this add-on in centavos */
+    public function monthlyCost(): int
+    {
+        return $this->quantity * $this->price_per_unit;
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true)
+            ->where(fn ($q) => $q->whereNull('expires_at')->orWhere('expires_at', '>', now()));
+    }
+}
+```
+
+### 2.8 Tenant Model Changes
 
 Add to `app/Models/Tenant.php`:
 
@@ -546,6 +731,16 @@ class Tenant extends Model
         return $this->onTrial() || $this->subscribed('default');
     }
 
+    public function addons(): HasMany
+    {
+        return $this->hasMany(TenantAddon::class);
+    }
+
+    public function activeAddons(): HasMany
+    {
+        return $this->addons()->active();
+    }
+
     public function hasModule(Module $module): bool
     {
         if (! $this->plan) {
@@ -563,10 +758,37 @@ class Tenant extends Model
 
         return $this->plan->modules->pluck('module')->toArray();
     }
+
+    /** Get effective limit including add-ons */
+    public function effectiveLimit(string $key): int|null
+    {
+        $base = $this->plan?->getLimit($key);
+
+        if ($base === null || $base === -1) {
+            return $base; // null = no plan, -1 = unlimited
+        }
+
+        $addonType = match ($key) {
+            'max_employees' => AddonType::EmployeeSlots,
+            'max_biometric_devices' => AddonType::BiometricDevices,
+            default => null,
+        };
+
+        if (! $addonType) {
+            return $base;
+        }
+
+        $extra = $this->activeAddons()
+            ->where('type', $addonType->value)
+            ->get()
+            ->sum(fn (TenantAddon $addon) => $addon->extraUnits());
+
+        return $base + $extra;
+    }
 }
 ```
 
-### 2.8 PayMongo Service Layer
+### 2.9 PayMongo Service Layer
 
 #### Service Provider
 
@@ -616,7 +838,7 @@ class PayMongoService
 // - handleEvent(payload): Routes to handler by event type
 ```
 
-### 2.9 Per-Tenant Dynamic Plan Strategy
+### 2.10 Per-Tenant Dynamic Plan Strategy
 
 **On subscription creation:**
 1. Create PayMongo plan: `POST /v1/subscriptions/plans` with `amount = price_per_unit × max(employee_count, tier_minimum)`, name = `"{tier}_{tenant_slug}_{interval}"`
@@ -624,11 +846,17 @@ class PayMongoService
 3. Store `paymongo_plan_id` on local `subscriptions` table
 
 **On employee count change:**
-1. Calculate new amount: `price_per_unit × max(new_count, tier_minimum)`
+1. Calculate new amount: `(price_per_unit × max(new_count, tier_minimum)) + total_addon_cost`
 2. Update plan: `PUT /v1/subscriptions/plans/{plan_id}` with new amount
 3. Future invoices reflect the updated amount automatically
 
-### 2.10 Feature Gate Service
+**On add-on purchase/update/cancel:**
+1. Create or update `TenantAddon` record locally
+2. Recalculate total plan amount: `(price_per_unit × max(employee_count, tier_minimum)) + sum(addon.quantity × addon.price_per_unit)`
+3. Update PayMongo plan: `PUT /v1/subscriptions/plans/{plan_id}` with new total amount
+4. Effective limits update immediately; billing change reflects on next invoice
+
+### 2.11 Feature Gate Service
 
 Centralized service for all module and limit access checks.
 
@@ -645,14 +873,17 @@ class FeatureGateService
     public function hasModule(Module $module): bool { /* ... */ }
     public function hasAnyModule(Module ...$modules): bool { /* ... */ }
     public function availableModules(): array { /* ... */ }
-    public function isWithinEmployeeLimit(): bool { /* ... */ }
+    public function isWithinEmployeeLimit(): bool { /* uses tenant->effectiveLimit('max_employees') */ }
     public function isWithinUserLimit(): bool { /* ... */ }
-    public function isWithinDeviceLimit(): bool { /* ... */ }
+    public function isWithinDeviceLimit(): bool { /* uses tenant->effectiveLimit('max_biometric_devices') */ }
     public function getLimit(string $key, mixed $default = null): mixed { /* ... */ }
+    public function getEffectiveLimit(string $key): int|null { /* delegates to tenant->effectiveLimit() */ }
+    public function activeAddons(): Collection { /* returns tenant's active add-ons */ }
+    public function addonCostBreakdown(): array { /* returns per-addon cost summary for billing UI */ }
 }
 ```
 
-### 2.11 Module Gating Middleware
+### 2.12 Module Gating Middleware
 
 ```php
 // app/Http/Middleware/EnsureModuleAccess.php
@@ -697,7 +928,7 @@ $middleware->appendToGroup('tenant', [
 ]);
 ```
 
-### 2.12 Route Integration
+### 2.13 Route Integration
 
 Apply `module` middleware to route groups in `routes/tenant/`. Starter-tier modules do NOT get the middleware since they are always available on any paid plan.
 
@@ -718,7 +949,7 @@ Apply `module` middleware to route groups in `routes/tenant/`. Starter-tier modu
 | `audit_security` | Audit log route groups |
 | `careers_portal` | Careers/public portal route groups |
 
-### 2.13 Frontend Gating
+### 2.14 Frontend Gating
 
 #### Shared Props via Inertia
 
@@ -739,6 +970,16 @@ return [
         'is_subscribed' => $tenant->subscribed('default'),
     ],
     'available_modules' => app(FeatureGateService::class)->availableModules(),
+    'effective_limits' => [
+        'max_employees' => $tenant->effectiveLimit('max_employees'),
+        'max_biometric_devices' => $tenant->effectiveLimit('max_biometric_devices'),
+    ],
+    'active_addons' => $tenant->activeAddons->map(fn ($addon) => [
+        'id' => $addon->id,
+        'type' => $addon->type->value,
+        'quantity' => $addon->quantity,
+        'extra_units' => $addon->extraUnits(),
+    ]),
 ];
 ```
 
@@ -807,7 +1048,7 @@ const { hasModule } = useSubscription()
 </template>
 ```
 
-### 2.14 Billing Routes & Controller
+### 2.15 Billing Routes & Controller
 
 ```php
 // routes/tenant/web-billing.php (included from routes/tenant.php)
@@ -822,6 +1063,12 @@ Route::prefix('billing')
         Route::post('/cancel', [BillingController::class, 'cancel'])->name('tenant.billing.cancel');
         Route::get('/invoices', [BillingController::class, 'invoices'])->name('tenant.billing.invoices');
         Route::get('/success', [BillingController::class, 'success'])->name('tenant.billing.success');
+
+        // Add-Ons
+        Route::get('/addons', [BillingController::class, 'addons'])->name('tenant.billing.addons');
+        Route::post('/addons/purchase', [BillingController::class, 'purchaseAddon'])->name('tenant.billing.addons.purchase');
+        Route::post('/addons/{tenantAddon}/update', [BillingController::class, 'updateAddon'])->name('tenant.billing.addons.update');
+        Route::post('/addons/{tenantAddon}/cancel', [BillingController::class, 'cancelAddon'])->name('tenant.billing.addons.cancel');
     });
 ```
 
@@ -837,8 +1084,12 @@ Route::prefix('billing')
 | `cancel` | Calls cancel, redirects back with confirmation |
 | `invoices` | List all invoices |
 | `success` | Post-checkout confirmation callback |
+| `addons` | Add-ons management page: current add-ons, available add-ons, usage vs limits |
+| `purchaseAddon` | Validates tier eligibility (not Enterprise), creates `TenantAddon`, updates PayMongo plan amount |
+| `updateAddon` | Changes add-on quantity (increase/decrease), validates usage before decrease |
+| `cancelAddon` | Validates current usage fits within reduced limits, deactivates add-on on next billing cycle |
 
-### 2.15 PayMongo Webhook Handling
+### 2.16 PayMongo Webhook Handling
 
 Webhooks are received on the **main domain**, not tenant subdomains.
 
@@ -859,7 +1110,7 @@ Route::post('/paymongo/webhook', [PayMongoWebhookController::class, 'handle'])
 // - subscription.invoice.payment_failed → Notify admins
 ```
 
-### 2.16 Tenant Registration Changes
+### 2.17 Tenant Registration Changes
 
 Modify `TenantRegistrationController::store()` to assign a trial:
 
@@ -876,7 +1127,7 @@ $tenant->update([
 app(PayMongoCustomerService::class)->createOrGet($tenant);
 ```
 
-### 2.17 Upgrade/Downgrade Flow
+### 2.18 Upgrade/Downgrade Flow
 
 #### Upgrade
 
@@ -900,7 +1151,7 @@ app(PayMongoCustomerService::class)->createOrGet($tenant);
 5. Downgraded modules remain accessible until current billing period ends
 6. At period end, webhook triggers plan change and modules become restricted
 
-### 2.18 Employee Count Synchronization
+### 2.19 Employee Count Synchronization
 
 ```php
 // app/Jobs/UpdateBillingQuantity.php (ShouldQueue)
@@ -926,7 +1177,9 @@ class UpdateBillingQuantity implements ShouldQueue
 
 **Safety net:** Nightly scheduled command `SyncBillingQuantities` iterates all tenants with active subscriptions and dispatches `UpdateBillingQuantity`.
 
-### 2.19 Limit Enforcement
+### 2.20 Limit Enforcement
+
+All limit checks use `effectiveLimit()` which includes add-on capacity. When a limit is reached, the error message offers both upgrading and purchasing add-ons as options.
 
 #### Employee Limit
 
@@ -937,7 +1190,8 @@ $gate = app(FeatureGateService::class);
 
 if (! $gate->isWithinEmployeeLimit()) {
     return back()->withErrors([
-        'limit' => "You've reached your plan's employee limit. Please upgrade your plan."
+        'limit' => "You've reached your employee limit ({$gate->getEffectiveLimit('max_employees')}). "
+            . "You can purchase additional employee slots or upgrade your plan."
     ]);
 }
 ```
@@ -961,12 +1215,13 @@ In biometric device registration/creation:
 ```php
 if (! $gate->isWithinDeviceLimit()) {
     return back()->withErrors([
-        'limit' => "You've reached your plan's biometric device limit. Please upgrade your plan."
+        'limit' => "You've reached your biometric device limit ({$gate->getEffectiveLimit('max_biometric_devices')}). "
+            . "You can purchase additional device slots or upgrade your plan."
     ]);
 }
 ```
 
-### 2.20 Trial Expiration Handling
+### 2.21 Trial Expiration Handling
 
 ```php
 // app/Console/Commands/CheckExpiredTrials.php
@@ -975,7 +1230,7 @@ if (! $gate->isWithinDeviceLimit()) {
 // Notifies all admin users via TrialExpiredNotification
 ```
 
-### 2.21 Notifications
+### 2.22 Notifications
 
 | Notification | Trigger | Recipients |
 |-------------|---------|------------|
@@ -983,7 +1238,7 @@ if (! $gate->isWithinDeviceLimit()) {
 | `PaymentFailedNotification` | PayMongo invoice payment fails | Tenant admin users |
 | `SubscriptionCancelledNotification` | Subscription cancelled | Tenant admin users |
 
-### 2.22 Plan Seeder
+### 2.23 Plan Seeder
 
 ```php
 // database/seeders/PlanSeeder.php
@@ -1005,7 +1260,7 @@ if (! $gate->isWithinDeviceLimit()) {
 - [ ] Create `config/billing.php` and `config/paymongo.php`
 - [ ] Create platform migration for `plans`, `plan_prices`, `plan_modules`, `subscriptions`
 - [ ] Create migration to add billing columns to `tenants` table
-- [ ] Create `Plan`, `PlanPrice`, `PlanModule`, `Subscription` models
+- [ ] Create `Plan`, `PlanPrice`, `PlanModule`, `Subscription`, `TenantAddon` models
 - [ ] Add plan/subscription relationships and trial methods to `Tenant` model
 - [ ] Create `PlanSeeder`
 - [ ] Create model factories (`PlanFactory`, `SubscriptionFactory`)
@@ -1033,7 +1288,7 @@ if (! $gate->isWithinDeviceLimit()) {
 ### Phase 4: Billing UI & Routes (Week 4–5)
 
 - [ ] Create `BillingController` with Inertia pages
-- [ ] Create billing Inertia pages: Index, Plans, Upgrade, Success
+- [ ] Create billing Inertia pages: Index, Plans, Upgrade, Addons, Success
 - [ ] Create `PayMongoWebhookController`
 - [ ] Add billing routes (`routes/tenant/web-billing.php`)
 - [ ] Add webhook route (`routes/platform.php`)
@@ -1049,6 +1304,7 @@ if (! $gate->isWithinDeviceLimit()) {
 - [ ] Add employee limit check to `EmployeeController::store()`
 - [ ] Add user limit check to invitation/user creation flows
 - [ ] Add device limit check to biometric device creation
+- [ ] Integrate add-on costs into `UpdateBillingQuantity` PayMongo plan amount calculation
 - [ ] Create notification classes (TrialExpired, PaymentFailed, SubscriptionCancelled)
 
 ### Phase 6: Platform Admin Dashboard (Week 6–7)
@@ -1060,14 +1316,16 @@ if (! $gate->isWithinDeviceLimit()) {
 - [ ] Create `Admin/Tenants/Show.vue` with subscription actions
 - [ ] Add `/admin/*` routes to `routes/platform.php`
 - [ ] Implement extend trial, assign plan, cancel subscription actions
+- [ ] Create custom plan CRUD (Create, Edit pages + controller actions)
 - [ ] Implement impersonation redirect (secure token pattern)
 
 ### Phase 7: Testing (Week 7–8)
 
-- [ ] Feature tests for `FeatureGateService` (module access, limits)
+- [ ] Feature tests for `FeatureGateService` (module access, limits, effective limits with add-ons)
 - [ ] Feature tests for `EnsureModuleAccess` middleware
 - [ ] Feature tests for `EnsureActiveSubscription` middleware
-- [ ] Feature tests for `BillingController`
+- [ ] Feature tests for `BillingController` (including add-on purchase, update, cancel)
+- [ ] Feature tests for `TenantAddon` (effective limits, addon cost calculation, validation on removal)
 - [ ] Feature tests for webhook handling
 - [ ] Feature tests for employee count sync
 - [ ] Feature tests for trial status and expiration
@@ -1080,12 +1338,14 @@ if (! $gate->isWithinDeviceLimit()) {
 
 | File | Purpose |
 |------|---------|
+| `app/Enums/AddonType.php` | Add-on type identifiers (employee_slots, biometric_devices) |
 | `app/Enums/Module.php` | 21 module identifiers |
 | `app/Enums/SubscriptionStatus.php` | PayMongo subscription statuses |
 | `app/Models/Plan.php` | Subscription plan model |
 | `app/Models/PlanPrice.php` | Plan price model |
 | `app/Models/PlanModule.php` | Plan-to-module pivot |
 | `app/Models/Subscription.php` | Local subscription record |
+| `app/Models/TenantAddon.php` | Tenant add-on slots model |
 | `app/Services/FeatureGateService.php` | Centralized module/limit checks |
 | `app/Services/Billing/PayMongoService.php` | Main billing facade |
 | `app/Services/Billing/PayMongoCustomerService.php` | Customer CRUD |
@@ -1105,7 +1365,8 @@ if (! $gate->isWithinDeviceLimit()) {
 | `app/Notifications/SubscriptionCancelledNotification.php` | Cancellation notice |
 | `config/billing.php` | Billing configuration |
 | `config/paymongo.php` | PayMongo credentials |
-| `database/migrations/xxxx_create_billing_tables.php` | All billing schema |
+| `database/migrations/xxxx_create_billing_tables.php` | All billing schema (incl. tenant_addons) |
+| `database/factories/TenantAddonFactory.php` | TenantAddon test factory |
 | `database/seeders/PlanSeeder.php` | Seed default plans with modules |
 | `database/factories/PlanFactory.php` | Plan test factory |
 | `database/factories/SubscriptionFactory.php` | Subscription test factory |
@@ -1113,12 +1374,15 @@ if (! $gate->isWithinDeviceLimit()) {
 | `resources/js/pages/Billing/Index.vue` | Billing dashboard page |
 | `resources/js/pages/Billing/Plans.vue` | Plan comparison page |
 | `resources/js/pages/Billing/Upgrade.vue` | Upgrade prompt page |
+| `resources/js/pages/Billing/Addons.vue` | Add-ons management page |
 | `resources/js/pages/Billing/Success.vue` | Post-checkout confirmation |
 | `routes/tenant/web-billing.php` | Billing routes |
 | `app/Http/Controllers/PlatformAdminController.php` | Platform admin dashboard + tenant management |
 | `resources/js/pages/Admin/Dashboard.vue` | Platform overview stats |
 | `resources/js/pages/Admin/Tenants/Index.vue` | Searchable tenant list |
 | `resources/js/pages/Admin/Tenants/Show.vue` | Tenant detail + subscription actions |
+| `resources/js/pages/Admin/Plans/Create.vue` | Custom plan creation form |
+| `resources/js/pages/Admin/Plans/Edit.vue` | Custom plan edit form |
 | `resources/js/layouts/admin/Layout.vue` | Admin sidebar layout |
 
 ## Part 5: Files to Modify
@@ -1183,6 +1447,16 @@ Route::prefix('admin')
             ->name('admin.plans.index');
         Route::post('/plans/{plan}/toggle', [PlatformAdminController::class, 'togglePlan'])
             ->name('admin.plans.toggle');
+
+        // Custom plan management
+        Route::get('/plans/custom/create', [PlatformAdminController::class, 'createCustomPlan'])
+            ->name('admin.plans.custom.create');
+        Route::post('/plans/custom', [PlatformAdminController::class, 'storeCustomPlan'])
+            ->name('admin.plans.custom.store');
+        Route::get('/plans/custom/{plan}/edit', [PlatformAdminController::class, 'editCustomPlan'])
+            ->name('admin.plans.custom.edit');
+        Route::put('/plans/custom/{plan}', [PlatformAdminController::class, 'updateCustomPlan'])
+            ->name('admin.plans.custom.update');
     });
 ```
 
@@ -1248,6 +1522,38 @@ class PlatformAdminController extends Controller
     {
         // Calls PayMongoSubscriptionService::cancel() if active subscription exists
         // Updates local subscription status
+    }
+
+    // Create custom plan form
+    public function createCustomPlan(): Response
+    {
+        // Renders form with: plan name, module picker (checkboxes for all 21 modules),
+        //   per-employee rate, limits (employees, users, devices, storage),
+        //   optional tenant assignment, billing method, contract term
+    }
+
+    // Store custom plan
+    public function storeCustomPlan(Request $request): RedirectResponse
+    {
+        // Validates all fields, creates Plan with is_custom = true
+        // Creates PlanPrice records for selected billing intervals
+        // Creates PlanModule records for selected modules
+        // Optionally assigns tenant_id if plan is exclusive to one tenant
+        // If tenant specified, can auto-assign via tenant.plan_id
+    }
+
+    // Edit custom plan
+    public function editCustomPlan(Plan $plan): Response
+    {
+        // Only editable if plan.is_custom = true
+        // Shows current modules, limits, pricing for editing
+    }
+
+    // Update custom plan
+    public function updateCustomPlan(Request $request, Plan $plan): RedirectResponse
+    {
+        // Validates changes, updates plan, modules, prices
+        // If tenant is actively using this plan, recalculates PayMongo plan amount
     }
 }
 ```
@@ -1366,32 +1672,87 @@ A browser-based clock-in/clock-out terminal that provides a software-only altern
 A dedicated full-screen web page designed to run on a shared tablet or computer at an office entrance.
 
 - **URL:** `https://{tenant}.kasamahr.com/kiosk` (or a unique kiosk token URL)
-- **Authentication:** Kiosk session authenticated by an admin, individual employees identify via PIN or employee code
+- **Authentication:** Kiosk session authenticated by an admin, individual employees identify via a dedicated **Kiosk PIN**
 - **Flow:**
-  1. Employee enters their PIN / employee code on the kiosk screen
-  2. System identifies the employee and shows their name + photo for confirmation
+  1. Employee enters their 4–6 digit Kiosk PIN on the kiosk screen
+  2. System identifies the employee and shows their name, photo, and employee code for confirmation
   3. Employee taps "Clock In" or "Clock Out"
   4. System creates an `AttendanceLog` record with `source = 'kiosk'`
   5. Confirmation screen shown briefly, then returns to the PIN entry screen
+
+#### Kiosk PIN
+
+A dedicated numeric PIN used exclusively for kiosk identification, separate from the employee's login credentials.
+
+- **Auto-generated:** A random 4–6 digit PIN is generated when the kiosk feature is enabled for a tenant, or when a new employee is created
+- **Stored securely:** Hashed in the database (like a password) using `Hash::make()`
+- **Shown once:** Displayed to the employee via their Self-Service dashboard under "My DTR → Kiosk PIN", or provided by HR during onboarding
+- **Resettable:** By the employee themselves (via Self-Service) or by an HR admin
+- **Unique per tenant:** Validated with a unique constraint scoped to the tenant database
+
+```php
+// employees table (tenant DB migration)
+$table->string('kiosk_pin')->nullable();          // hashed PIN
+$table->timestamp('kiosk_pin_changed_at')->nullable();
+```
+
+**Why not use employee code?** Employee codes are often sequential (EMP-0001, EMP-0002) and easy to guess. A random PIN prevents colleagues from clocking in for each other. Combined with the photo confirmation step, this provides reasonable identity verification for a shared terminal.
 
 #### Self-Service Clock-In (Optional Enhancement)
 
 Allow employees to clock in/out from their own device via the Employee Self-Service dashboard.
 
 - Available under "My DTR" section
-- Optionally restricted by IP whitelist (office network only) or geolocation
 - Creates `AttendanceLog` with `source = 'self_service'`
+- Location verification is configurable per work location (see below)
+
+#### Location Verification (Self-Service)
+
+Self-service clock-in can be restricted by location to prevent remote abuse. Admins configure which checks apply per work location.
+
+| Method | How It Works | Best For | Spoofing Risk |
+|--------|-------------|----------|:-------------:|
+| IP Whitelist | Check if employee's IP matches approved office network IPs | Office workers on static IP networks | Low |
+| Geofencing (GPS) | Browser Geolocation API returns lat/lng; backend calculates Haversine distance to office coordinates and rejects if beyond allowed radius | Field/mobile workers, satellite offices | Medium |
+| Both required | Must pass IP check AND GPS check | High-security environments | Low |
+| Any (default) | Pass either IP or GPS check | Flexible office policies | Medium |
+| None | No location restriction | Fully remote teams | N/A |
+
+**Geofencing implementation:**
+- Frontend uses `navigator.geolocation.getCurrentPosition()` with `enableHighAccuracy: true`
+- Coordinates and accuracy are submitted with the clock-in request
+- Backend rejects if `accuracy > 200m` (unreliable position data)
+- Backend calculates Haversine distance between employee coordinates and work location
+- Rejects if distance exceeds the configured radius (e.g., 150m)
+
+**GPS spoofing mitigations:**
+- Reject low-accuracy readings (`coords.accuracy` reported as 0 or >200m)
+- Combine GPS with IP whitelist (`location_check = 'both'`)
+- Photo capture on clock-in for manual audit
+- Anomaly detection: flag employees clocking in from locations far apart within short time windows
+
+```php
+// work_locations table (add columns)
+$table->decimal('latitude', 10, 7)->nullable();    // office GPS latitude
+$table->decimal('longitude', 10, 7)->nullable();   // office GPS longitude
+$table->integer('geofence_radius')->nullable();     // allowed radius in meters (e.g., 150)
+$table->json('ip_whitelist')->nullable();           // ["203.0.113.50", "203.0.113.51"]
+$table->string('location_check')->default('any');   // "ip", "gps", "both", "any", "none"
+```
 
 ### Anti-Fraud Measures
 
 | Measure | Description |
 |---------|-------------|
-| IP Whitelisting | Restrict kiosk clock-in to specific office IP addresses |
-| Geofencing | Require GPS location within a radius of the office (for self-service) |
+| Kiosk PIN | Dedicated random numeric PIN per employee, hashed in DB — not guessable like sequential employee codes |
+| IP Whitelisting | Restrict kiosk and self-service clock-in to specific office IP addresses |
+| Geofencing (GPS) | Require GPS location within a radius of the office; reject if `accuracy > 200m` |
+| GPS Accuracy Check | Reject geolocation readings with poor accuracy (spoofed locations often report 0 or extreme values) |
 | Photo Capture | Take webcam photo on clock-in for verification |
 | Cooldown Period | Prevent duplicate clock-ins within a configurable window (e.g., 5 minutes) |
-| Admin Audit | All kiosk entries flagged with `source` for easy audit filtering |
+| Admin Audit | All kiosk/self-service entries flagged with `source` for easy audit filtering |
 | Device Binding | Bind kiosk sessions to specific device fingerprints |
+| Anomaly Detection | Flag employees clocking in from locations far apart within short time windows |
 
 ### Technical Changes
 
@@ -1406,9 +1767,18 @@ Schema::table('attendance_logs', function (Blueprint $table) {
 });
 ```
 
+Add `kiosk_pin` to `employees` table:
+
+```php
+Schema::table('employees', function (Blueprint $table) {
+    $table->string('kiosk_pin')->nullable();
+    $table->timestamp('kiosk_pin_changed_at')->nullable();
+});
+```
+
 Add `kiosks` table for registered kiosk terminals:
 
-```
+```php
 Schema::create('kiosks', function (Blueprint $table) {
     $table->id();
     $table->string('name');                    // "Main Entrance", "2nd Floor"
@@ -1419,6 +1789,18 @@ Schema::create('kiosks', function (Blueprint $table) {
     $table->boolean('is_active')->default(true);
     $table->timestamp('last_activity_at')->nullable();
     $table->timestamps();
+});
+```
+
+Add geofencing columns to `work_locations` table:
+
+```php
+Schema::table('work_locations', function (Blueprint $table) {
+    $table->decimal('latitude', 10, 7)->nullable();
+    $table->decimal('longitude', 10, 7)->nullable();
+    $table->integer('geofence_radius')->nullable();     // meters
+    $table->json('ip_whitelist')->nullable();
+    $table->string('location_check')->default('any');   // "ip", "gps", "both", "any", "none"
 });
 ```
 
@@ -1433,8 +1815,10 @@ Schema::create('kiosks', function (Blueprint $table) {
 | `resources/js/pages/Kiosk/Terminal.vue` | Full-screen kiosk clock-in UI |
 | `resources/js/pages/Kiosk/Index.vue` | Admin kiosk management page |
 | `resources/js/pages/Kiosk/Create.vue` | Admin kiosk registration form |
+| `database/migrations/tenant/xxxx_add_kiosk_pin_to_employees.php` | Add kiosk_pin and kiosk_pin_changed_at columns |
 | `database/migrations/tenant/xxxx_add_source_to_attendance_logs.php` | Add source column |
 | `database/migrations/tenant/xxxx_create_kiosks_table.php` | Kiosks table |
+| `database/migrations/tenant/xxxx_add_geofence_to_work_locations.php` | Add latitude, longitude, geofence_radius, ip_whitelist, location_check |
 
 #### Modified Files
 
@@ -1442,8 +1826,10 @@ Schema::create('kiosks', function (Blueprint $table) {
 |------|--------|
 | `app/Services/Dtr/DtrCalculationService.php` | Handle kiosk and self-service attendance log entries (same punch logic, different source) |
 | `app/Models/AttendanceLog.php` | Add `source` attribute, scope for filtering by source |
+| `app/Models/Employee.php` | Add `kiosk_pin` (hidden), PIN verification method, PIN generation |
+| `app/Models/WorkLocation.php` | Add geofence attributes, `isWithinGeofence(lat, lng)` method |
 | `resources/js/components/TenantSidebar.vue` | Add kiosk management link under Time & Attendance |
-| `resources/js/pages/SelfService/MyDtr.vue` | Add clock-in/out button (if self-service clock-in enabled) |
+| `resources/js/pages/SelfService/MyDtr.vue` | Add clock-in/out button (if self-service clock-in enabled), Kiosk PIN display/reset |
 
 #### Kiosk Limits per Tier
 

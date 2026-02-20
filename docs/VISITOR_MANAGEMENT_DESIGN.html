@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KasamaHR &mdash; Visitor Management Module Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300..700;1,9..40,300..700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1a2e;
+    --ink-soft: #3d3d5c;
+    --ink-muted: #6b6b8a;
+    --surface: #fafaf8;
+    --surface-warm: #f5f3ee;
+    --surface-code: #f0eee8;
+    --border: #e2dfd6;
+    --border-strong: #c9c5b8;
+    --accent: #c17f24;
+    --accent-soft: #f0dbb8;
+    --accent-bg: #fdf6ea;
+    --visitor: #0e7490;
+    --visitor-bg: #ecfeff;
+    --visitor-border: #a5f3fc;
+    --starter: #2d6a4f;
+    --starter-bg: #f0f7f4;
+    --biometric: #7c3aed;
+    --biometric-bg: #f5f0ff;
+    --biometric-border: #c7b3f4;
+    --kiosk: #1d4ed8;
+    --kiosk-bg: #eff4ff;
+    --kiosk-border: #b3cbf7;
+    --manual: #b45309;
+    --manual-bg: #fffbeb;
+    --manual-border: #fbbf24;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --sans: 'DM Sans', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', 'SF Mono', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; font-size: 16px; }
+
+  body {
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--surface);
+    line-height: 1.7;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---- NAV ---- */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 260px;
+    height: 100vh;
+    background: var(--ink);
+    color: #c8c6be;
+    padding: 32px 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  nav .brand {
+    padding: 0 28px 28px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    margin-bottom: 16px;
+  }
+
+  nav .brand h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.35rem;
+    color: #fff;
+    letter-spacing: -0.01em;
+  }
+
+  nav .brand span {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--accent);
+    margin-top: 4px;
+    font-weight: 500;
+  }
+
+  nav .nav-group {
+    padding: 8px 20px;
+  }
+
+  nav .nav-group-label {
+    font-size: 0.625rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255,255,255,0.3);
+    padding: 12px 8px 6px;
+    font-weight: 500;
+  }
+
+  nav a {
+    display: block;
+    padding: 7px 8px;
+    color: #a8a6a0;
+    text-decoration: none;
+    font-size: 0.82rem;
+    border-radius: 6px;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+
+  nav a:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.06);
+  }
+
+  nav .nav-footer {
+    margin-top: auto;
+    padding: 20px 28px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+
+  nav .nav-footer .badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: rgba(14,116,144,0.15);
+    color: var(--visitor);
+    font-weight: 500;
+  }
+
+  /* ---- MAIN ---- */
+  main {
+    margin-left: 260px;
+    max-width: 920px;
+    padding: 60px 64px 120px;
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    margin-bottom: 64px;
+    padding-bottom: 48px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero .overline {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--visitor);
+    font-weight: 500;
+    margin-bottom: 12px;
+  }
+
+  .hero h1 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 2.8rem;
+    line-height: 1.15;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-bottom: 20px;
+  }
+
+  .hero .lead {
+    font-size: 1.05rem;
+    color: var(--ink-soft);
+    max-width: 620px;
+    line-height: 1.75;
+  }
+
+  .hero .state-cards {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 0;
+    margin-top: 32px;
+    align-items: center;
+  }
+
+  .hero .state-card {
+    padding: 20px 24px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: #fff;
+  }
+
+  .hero .state-card.target {
+    border-color: var(--visitor-border);
+    background: var(--visitor-bg);
+  }
+
+  .hero .state-card .label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--ink-muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  .hero .state-card.target .label { color: var(--visitor); }
+
+  .hero .state-card p {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .hero .arrow {
+    text-align: center;
+    font-size: 1.3rem;
+    color: var(--border-strong);
+  }
+
+  /* ---- TYPOGRAPHY ---- */
+  h2 {
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: 1.9rem;
+    letter-spacing: -0.015em;
+    margin: 72px 0 12px;
+    padding-top: 20px;
+    line-height: 1.2;
+  }
+
+  h2 .part-num {
+    display: block;
+    font-family: var(--sans);
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--visitor);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  h3 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 40px 0 12px;
+    color: var(--ink);
+  }
+
+  h4 {
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin: 28px 0 8px;
+    color: var(--ink-soft);
+  }
+
+  p { margin-bottom: 14px; font-size: 0.92rem; color: var(--ink-soft); }
+
+  strong { color: var(--ink); font-weight: 600; }
+
+  /* ---- TABLES ---- */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 16px 0 28px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.84rem;
+  }
+
+  thead th {
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--ink-muted);
+    font-weight: 500;
+    background: var(--surface-warm);
+    border-bottom: 1px solid var(--border);
+  }
+
+  thead th:first-child { border-radius: 9px 0 0 0; }
+  thead th:last-child { border-radius: 0 9px 0 0; }
+
+  tbody td {
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    color: var(--ink-soft);
+    vertical-align: top;
+  }
+
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: var(--surface-warm); }
+
+  td.col-name {
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ---- CODE ---- */
+  pre {
+    background: var(--surface-code);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0 28px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.65;
+    color: var(--ink-soft);
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.82em;
+    background: var(--surface-code);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: var(--ink);
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    color: inherit;
+  }
+
+  /* ---- CALLOUT ---- */
+  .callout {
+    padding: 20px 24px;
+    border-radius: 10px;
+    margin: 20px 0 28px;
+    font-size: 0.88rem;
+    line-height: 1.65;
+  }
+
+  .callout.info {
+    background: var(--visitor-bg);
+    border: 1px solid var(--visitor-border);
+    color: var(--ink-soft);
+  }
+
+  .callout.info strong { color: var(--visitor); }
+
+  .callout.warn {
+    background: var(--manual-bg);
+    border: 1px solid var(--manual-border);
+    color: var(--ink-soft);
+  }
+
+  .callout.warn strong { color: var(--manual); }
+
+  /* ---- CHECK-IN METHOD CARDS ---- */
+  .method-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin: 24px 0 40px;
+  }
+
+  .method-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 20px;
+    background: #fff;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .method-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  }
+
+  .method-card.biometric { border-color: var(--biometric-border); }
+  .method-card.kiosk { border-color: var(--kiosk-border); }
+  .method-card.manual { border-color: var(--manual-border); }
+
+  .method-card .method-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .method-card.biometric .method-badge { background: var(--biometric-bg); color: var(--biometric); }
+  .method-card.kiosk .method-badge { background: var(--kiosk-bg); color: var(--kiosk); }
+  .method-card.manual .method-badge { background: var(--manual-bg); color: var(--manual); }
+
+  .method-card .method-name {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .method-card .method-desc {
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+
+  .method-card .method-req {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--ink-muted);
+    font-weight: 500;
+  }
+
+  /* ---- FLOW DIAGRAMS ---- */
+  .flow {
+    background: var(--surface-code);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px 28px;
+    margin: 16px 0 28px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.8;
+    color: var(--ink-soft);
+    white-space: pre-wrap;
+  }
+
+  .flow .step {
+    color: var(--visitor);
+    font-weight: 500;
+  }
+
+  .flow .arrow {
+    color: var(--border-strong);
+  }
+
+  /* ---- FILE LIST ---- */
+  .file-list {
+    background: var(--surface-code);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin: 16px 0 28px;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.9;
+    color: var(--ink-soft);
+  }
+
+  .file-list .file-group {
+    color: var(--ink-muted);
+    font-style: italic;
+    margin-top: 12px;
+    margin-bottom: 2px;
+  }
+
+  .file-list .file-group:first-child { margin-top: 0; }
+
+  /* ---- ENUM BADGES ---- */
+  .enum-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 24px;
+  }
+
+  .enum-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.76rem;
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: var(--surface-code);
+    border: 1px solid var(--border);
+    color: var(--ink-soft);
+  }
+
+  /* ---- STATUS BADGES ---- */
+  .status-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 12px 0 24px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+  }
+
+  .status-badge.pending-approval { background: #fef3c7; color: #92400e; }
+  .status-badge.approved { background: #dbeafe; color: #1d4ed8; }
+  .status-badge.pre-registered { background: #e0e7ff; color: #3730a3; }
+  .status-badge.checked-in { background: #d1fae5; color: #065f46; }
+  .status-badge.checked-out { background: #e5e7eb; color: #4b5563; }
+  .status-badge.rejected { background: #fee2e2; color: #991b1b; }
+  .status-badge.cancelled { background: #fce7f3; color: #9d174d; }
+  .status-badge.no-show { background: #f3f4f6; color: #6b7280; }
+
+  /* ---- REGISTRATION PATH CARDS ---- */
+  .reg-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin: 24px 0 40px;
+  }
+
+  .reg-card {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 20px;
+    background: #fff;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .reg-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+  }
+
+  .reg-card.visitor-init { border-color: var(--visitor-border); }
+  .reg-card.admin-init { border-color: var(--kiosk-border); }
+
+  .reg-card .reg-badge {
+    display: inline-block;
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .reg-card.visitor-init .reg-badge { background: var(--visitor-bg); color: var(--visitor); }
+  .reg-card.admin-init .reg-badge { background: var(--kiosk-bg); color: var(--kiosk); }
+
+  .reg-card .reg-name {
+    font-family: var(--serif);
+    font-size: 1.3rem;
+    font-weight: 400;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .reg-card .reg-desc {
+    font-size: 0.82rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+
+  .reg-card .reg-approval {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 500;
+  }
+
+  .reg-card.visitor-init .reg-approval { color: var(--manual); }
+  .reg-card.admin-init .reg-approval { color: var(--starter); }
+
+  /* ---- SECURITY TABLE ---- */
+  .security-table td:first-child {
+    font-weight: 500;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+
+  /* ---- PHASE CARDS ---- */
+  .phases {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    margin: 20px 0 28px;
+  }
+
+  .phase-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px 20px;
+    background: #fff;
+  }
+
+  .phase-card .phase-num {
+    font-size: 0.6rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--visitor);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  .phase-card .phase-title {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+
+  .phase-card .phase-desc {
+    font-size: 0.8rem;
+    color: var(--ink-muted);
+    line-height: 1.55;
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 1100px) {
+    nav { display: none; }
+    main { margin-left: 0; padding: 40px 28px 80px; }
+  }
+
+  @media (max-width: 700px) {
+    .hero h1 { font-size: 2rem; }
+    .hero .state-cards { grid-template-columns: 1fr; gap: 12px; }
+    .hero .arrow { transform: rotate(90deg); }
+    .method-cards { grid-template-columns: 1fr; }
+    .phases { grid-template-columns: 1fr; }
+    h2 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ SIDEBAR NAV ============ -->
+<nav>
+  <div class="brand">
+    <h2>KasamaHR</h2>
+    <span>Visitor Management Design</span>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Overview</div>
+    <a href="#scope">Scope &amp; User Stories</a>
+    <a href="#reg-paths">Registration Paths</a>
+    <a href="#checkin-methods">Check-in Methods</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Data &amp; Backend</div>
+    <a href="#data-model">Data Model</a>
+    <a href="#enums">Enums</a>
+    <a href="#architecture">Backend Architecture</a>
+    <a href="#api">API Endpoints</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Integrations</div>
+    <a href="#visitor-reg-flow">Visitor Registration Flow</a>
+    <a href="#admin-pre-reg-flow">Admin Pre-Registration Flow</a>
+    <a href="#fr-device">FR Device Flow</a>
+    <a href="#kiosk">Kiosk QR Flow</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Implementation</div>
+    <a href="#frontend">Frontend</a>
+    <a href="#files">Files to Create/Modify</a>
+    <a href="#security">Security</a>
+    <a href="#phases">Implementation Sequence</a>
+    <a href="#verification">Verification</a>
+  </div>
+
+  <div class="nav-footer">
+    <div class="badge">Starter Tier</div>
+  </div>
+</nav>
+
+<!-- ============ MAIN CONTENT ============ -->
+<main>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="overline">Module Design Document</div>
+    <h1>Visitor Management</h1>
+    <p class="lead">
+      Full visitor lifecycle management with dual registration paths (visitor self-registration + admin pre-registration), host approval workflow, automated check-in via FR devices and Kiosk QR codes, host notifications, and visitor logs with export. Available on all paid plans (Starter tier).
+    </p>
+
+    <div class="state-cards">
+      <div class="state-card">
+        <div class="label">Current State</div>
+        <p>No visitor tracking. Visitors are managed informally outside the system.</p>
+      </div>
+      <div class="arrow">&rarr;</div>
+      <div class="state-card target">
+        <div class="label">Target State</div>
+        <p>Public registration page with host approval, admin pre-registration, QR codes, FR device recognition, Kiosk check-in, host notifications, and visitor log with export.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ PART 1: SCOPE ============ -->
+  <h2 id="scope"><span class="part-num">Part 1</span>Scope &amp; User Stories</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>As a&hellip;</th>
+          <th>I want to&hellip;</th>
+          <th>So that&hellip;</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td class="col-name">Visitor</td>
+          <td>Visit a public registration page to register my upcoming visit</td>
+          <td>I can pre-register without needing to contact the company directly</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td class="col-name">System</td>
+          <td>Notify the front desk admin and host employee about a new registration</td>
+          <td>They can review and approve or reject the visit request</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td class="col-name">Host employee</td>
+          <td>Approve or reject a visitor registration request</td>
+          <td>Only authorized visitors are granted access</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td class="col-name">System</td>
+          <td>On approval: create the visit, sync photo to FR device, generate QR, email visitor</td>
+          <td>The visitor receives everything they need for a smooth check-in</td>
+        </tr>
+        <tr>
+          <td>5</td>
+          <td class="col-name">Front desk admin</td>
+          <td>Pre-register visitors with optional photo upload (admin-initiated)</td>
+          <td>I can register expected visitors on behalf of the company</td>
+        </tr>
+        <tr>
+          <td>6</td>
+          <td class="col-name">Visitor</td>
+          <td>Check in via FR device recognition</td>
+          <td>I don&rsquo;t need to stop at the front desk</td>
+        </tr>
+        <tr>
+          <td>7</td>
+          <td class="col-name">Visitor</td>
+          <td>Check in by scanning a QR code at a Kiosk</td>
+          <td>I can quickly identify myself without a PIN</td>
+        </tr>
+        <tr>
+          <td>8</td>
+          <td class="col-name">Front desk admin</td>
+          <td>Manually check in a visitor</td>
+          <td>Walk-in visitors without pre-registration can be recorded</td>
+        </tr>
+        <tr>
+          <td>9</td>
+          <td class="col-name">Host employee</td>
+          <td>Receive arrival/departure notifications</td>
+          <td>I know when my visitor has arrived or left</td>
+        </tr>
+        <tr>
+          <td>10</td>
+          <td class="col-name">HR / Admin</td>
+          <td>Search, filter, and export the visitor log</td>
+          <td>I can audit visitor traffic and generate reports</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- REGISTRATION PATHS -->
+  <h3 id="reg-paths">Registration Paths</h3>
+
+  <div class="reg-cards">
+    <div class="reg-card visitor-init">
+      <div class="reg-badge">Primary</div>
+      <div class="reg-name">Visitor Self-Registration</div>
+      <div class="reg-desc">Visitor visits a public registration page, fills in their details, selects a host employee, and submits. Admin and host are notified. Host approves &rarr; QR code and confirmation sent to visitor.</div>
+      <div class="reg-approval">Approval required</div>
+    </div>
+    <div class="reg-card admin-init">
+      <div class="reg-badge">Secondary</div>
+      <div class="reg-name">Admin Pre-Registration</div>
+      <div class="reg-desc">Front desk admin creates the visit on behalf of an expected visitor. QR code and confirmation are sent to the visitor immediately &mdash; no approval step needed.</div>
+      <div class="reg-approval">No approval needed</div>
+    </div>
+  </div>
+
+  <!-- CHECK-IN METHODS -->
+  <h3 id="checkin-methods">Check-in Methods</h3>
+
+  <div class="method-cards">
+    <div class="method-card biometric">
+      <div class="method-badge">FR Device</div>
+      <div class="method-name">Biometric</div>
+      <div class="method-desc">Visitor photo synced to FR devices via MQTT. Device recognizes visitor on arrival &mdash; fully automated.</div>
+      <div class="method-req">Requires: Approved visit with photo</div>
+    </div>
+    <div class="method-card kiosk">
+      <div class="method-badge">Kiosk</div>
+      <div class="method-name">QR Scan</div>
+      <div class="method-desc">Visitor scans QR code from confirmation email at a Kiosk terminal. Quick and contactless.</div>
+      <div class="method-req">Requires: Approved visit</div>
+    </div>
+    <div class="method-card manual">
+      <div class="method-badge">Front Desk</div>
+      <div class="method-name">Manual</div>
+      <div class="method-desc">Front desk admin searches for visitor or creates a walk-in entry. No pre-registration needed.</div>
+      <div class="method-req">No approved visit required</div>
+    </div>
+  </div>
+
+  <!-- ============ PART 2: DATA MODEL ============ -->
+  <h2 id="data-model"><span class="part-num">Part 2</span>Data Model</h2>
+
+  <h3>2.1 <code>visitors</code> table (tenant DB)</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">id</td><td>bigIncrements</td><td>PK</td></tr>
+        <tr><td class="col-name">first_name</td><td>string(255)</td><td>Required</td></tr>
+        <tr><td class="col-name">last_name</td><td>string(255)</td><td>Required</td></tr>
+        <tr><td class="col-name">email</td><td>string(255)</td><td>Nullable</td></tr>
+        <tr><td class="col-name">phone</td><td>string(50)</td><td>Nullable</td></tr>
+        <tr><td class="col-name">company</td><td>string(255)</td><td>Nullable</td></tr>
+        <tr><td class="col-name">id_type</td><td>string(100)</td><td>Nullable (drivers_license, passport, etc.)</td></tr>
+        <tr><td class="col-name">id_number</td><td>string(255)</td><td>Nullable</td></tr>
+        <tr><td class="col-name">photo_path</td><td>string(500)</td><td>Nullable, for FR sync</td></tr>
+        <tr><td class="col-name">notes</td><td>text</td><td>Nullable</td></tr>
+        <tr><td class="col-name">metadata</td><td>json</td><td>Nullable</td></tr>
+        <tr><td class="col-name">timestamps</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Indexes:</strong> <code>email</code>, composite <code>(last_name, first_name)</code></p>
+
+  <h3>2.2 <code>visitor_visits</code> table (tenant DB)</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">id</td><td>bigIncrements</td><td>PK</td></tr>
+        <tr><td class="col-name">visitor_id</td><td>foreignId</td><td>FK visitors, cascade delete</td></tr>
+        <tr><td class="col-name">work_location_id</td><td>foreignId</td><td>FK work_locations, cascade delete</td></tr>
+        <tr><td class="col-name">host_employee_id</td><td>foreignId</td><td>Nullable FK employees, null on delete</td></tr>
+        <tr><td class="col-name">purpose</td><td>string(500)</td><td>Required</td></tr>
+        <tr><td class="col-name">status</td><td>string(50)</td><td>Cast: <code>VisitStatus</code> enum</td></tr>
+        <tr><td class="col-name">registration_source</td><td>string(50)</td><td><code>'visitor'</code> or <code>'admin'</code> &mdash; who initiated</td></tr>
+        <tr><td class="col-name">expected_at</td><td>datetime</td><td>Nullable</td></tr>
+        <tr><td class="col-name">approved_at</td><td>datetime</td><td>Nullable, set when host/admin approves</td></tr>
+        <tr><td class="col-name">approved_by</td><td>foreignId</td><td>Nullable FK users, null on delete</td></tr>
+        <tr><td class="col-name">rejected_at</td><td>datetime</td><td>Nullable, set when host/admin rejects</td></tr>
+        <tr><td class="col-name">rejection_reason</td><td>string(500)</td><td>Nullable</td></tr>
+        <tr><td class="col-name">checked_in_at</td><td>datetime</td><td>Nullable</td></tr>
+        <tr><td class="col-name">checked_out_at</td><td>datetime</td><td>Nullable</td></tr>
+        <tr><td class="col-name">check_in_method</td><td>string(50)</td><td>Nullable, cast: <code>CheckInMethod</code> enum</td></tr>
+        <tr><td class="col-name">checked_in_by</td><td>foreignId</td><td>Nullable FK users, null on delete</td></tr>
+        <tr><td class="col-name">biometric_device_id</td><td>foreignId</td><td>Nullable FK biometric_devices, null on delete</td></tr>
+        <tr><td class="col-name">kiosk_id</td><td>foreignId</td><td>Nullable FK kiosks, null on delete</td></tr>
+        <tr><td class="col-name">qr_token</td><td>string(64)</td><td>Unique nullable, generated on approval</td></tr>
+        <tr><td class="col-name">registration_token</td><td>string(64)</td><td>Unique, for public registration page URL</td></tr>
+        <tr><td class="col-name">badge_number</td><td>string(50)</td><td>Nullable</td></tr>
+        <tr><td class="col-name">host_notified_at</td><td>datetime</td><td>Nullable</td></tr>
+        <tr><td class="col-name">notes</td><td>text</td><td>Nullable</td></tr>
+        <tr><td class="col-name">timestamps</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Indexes:</strong> <code>qr_token</code> (unique), <code>registration_token</code> (unique), <code>status</code>, <code>work_location_id</code>, <code>expected_at</code></p>
+
+  <h3>2.3 <code>visitor_device_syncs</code> table (tenant DB)</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">id</td><td>bigIncrements</td><td>PK</td></tr>
+        <tr><td class="col-name">visitor_id</td><td>foreignId</td><td>FK visitors, cascade delete</td></tr>
+        <tr><td class="col-name">biometric_device_id</td><td>foreignId</td><td>FK biometric_devices, cascade delete</td></tr>
+        <tr><td class="col-name">status</td><td>string(50)</td><td>pending / syncing / synced / failed</td></tr>
+        <tr><td class="col-name">last_synced_at</td><td>datetime</td><td>Nullable</td></tr>
+        <tr><td class="col-name">last_error</td><td>text</td><td>Nullable</td></tr>
+        <tr><td class="col-name">message_id</td><td>string(255)</td><td>Nullable, MQTT message ID</td></tr>
+        <tr><td class="col-name">timestamps</td><td></td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Unique constraint:</strong> <code>(visitor_id, biometric_device_id)</code></p>
+
+  <!-- ============ PART 3: ENUMS ============ -->
+  <h2 id="enums"><span class="part-num">Part 3</span>Enums</h2>
+
+  <h3>3.1 <code>VisitStatus</code></h3>
+  <p>Tracks the lifecycle of a visitor visit.</p>
+
+  <div class="status-badges">
+    <span class="status-badge pending-approval">PendingApproval</span>
+    <span class="status-badge approved">Approved</span>
+    <span class="status-badge pre-registered">PreRegistered</span>
+    <span class="status-badge checked-in">CheckedIn</span>
+    <span class="status-badge checked-out">CheckedOut</span>
+    <span class="status-badge rejected">Rejected</span>
+    <span class="status-badge cancelled">Cancelled</span>
+    <span class="status-badge no-show">NoShow</span>
+  </div>
+
+  <p><strong>Status transitions:</strong></p>
+  <pre><code>Visitor-initiated:  PendingApproval &rarr; Approved &rarr; CheckedIn &rarr; CheckedOut
+                    PendingApproval &rarr; Rejected
+Admin-initiated:    PreRegistered &rarr; CheckedIn &rarr; CheckedOut
+Either:             * &rarr; Cancelled
+                    Approved/PreRegistered &rarr; NoShow (scheduled cleanup)</code></pre>
+
+  <h3>3.2 <code>CheckInMethod</code></h3>
+  <p>Identifies how a visitor checked in.</p>
+
+  <div class="enum-list">
+    <span class="enum-badge">Biometric</span>
+    <span class="enum-badge">Kiosk</span>
+    <span class="enum-badge">Manual</span>
+  </div>
+
+  <h3>3.3 Module Enum Update</h3>
+  <p>Add <code>VisitorManagement = 'visitor_management'</code> to the Starter tier modules in <code>app/Enums/Module.php</code>.</p>
+
+  <div class="callout info">
+    <strong>Starter tier:</strong> Visitor Management is available on all paid plans, just like Time &amp; Attendance and Biometric Integration.
+  </div>
+
+  <!-- ============ PART 4: ARCHITECTURE ============ -->
+  <h2 id="architecture"><span class="part-num">Part 4</span>Backend Architecture</h2>
+
+  <h3>4.1 Models</h3>
+  <p>All models extend <code>TenantModel</code> (tenant database connection).</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Model</th><th>Relationships</th><th>Key Features</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-name">Visitor</td>
+          <td><code>visits()</code>, <code>deviceSyncs()</code></td>
+          <td><code>fullName</code> accessor, <code>scopeSearch()</code></td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorVisit</td>
+          <td><code>visitor()</code>, <code>workLocation()</code>, <code>hostEmployee()</code>, <code>checkedInBy()</code>, <code>biometricDevice()</code>, <code>kiosk()</code></td>
+          <td>Scopes: <code>active()</code>, <code>today()</code>, <code>atLocation()</code></td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorDeviceSync</td>
+          <td><code>visitor()</code>, <code>biometricDevice()</code></td>
+          <td>Status mutation: <code>markSyncing()</code>, <code>markSynced()</code>, <code>markFailed()</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>4.2 Controllers</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Controller</th><th>Type</th><th>Methods</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-name">VisitorController</td>
+          <td>Inertia (web)</td>
+          <td><code>index()</code>, <code>log()</code></td>
+        </tr>
+        <tr>
+          <td class="col-name">Api\VisitorController</td>
+          <td>API</td>
+          <td><code>index</code>, <code>store</code>, <code>show</code>, <code>update</code>, <code>destroy</code></td>
+        </tr>
+        <tr>
+          <td class="col-name">Api\VisitorVisitController</td>
+          <td>API</td>
+          <td><code>index</code>, <code>store</code>, <code>show</code>, <code>update</code>, <code>destroy</code>, <code>approve</code>, <code>reject</code>, <code>checkIn</code>, <code>checkOut</code>, <code>resendQrCode</code>, <code>export</code></td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorRegistrationController</td>
+          <td>Public</td>
+          <td><code>show</code> (registration form page), <code>store</code> (submit registration)</td>
+        </tr>
+        <tr>
+          <td class="col-name">KioskTerminalController <em>(modify)</em></td>
+          <td>Public</td>
+          <td>Add <code>visitorCheckIn</code>, <code>visitorCheckOut</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>4.3 Services</h3>
+
+  <h4>VisitorRegistrationService</h4>
+  <pre><code>// app/Services/Visitor/VisitorRegistrationService.php
+
+// Visitor-initiated: creates visit with PendingApproval, notifies admin + host
+registerFromPublicPage(array $visitorData, array $visitData): VisitorVisit
+
+// Admin-initiated: creates visit with PreRegistered, generates QR, emails visitor
+preRegister(Visitor $visitor, array $visitData, User $admin): VisitorVisit
+
+// Approve: generates QR, syncs FR (if photo), sends confirmation to visitor
+approve(VisitorVisit $visit, User $approver): VisitorVisit
+
+// Reject: notifies visitor with reason
+reject(VisitorVisit $visit, User $rejector, ?string $reason): VisitorVisit
+
+generateQrToken(): string           // 64-char cryptographically random
+generateRegistrationToken(): string  // 64-char for public page URL
+resendConfirmationEmail(VisitorVisit $visit): void</code></pre>
+
+  <h4>VisitorCheckInService</h4>
+  <pre><code>// app/Services/Visitor/VisitorCheckInService.php
+
+checkInManual(VisitorVisit $visit, User $user, ?string $badgeNumber): VisitorVisit
+checkInViaKiosk(VisitorVisit $visit, Kiosk $kiosk): VisitorVisit
+checkInViaBiometric(VisitorVisit $visit, BiometricDevice $device): VisitorVisit
+checkOut(VisitorVisit $visit, ?User $user): VisitorVisit</code></pre>
+
+  <h4>VisitorDeviceSyncService</h4>
+  <pre><code>// app/Services/Visitor/VisitorDeviceSyncService.php
+
+syncVisitorToDevice(Visitor $visitor, BiometricDevice $device): VisitorDeviceSync
+syncVisitorToLocationDevices(Visitor $visitor, WorkLocation $location): Collection
+unsyncVisitorFromDevice(Visitor $visitor, BiometricDevice $device): void</code></pre>
+
+  <h3>4.4 Notifications &amp; Jobs</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Name</th><th>Type</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-name">VisitorRegistrationRequested</td>
+          <td>Notification (Mail + DB)</td>
+          <td>Visitor submits public registration &rarr; notifies front desk admin + host employee</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorApproved</td>
+          <td>Notification (Mail)</td>
+          <td>Host/admin approves visit &rarr; sends QR code + visit details to visitor</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorRejected</td>
+          <td>Notification (Mail)</td>
+          <td>Host/admin rejects visit &rarr; sends rejection reason to visitor</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorPreRegistered</td>
+          <td>Notification (Mail)</td>
+          <td>Admin creates visit (admin-initiated) &rarr; sends QR code + details to visitor</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorArrived</td>
+          <td>Notification (Mail + DB)</td>
+          <td>Visitor checks in &rarr; notifies host employee</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorCheckedOut</td>
+          <td>Notification (Database)</td>
+          <td>Visitor checks out &rarr; notifies host employee</td>
+        </tr>
+        <tr>
+          <td class="col-name">SyncVisitorToDeviceJob</td>
+          <td>Queued Job</td>
+          <td>MQTT sync of visitor photo to FR device via <code>editPerson</code></td>
+        </tr>
+        <tr>
+          <td class="col-name">CleanupVisitorDeviceSyncsJob</td>
+          <td>Scheduled Job (daily)</td>
+          <td>Removes visitors from FR devices 24h after checkout</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ PART 5: API ============ -->
+  <h2 id="api"><span class="part-num">Part 5</span>API Endpoints</h2>
+
+  <h3>5.1 Authenticated (module-gated)</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Path</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">GET</td><td><code>/api/visitors</code></td><td>List visitors</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/api/visitors</code></td><td>Create visitor</td></tr>
+        <tr><td class="col-name">GET</td><td><code>/api/visitors/{visitor}</code></td><td>Show visitor</td></tr>
+        <tr><td class="col-name">PUT</td><td><code>/api/visitors/{visitor}</code></td><td>Update visitor</td></tr>
+        <tr><td class="col-name">DELETE</td><td><code>/api/visitors/{visitor}</code></td><td>Delete visitor</td></tr>
+        <tr><td class="col-name">GET</td><td><code>/api/visitor-visits</code></td><td>List visits (filterable by status, date, location)</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/api/visitor-visits</code></td><td>Admin pre-register visit (status = PreRegistered)</td></tr>
+        <tr><td class="col-name">GET</td><td><code>/api/visitor-visits/{visit}</code></td><td>Show visit</td></tr>
+        <tr><td class="col-name">PUT</td><td><code>/api/visitor-visits/{visit}</code></td><td>Update visit</td></tr>
+        <tr><td class="col-name">DELETE</td><td><code>/api/visitor-visits/{visit}</code></td><td>Delete visit</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/api/visitor-visits/{visit}/approve</code></td><td>Approve pending visit &rarr; generates QR, syncs FR, emails visitor</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/api/visitor-visits/{visit}/reject</code></td><td>Reject pending visit &rarr; emails visitor with reason</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/api/visitor-visits/{visit}/check-in</code></td><td>Manual check-in</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/api/visitor-visits/{visit}/check-out</code></td><td>Manual check-out</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/api/visitor-visits/{visit}/resend-qr</code></td><td>Resend QR confirmation email</td></tr>
+        <tr><td class="col-name">GET</td><td><code>/api/visitor-visits/export</code></td><td>Export CSV</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>5.2 Public (no auth)</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Path</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">GET</td><td><code>/visit/{tenant}/register</code></td><td>Public visitor registration page</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/visit/{tenant}/register</code></td><td>Submit visitor registration (creates PendingApproval visit)</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/kiosk/{token}/visitor-check-in</code></td><td>Kiosk QR check-in</td></tr>
+        <tr><td class="col-name">POST</td><td><code>/kiosk/{token}/visitor-check-out</code></td><td>Kiosk check-out</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>5.3 Web (Inertia, module-gated)</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Method</th><th>Path</th><th>Action</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">GET</td><td><code>/visitors</code></td><td>Dashboard / list page (tabs: Pending Approval, Expected Today, Checked In, All)</td></tr>
+        <tr><td class="col-name">GET</td><td><code>/visitors/log</code></td><td>Full visitor log</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ PART 6: INTEGRATION FLOWS ============ -->
+  <h2 id="flows"><span class="part-num">Part 6</span>Integration Flows</h2>
+
+  <h3 id="visitor-reg-flow">6.1 Visitor-Initiated Registration Flow (Primary)</h3>
+
+  <div class="flow">
+<span class="step">1.</span> Visitor visits public registration page
+   <span class="arrow">&rarr;</span> URL: /visit/{tenant}/register (shareable link, can be posted on website/lobby)
+   <span class="arrow">&rarr;</span> Fills in: name, email, phone, company, purpose, host employee (searchable),
+       expected date/time, optional photo upload, work location
+
+<span class="step">2.</span> System creates VisitorVisit with status = PendingApproval
+   <span class="arrow">&rarr;</span> Creates or reuses Visitor record (matched by email)
+   <span class="arrow">&rarr;</span> Generates registration_token for tracking
+
+<span class="step">3.</span> VisitorRegistrationRequested notification sent
+   <span class="arrow">&rarr;</span> Notifies front desk admin (mail + database notification)
+   <span class="arrow">&rarr;</span> Notifies host employee (mail + database notification)
+   <span class="arrow">&rarr;</span> Email contains: visitor details, purpose, expected date, approve/reject links
+
+<span class="step">4.</span> Host employee or admin reviews and approves the visit
+   <span class="arrow">&rarr;</span> POST /api/visitor-visits/{visit}/approve
+   <span class="arrow">&rarr;</span> Status changes: PendingApproval &rarr; Approved
+   <span class="arrow">&rarr;</span> System generates <code>qr_token</code> (64-char random)
+   <span class="arrow">&rarr;</span> If visitor uploaded photo &rarr; SyncVisitorToDeviceJob dispatched (FR sync)
+   <span class="arrow">&rarr;</span> If no photo &rarr; only QR check-in available
+
+<span class="step">5.</span> VisitorApproved notification sent to visitor
+   <span class="arrow">&rarr;</span> Contains: QR code image, visit details, expected date, location/directions
+
+<span class="step">6.</span> On arrival day, visitor uses one of:
+   <span class="arrow">&rarr;</span> FR recognition (if photo was synced)
+   <span class="arrow">&rarr;</span> QR scan at kiosk
+   <span class="arrow">&rarr;</span> Manual check-in at front desk
+
+   <em>Alternative: Host/admin rejects the visit</em>
+   <span class="arrow">&rarr;</span> POST /api/visitor-visits/{visit}/reject
+   <span class="arrow">&rarr;</span> Status changes: PendingApproval &rarr; Rejected
+   <span class="arrow">&rarr;</span> VisitorRejected notification sent to visitor (with optional reason)</div>
+
+  <h3 id="admin-pre-reg-flow">6.2 Admin-Initiated Pre-Registration Flow</h3>
+
+  <div class="flow">
+<span class="step">1.</span> Admin creates visit via Visitors page (VisitorPreRegisterModal)
+   <span class="arrow">&rarr;</span> Searches/creates visitor record
+   <span class="arrow">&rarr;</span> Selects host employee, work location, purpose, expected date
+   <span class="arrow">&rarr;</span> Optional: uploads visitor photo
+
+<span class="step">2.</span> System creates VisitorVisit with status = PreRegistered (no approval needed)
+   <span class="arrow">&rarr;</span> Generates <code>qr_token</code> immediately
+   <span class="arrow">&rarr;</span> If photo uploaded &rarr; SyncVisitorToDeviceJob dispatched (FR sync)
+
+<span class="step">3.</span> VisitorPreRegistered notification sent to visitor email
+   <span class="arrow">&rarr;</span> Contains: QR code image, visit details, expected date, location/directions
+
+<span class="step">4.</span> On arrival day, visitor uses one of:
+   <span class="arrow">&rarr;</span> FR recognition (if photo was synced)
+   <span class="arrow">&rarr;</span> QR scan at kiosk
+   <span class="arrow">&rarr;</span> Manual check-in at front desk</div>
+
+  <h3 id="fr-device">6.3 FR Device Check-in Flow</h3>
+
+  <div class="flow">
+<span class="step">1.</span> Photo uploaded during registration (visitor-initiated or admin-initiated)
+   <span class="arrow">&rarr;</span> Photo stored in tenant-scoped storage
+
+<span class="step">2.</span> On approval/creation, SyncVisitorToDeviceJob dispatched
+   <span class="arrow">&rarr;</span> MQTT <code>editPerson</code> command sent to FR device
+   <span class="arrow">&rarr;</span> device_person_id: <code>"visitor-{id}"</code> (prefixed to avoid employee ID collision)
+
+<span class="step">3.</span> Visitor arrives at office
+   <span class="arrow">&rarr;</span> FR device recognizes face
+   <span class="arrow">&rarr;</span> MQTT event published with <code>"visitor-{id}"</code> identifier
+
+<span class="step">4.</span> MQTT listener receives event
+   <span class="arrow">&rarr;</span> Routes <code>"visitor-*"</code> IDs to VisitorCheckInService::checkInViaBiometric()
+   <span class="arrow">&rarr;</span> Host employee notified via VisitorArrived notification
+
+<span class="step">5.</span> After checkout + 24h
+   <span class="arrow">&rarr;</span> CleanupVisitorDeviceSyncsJob removes visitor from device</div>
+
+  <h3 id="kiosk">6.4 Kiosk QR Check-in Flow</h3>
+
+  <div class="flow">
+<span class="step">1.</span> Kiosk Terminal UI has a "Visitor" tab alongside employee PIN entry
+
+<span class="step">2.</span> Visitor scans QR code (barcode scanner acts as keyboard input)
+   <span class="arrow">&rarr;</span> QR contains the <code>qr_token</code> value
+
+<span class="step">3.</span> POST /kiosk/{token}/visitor-check-in validates qr_token
+   <span class="arrow">&rarr;</span> Validates visit status is Approved or PreRegistered
+   <span class="arrow">&rarr;</span> Records check-in with check_in_method = 'kiosk'
+   <span class="arrow">&rarr;</span> Host employee notified via VisitorArrived notification
+   <span class="arrow">&rarr;</span> Shows confirmation screen
+
+<span class="step">4.</span> Re-scan when already checked in triggers check-out</div>
+
+  <!-- ============ PART 7: FRONTEND ============ -->
+  <h2 id="frontend"><span class="part-num">Part 7</span>Frontend</h2>
+
+  <h3>7.1 Pages</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>File</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-name">Visitors/Index.vue</td>
+          <td>Tabbed layout: Pending Approval | Expected Today | Checked In | All Visitors</td>
+        </tr>
+        <tr>
+          <td class="col-name">Visitors/Log.vue</td>
+          <td>Full log with filters (date range, location, status, method) and CSV export</td>
+        </tr>
+        <tr>
+          <td class="col-name">Visitor/Register.vue</td>
+          <td>Public visitor registration page (GuestLayout), form with host employee search, photo upload via camera/file</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7.2 Components</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Component</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="col-name">VisitorPreRegisterModal.vue</td>
+          <td>Admin pre-registration form with visitor search/create and host employee select</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorApprovalModal.vue</td>
+          <td>Approve/reject modal with optional rejection reason</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorCheckInModal.vue</td>
+          <td>Manual check-in modal with optional badge number</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorQrCode.vue</td>
+          <td>QR code renderer (using <code>qr_token</code> value)</td>
+        </tr>
+        <tr>
+          <td class="col-name">VisitorStatusBadge.vue</td>
+          <td>Color-coded status badges for visit statuses</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>7.3 Sidebar</h3>
+  <p>Add &ldquo;Visitor Management&rdquo; section to <code>TenantSidebar.vue</code> under Time &amp; Attendance, gated by <code>hasModule('visitor_management')</code>.</p>
+
+  <!-- ============ PART 8: FILES ============ -->
+  <h2 id="files"><span class="part-num">Part 8</span>Files to Create / Modify</h2>
+
+  <h3>New Files (~40 files)</h3>
+
+  <div class="file-list">
+<div class="file-group"># Enums</div>
+app/Enums/VisitStatus.php
+app/Enums/CheckInMethod.php
+
+<div class="file-group"># Models + Factories</div>
+app/Models/Visitor.php
+app/Models/VisitorVisit.php
+app/Models/VisitorDeviceSync.php
+database/factories/VisitorFactory.php
+database/factories/VisitorVisitFactory.php
+
+<div class="file-group"># Controllers</div>
+app/Http/Controllers/VisitorController.php
+app/Http/Controllers/VisitorRegistrationController.php
+app/Http/Controllers/Api/VisitorController.php
+app/Http/Controllers/Api/VisitorVisitController.php
+
+<div class="file-group"># Form Requests</div>
+app/Http/Requests/StoreVisitorRequest.php
+app/Http/Requests/UpdateVisitorRequest.php
+app/Http/Requests/StoreVisitorVisitRequest.php
+app/Http/Requests/UpdateVisitorVisitRequest.php
+app/Http/Requests/ApproveVisitorVisitRequest.php
+app/Http/Requests/RejectVisitorVisitRequest.php
+app/Http/Requests/CheckInVisitorRequest.php
+app/Http/Requests/VisitorRegistrationRequest.php
+
+<div class="file-group"># Resources</div>
+app/Http/Resources/VisitorResource.php
+app/Http/Resources/VisitorVisitResource.php
+
+<div class="file-group"># Services</div>
+app/Services/Visitor/VisitorRegistrationService.php
+app/Services/Visitor/VisitorCheckInService.php
+app/Services/Visitor/VisitorDeviceSyncService.php
+
+<div class="file-group"># Notifications &amp; Jobs</div>
+app/Notifications/VisitorRegistrationRequested.php
+app/Notifications/VisitorApproved.php
+app/Notifications/VisitorRejected.php
+app/Notifications/VisitorPreRegistered.php
+app/Notifications/VisitorArrived.php
+app/Notifications/VisitorCheckedOut.php
+app/Jobs/SyncVisitorToDeviceJob.php
+app/Jobs/CleanupVisitorDeviceSyncsJob.php
+
+<div class="file-group"># Migrations</div>
+database/migrations/tenant/2026_02_20_000001_create_visitors_table.php
+database/migrations/tenant/2026_02_20_000002_create_visitor_visits_table.php
+database/migrations/tenant/2026_02_20_000003_create_visitor_device_syncs_table.php
+
+<div class="file-group"># Routes</div>
+routes/tenant/web-visitors.php
+routes/tenant/api-visitors.php
+
+<div class="file-group"># Frontend</div>
+resources/js/pages/Visitors/Index.vue
+resources/js/pages/Visitors/Log.vue
+resources/js/pages/Visitor/Register.vue
+resources/js/components/VisitorPreRegisterModal.vue
+resources/js/components/VisitorApprovalModal.vue
+resources/js/components/VisitorCheckInModal.vue
+resources/js/components/VisitorQrCode.vue
+resources/js/components/VisitorStatusBadge.vue
+
+<div class="file-group"># Tests</div>
+tests/Feature/VisitorCrudTest.php
+tests/Feature/VisitorVisitCrudTest.php
+tests/Feature/VisitorRegistrationTest.php
+tests/Feature/VisitorApprovalTest.php
+tests/Feature/VisitorCheckInTest.php
+tests/Feature/VisitorKioskCheckInTest.php
+tests/Feature/VisitorDeviceSyncTest.php
+tests/Feature/VisitorNotificationTest.php</div>
+
+  <h3>Files to Modify</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>File</th><th>Change</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">app/Enums/Module.php</td><td>Add <code>VisitorManagement = 'visitor_management'</code> to Starter tier</td></tr>
+        <tr><td class="col-name">routes/tenant.php</td><td>Register public visitor registration route + require route files</td></tr>
+        <tr><td class="col-name">KioskTerminalController.php</td><td>Add <code>visitorCheckIn</code>, <code>visitorCheckOut</code> methods</td></tr>
+        <tr><td class="col-name">Kiosk/Terminal.vue</td><td>Add visitor mode tab with QR input</td></tr>
+        <tr><td class="col-name">TenantSidebar.vue</td><td>Add Visitor Management section</td></tr>
+        <tr><td class="col-name">types/index.d.ts</td><td>Add <code>VisitorData</code>, <code>VisitorVisitData</code> types</td></tr>
+        <tr><td class="col-name">DeviceCommandService.php</td><td>Add <code>editVisitorPerson()</code> for MQTT sync</td></tr>
+        <tr><td class="col-name">routes/console.php</td><td>Schedule <code>CleanupVisitorDeviceSyncsJob</code></td></tr>
+        <tr><td class="col-name">HandleInertiaRequests.php</td><td>Share public visitor registration URL in tenant context</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ PART 9: SECURITY ============ -->
+  <h2 id="security"><span class="part-num">Part 9</span>Security</h2>
+
+  <div class="table-wrap security-table">
+    <table>
+      <thead>
+        <tr><th>Concern</th><th>Mitigation</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>QR / self-registration tokens</td><td>64-char cryptographically random strings (<code>Str::random(64)</code>)</td></tr>
+        <tr><td>Public endpoint abuse</td><td>Rate-limited: 10 req/min self-registration, 5 req/min kiosk</td></tr>
+        <tr><td>FR device ID collision</td><td>Visitor person IDs prefixed <code>"visitor-"</code> to prevent collision with employees</td></tr>
+        <tr><td>Stale device data</td><td>Visitors auto-removed from FR devices 24h after checkout</td></tr>
+        <tr><td>Tenant isolation</td><td>Visitor photos stored in tenant-scoped storage (isolated per tenant)</td></tr>
+        <tr><td>Module access</td><td>Module-gated routes prevent access without subscription</td></tr>
+        <tr><td>Token expiry</td><td>Self-registration tokens invalidated after use or configurable expiry</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ============ PART 10: PHASES ============ -->
+  <h2 id="phases"><span class="part-num">Part 10</span>Implementation Sequence</h2>
+
+  <div class="phases">
+    <div class="phase-card">
+      <div class="phase-num">Phase 1</div>
+      <div class="phase-title">Foundation</div>
+      <div class="phase-desc">Module enum update, migrations, models, enums, factories</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 2</div>
+      <div class="phase-title">Core CRUD</div>
+      <div class="phase-desc">Visitor + VisitorVisit API controllers, form requests, resources, routes, tests</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 3</div>
+      <div class="phase-title">Public Registration + Approval</div>
+      <div class="phase-desc">VisitorRegistrationController (public page), VisitorRegistrationService, approve/reject endpoints, registration notifications, public Register.vue page, tests</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 4</div>
+      <div class="phase-title">Admin Pre-Registration</div>
+      <div class="phase-desc">Admin pre-registration flow (no approval needed), VisitorPreRegistered notification, VisitorPreRegisterModal.vue, tests</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 5</div>
+      <div class="phase-title">Kiosk Integration</div>
+      <div class="phase-desc">Extend KioskTerminalController + Terminal.vue, tests</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 6</div>
+      <div class="phase-title">FR Device Integration</div>
+      <div class="phase-desc">DeviceCommandService extension, sync service/job, MQTT handler, cleanup job, tests</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 7</div>
+      <div class="phase-title">Frontend</div>
+      <div class="phase-desc">Visitors pages (Index with Pending Approval tab, Log), approval modal, check-in modal, sidebar update, TypeScript types</div>
+    </div>
+    <div class="phase-card">
+      <div class="phase-num">Phase 8</div>
+      <div class="phase-title">Arrival/Departure Notifications</div>
+      <div class="phase-desc">VisitorArrived + VisitorCheckedOut host notifications, tests</div>
+    </div>
+  </div>
+
+  <!-- ============ PART 11: VERIFICATION ============ -->
+  <h2 id="verification"><span class="part-num">Part 11</span>Verification</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Check</th><th>Method</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="col-name">Unit / feature tests</td><td><code>php artisan test --filter=Visitor</code> after each phase</td></tr>
+        <tr><td class="col-name">Public registration flow</td><td>Visit <code>/visit/{tenant}/register</code>, submit form, verify admin+host notified</td></tr>
+        <tr><td class="col-name">Approval flow</td><td>Approve pending visit, verify QR generated and visitor emailed</td></tr>
+        <tr><td class="col-name">Rejection flow</td><td>Reject pending visit, verify visitor emailed with reason</td></tr>
+        <tr><td class="col-name">Admin pre-registration</td><td>Create visit via admin, verify QR sent immediately (no approval step)</td></tr>
+        <tr><td class="col-name">Kiosk visitor flow</td><td>Manual test via <code>/kiosk/{token}</code> with a QR token</td></tr>
+        <tr><td class="col-name">FR sync</td><td>Check MQTT messages in debug session</td></tr>
+        <tr><td class="col-name">Module gating</td><td>Toggle <code>visitor_management</code> in tenant&rsquo;s plan and verify access control</td></tr>
+        <tr><td class="col-name">Full regression</td><td><code>php artisan test</code> at the end</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</main>
+</body>
+</html>

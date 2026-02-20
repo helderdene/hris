@@ -16,6 +16,7 @@ use App\Models\Employee;
 use App\Models\EmployeeDeviceSync;
 use App\Models\Position;
 use App\Models\WorkLocation;
+use App\Services\FeatureGateService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -116,6 +117,14 @@ class EmployeeController extends Controller
     public function store(StoreEmployeeRequest $request): RedirectResponse
     {
         Gate::authorize('can-manage-employees');
+
+        $gate = app(FeatureGateService::class);
+        if (! $gate->isWithinEmployeeLimit()) {
+            return back()->withErrors([
+                'limit' => "You've reached your employee limit ({$gate->getEffectiveLimit('max_employees')}). "
+                    .'You can purchase additional employee slots or upgrade your plan.',
+            ]);
+        }
 
         $employee = Employee::create($request->validated());
 

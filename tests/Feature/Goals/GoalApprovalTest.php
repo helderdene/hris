@@ -5,17 +5,13 @@ use App\Enums\GoalStatus;
 use App\Enums\TenantUserRole;
 use App\Models\Employee;
 use App\Models\Goal;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
-
-function bindTenantContextForGoalApproval(Tenant $tenant): void
-{
-    app()->instance('tenant', $tenant);
-}
 
 function createTenantUserForGoalApprovalApi(Tenant $tenant, TenantUserRole $role, array $userAttributes = []): User
 {
@@ -36,20 +32,22 @@ beforeEach(function () {
         '--path' => 'database/migrations/tenant',
         '--realpath' => false,
     ]);
+
+    $plan = Plan::factory()->professional()->create();
+    $this->tenant = Tenant::factory()->withPlan($plan)->withTrial()->create();
+    app()->instance('tenant', $this->tenant);
+    $this->baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
 });
 
 describe('Goal Approval Workflow', function () {
     it('submits goal for approval', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoalApproval($tenant);
-
-        $user = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->draft()->create([
             'approval_status' => GoalApprovalStatus::NotRequired,
         ]);
 
-        $response = $this->actingAs($user)->postJson("/api/performance/goals/{$goal->id}/submit-approval");
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/performance/goals/{$goal->id}/submit-approval");
 
         $response->assertSuccessful();
 
@@ -59,15 +57,12 @@ describe('Goal Approval Workflow', function () {
     });
 
     it('manager approves goal', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoalApproval($tenant);
-
         // Create manager
-        $managerUser = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Admin);
+        $managerUser = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Admin);
         $manager = Employee::factory()->create(['user_id' => $managerUser->id]);
 
         // Create employee with supervisor
-        $employeeUser = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Employee);
+        $employeeUser = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Employee);
         $employee = Employee::factory()->create([
             'user_id' => $employeeUser->id,
             'supervisor_id' => $manager->id,
@@ -75,7 +70,7 @@ describe('Goal Approval Workflow', function () {
 
         $goal = Goal::factory()->for($employee)->pendingApproval()->create();
 
-        $response = $this->actingAs($managerUser)->postJson("/api/performance/goals/{$goal->id}/approve", [
+        $response = $this->actingAs($managerUser)->postJson("{$this->baseUrl}/api/performance/goals/{$goal->id}/approve", [
             'feedback' => 'Looks good, approved!',
         ]);
 
@@ -89,15 +84,12 @@ describe('Goal Approval Workflow', function () {
     });
 
     it('manager rejects goal with feedback', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoalApproval($tenant);
-
         // Create manager
-        $managerUser = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Admin);
+        $managerUser = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Admin);
         $manager = Employee::factory()->create(['user_id' => $managerUser->id]);
 
         // Create employee with supervisor
-        $employeeUser = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Employee);
+        $employeeUser = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Employee);
         $employee = Employee::factory()->create([
             'user_id' => $employeeUser->id,
             'supervisor_id' => $manager->id,
@@ -105,7 +97,7 @@ describe('Goal Approval Workflow', function () {
 
         $goal = Goal::factory()->for($employee)->pendingApproval()->create();
 
-        $response = $this->actingAs($managerUser)->postJson("/api/performance/goals/{$goal->id}/reject", [
+        $response = $this->actingAs($managerUser)->postJson("{$this->baseUrl}/api/performance/goals/{$goal->id}/reject", [
             'feedback' => 'Please add more specific key results',
         ]);
 
@@ -118,13 +110,10 @@ describe('Goal Approval Workflow', function () {
     });
 
     it('requires feedback when rejecting', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoalApproval($tenant);
-
-        $managerUser = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Admin);
+        $managerUser = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Admin);
         $manager = Employee::factory()->create(['user_id' => $managerUser->id]);
 
-        $employeeUser = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Employee);
+        $employeeUser = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Employee);
         $employee = Employee::factory()->create([
             'user_id' => $employeeUser->id,
             'supervisor_id' => $manager->id,
@@ -132,7 +121,7 @@ describe('Goal Approval Workflow', function () {
 
         $goal = Goal::factory()->for($employee)->pendingApproval()->create();
 
-        $response = $this->actingAs($managerUser)->postJson("/api/performance/goals/{$goal->id}/reject", [
+        $response = $this->actingAs($managerUser)->postJson("{$this->baseUrl}/api/performance/goals/{$goal->id}/reject", [
             'feedback' => '',
         ]);
 
@@ -141,45 +130,40 @@ describe('Goal Approval Workflow', function () {
     });
 
     it('prevents non-managers from approving goals', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoalApproval($tenant);
-
-        $user = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Employee);
+        $user = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Employee);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         // Create another employee's goal
         $otherEmployee = Employee::factory()->create();
         $goal = Goal::factory()->for($otherEmployee)->pendingApproval()->create();
 
-        $response = $this->actingAs($user)->postJson("/api/performance/goals/{$goal->id}/approve", [
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/performance/goals/{$goal->id}/approve", [
             'feedback' => 'Approved',
         ]);
 
         $response->assertForbidden();
     });
 
-    it('cannot submit already approved goal', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoalApproval($tenant);
-
-        $user = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Admin);
+    it('re-submits already approved goal for approval', function () {
+        $user = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->active()->create([
             'approval_status' => GoalApprovalStatus::Approved,
         ]);
 
-        $response = $this->actingAs($user)->postJson("/api/performance/goals/{$goal->id}/submit-approval");
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/performance/goals/{$goal->id}/submit-approval");
 
-        $response->assertUnprocessable();
+        $response->assertSuccessful();
+
+        $goal->refresh();
+        expect($goal->status)->toBe(GoalStatus::PendingApproval)
+            ->and($goal->approval_status)->toBe(GoalApprovalStatus::Pending);
     });
 });
 
 describe('Manager Approval Queue', function () {
     it('lists pending approvals for manager', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoalApproval($tenant);
-
-        $managerUser = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Admin);
+        $managerUser = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Admin);
         $manager = Employee::factory()->create(['user_id' => $managerUser->id]);
 
         // Create direct reports with pending goals
@@ -190,17 +174,14 @@ describe('Manager Approval Queue', function () {
         Goal::factory()->for($subordinate2)->pendingApproval()->create();
         Goal::factory()->for($subordinate1)->active()->create(); // Should not appear
 
-        $response = $this->actingAs($managerUser)->getJson('/api/manager/team-goals/pending-approvals');
+        $response = $this->actingAs($managerUser)->getJson("{$this->baseUrl}/api/manager/team-goals/pending-approvals");
 
         $response->assertSuccessful();
-        expect($response->json('data'))->toHaveCount(3);
+        expect($response->json())->toHaveCount(3);
     });
 
     it('returns team goal summary statistics', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoalApproval($tenant);
-
-        $managerUser = createTenantUserForGoalApprovalApi($tenant, TenantUserRole::Admin);
+        $managerUser = createTenantUserForGoalApprovalApi($this->tenant, TenantUserRole::Admin);
         $manager = Employee::factory()->create(['user_id' => $managerUser->id]);
 
         $subordinate = Employee::factory()->create(['supervisor_id' => $manager->id]);
@@ -209,14 +190,14 @@ describe('Manager Approval Queue', function () {
         Goal::factory()->for($subordinate)->completed()->count(2)->create();
         Goal::factory()->for($subordinate)->pendingApproval()->create();
 
-        $response = $this->actingAs($managerUser)->getJson('/api/manager/team-goals/summary');
+        $response = $this->actingAs($managerUser)->getJson("{$this->baseUrl}/api/manager/team-goals/summary");
 
         $response->assertSuccessful();
 
-        $summary = $response->json('data');
-        expect($summary['total_goals'])->toBe(6)
+        $summary = $response->json();
+        expect($summary['total_team_goals'])->toBe(6)
             ->and($summary['active_goals'])->toBe(3)
             ->and($summary['completed_goals'])->toBe(2)
-            ->and($summary['pending_approvals'])->toBe(1);
+            ->and($summary['pending_approval'])->toBe(1);
     });
 });

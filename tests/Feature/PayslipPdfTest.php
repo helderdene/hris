@@ -2,6 +2,7 @@
 
 use App\Enums\TenantUserRole;
 use App\Http\Controllers\Api\PayrollEntryController;
+use App\Http\Requests\Api\DownloadBulkPayslipRequest;
 use App\Models\PayrollCycle;
 use App\Models\PayrollEntry;
 use App\Models\PayrollPeriod;
@@ -9,7 +10,6 @@ use App\Models\Tenant;
 use App\Models\User;
 use App\Services\Payroll\PayslipPdfService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
@@ -145,7 +145,7 @@ describe('PayslipPdf API', function () {
             $controller = app(PayrollEntryController::class);
             $pdfService = app(PayslipPdfService::class);
 
-            $response = $controller->downloadPdf($tenant->slug, $entry, $pdfService);
+            $response = $controller->downloadPdf($entry, $pdfService);
 
             expect($response->getStatusCode())->toBe(200);
             expect($response->headers->get('Content-Type'))->toBe('application/pdf');
@@ -169,7 +169,7 @@ describe('PayslipPdf API', function () {
 
             $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
 
-            $controller->downloadPdf($tenant->slug, $entry, $pdfService);
+            $controller->downloadPdf($entry, $pdfService);
         });
     });
 
@@ -195,14 +195,16 @@ describe('PayslipPdf API', function () {
             $controller = app(PayrollEntryController::class);
             $pdfService = app(PayslipPdfService::class);
 
-            $request = Request::create(
+            $request = DownloadBulkPayslipRequest::create(
                 "/api/organization/payroll-periods/{$period->id}/payslips/bulk-pdf",
                 'POST',
                 ['format' => 'pdf']
             );
             $request->setUserResolver(fn () => $hrManager);
+            $request->setContainer(app());
+            $request->validateResolved();
 
-            $response = $controller->downloadBulkPdf($request, $tenant->slug, $period, $pdfService);
+            $response = $controller->downloadBulkPdf($request, $period, $pdfService);
 
             expect($response->getStatusCode())->toBe(200);
             expect($response->headers->get('Content-Type'))->toBe('application/pdf');
@@ -229,14 +231,16 @@ describe('PayslipPdf API', function () {
             $controller = app(PayrollEntryController::class);
             $pdfService = app(PayslipPdfService::class);
 
-            $request = Request::create(
+            $request = DownloadBulkPayslipRequest::create(
                 "/api/organization/payroll-periods/{$period->id}/payslips/bulk-pdf",
                 'POST',
                 ['format' => 'zip']
             );
             $request->setUserResolver(fn () => $hrManager);
+            $request->setContainer(app());
+            $request->validateResolved();
 
-            $response = $controller->downloadBulkPdf($request, $tenant->slug, $period, $pdfService);
+            $response = $controller->downloadBulkPdf($request, $period, $pdfService);
 
             expect($response->getStatusCode())->toBe(200);
         });
@@ -256,14 +260,16 @@ describe('PayslipPdf API', function () {
             $controller = app(PayrollEntryController::class);
             $pdfService = app(PayslipPdfService::class);
 
-            $request = Request::create(
+            $request = DownloadBulkPayslipRequest::create(
                 "/api/organization/payroll-periods/{$period->id}/payslips/bulk-pdf",
                 'POST',
                 ['format' => 'pdf']
             );
             $request->setUserResolver(fn () => $hrManager);
+            $request->setContainer(app());
+            $request->validateResolved();
 
-            $response = $controller->downloadBulkPdf($request, $tenant->slug, $period, $pdfService);
+            $response = $controller->downloadBulkPdf($request, $period, $pdfService);
 
             expect($response->getStatusCode())->toBe(404);
 
@@ -294,7 +300,7 @@ describe('PayslipPdf API', function () {
             $controller = app(PayrollEntryController::class);
             $pdfService = app(PayslipPdfService::class);
 
-            $request = Request::create(
+            $request = DownloadBulkPayslipRequest::create(
                 "/api/organization/payroll-periods/{$period->id}/payslips/bulk-pdf",
                 'POST',
                 [
@@ -303,8 +309,10 @@ describe('PayslipPdf API', function () {
                 ]
             );
             $request->setUserResolver(fn () => $hrManager);
+            $request->setContainer(app());
+            $request->validateResolved();
 
-            $response = $controller->downloadBulkPdf($request, $tenant->slug, $period, $pdfService);
+            $response = $controller->downloadBulkPdf($request, $period, $pdfService);
 
             expect($response->getStatusCode())->toBe(200);
         });
@@ -328,16 +336,18 @@ describe('PayslipPdf API', function () {
             $controller = app(PayrollEntryController::class);
             $pdfService = app(PayslipPdfService::class);
 
-            $request = Request::create(
+            $request = DownloadBulkPayslipRequest::create(
                 "/api/organization/payroll-periods/{$period->id}/payslips/bulk-pdf",
                 'POST',
                 ['format' => 'pdf']
             );
             $request->setUserResolver(fn () => $employee);
+            $request->setContainer(app());
+            $request->validateResolved();
 
             $this->expectException(\Illuminate\Auth\Access\AuthorizationException::class);
 
-            $controller->downloadBulkPdf($request, $tenant->slug, $period, $pdfService);
+            $controller->downloadBulkPdf($request, $period, $pdfService);
         });
     });
 });

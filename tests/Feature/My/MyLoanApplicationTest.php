@@ -99,7 +99,7 @@ describe('My Loan Applications Pages', function () {
         $request = Request::create("/my/loan-applications/{$application->id}", 'GET');
         $request->setUserResolver(fn () => $user);
 
-        $response = $controller->show($request, 'acme', $application);
+        $response = $controller->show($request, $application);
 
         $reflection = new ReflectionClass($response);
         $componentProperty = $reflection->getProperty('component');
@@ -122,7 +122,7 @@ describe('My Loan Applications Pages', function () {
         $request = Request::create("/my/loan-applications/{$application->id}", 'GET');
         $request->setUserResolver(fn () => $user);
 
-        expect(fn () => $controller->show($request, 'acme', $application))
+        expect(fn () => $controller->show($request, $application))
             ->toThrow(\Symfony\Component\HttpKernel\Exception\HttpException::class);
     });
 

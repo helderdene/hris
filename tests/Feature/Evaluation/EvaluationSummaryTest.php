@@ -17,11 +17,6 @@ use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
 
-function bindTenantContextForEvaluationSummary(Tenant $tenant): void
-{
-    app()->instance('tenant', $tenant);
-}
-
 function createTenantUserForEvaluationSummary(Tenant $tenant, TenantUserRole $role): User
 {
     $user = User::factory()->create();
@@ -40,12 +35,15 @@ beforeEach(function () {
         '--path' => 'database/migrations/tenant',
         '--realpath' => false,
     ]);
+
+    $this->tenant = Tenant::factory()->create();
+    app()->instance('tenant', $this->tenant);
+    $this->baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
 });
 
 describe('EvaluationSummary Model', function () {
     it('creates an evaluation summary with correct attributes', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create();
 
@@ -65,8 +63,7 @@ describe('EvaluationSummary Model', function () {
     });
 
     it('belongs to a participant', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create();
         $summary = EvaluationSummary::factory()->create([
@@ -78,8 +75,7 @@ describe('EvaluationSummary Model', function () {
     });
 
     it('can be calibrated', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $admin = createTenantUserForEvaluationSummary($tenant, TenantUserRole::Admin);
         $summary = EvaluationSummary::factory()->create();
@@ -104,8 +100,7 @@ describe('EvaluationSummary Model', function () {
     });
 
     it('can be acknowledged by employee', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $summary = EvaluationSummary::factory()->calibrated()->create();
 
@@ -118,8 +113,7 @@ describe('EvaluationSummary Model', function () {
 
 describe('EvaluationService - Summary Calculation', function () {
     it('calculates competency averages by reviewer type', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create();
 
@@ -171,8 +165,7 @@ describe('EvaluationService - Summary Calculation', function () {
     });
 
     it('generates summary with calculated averages', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create();
 
@@ -211,13 +204,12 @@ describe('EvaluationService - Summary Calculation', function () {
         $summary = $service->generateSummary($participant);
 
         expect($summary)->toBeInstanceOf(EvaluationSummary::class)
-            ->and($summary->self_competency_avg)->toBe(4.0)
-            ->and($summary->peer_competency_avg)->toBe(3.5); // (3 + 4) / 2
+            ->and($summary->self_competency_avg)->toBe('4.00')
+            ->and($summary->peer_competency_avg)->toBe('3.50'); // (3 + 4) / 2
     });
 
     it('updates participant evaluation status based on reviewer progress', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create([
             'evaluation_status' => EvaluationStatus::NotStarted,
@@ -238,8 +230,7 @@ describe('EvaluationService - Summary Calculation', function () {
 
 describe('Evaluation Summary API', function () {
     it('gets summary for a participant', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $admin = createTenantUserForEvaluationSummary($tenant, TenantUserRole::Admin);
         $participant = PerformanceCycleParticipant::factory()->create();
@@ -248,34 +239,29 @@ describe('Evaluation Summary API', function () {
         ]);
 
         $response = $this->actingAs($admin)
-            ->getJson("/api/organization/participants/{$participant->id}/summary");
+            ->getJson("{$this->baseUrl}/api/organization/participants/{$participant->id}/summary");
 
         $response->assertSuccessful()
             ->assertJsonStructure([
-                'data' => [
-                    'id',
-                    'self_competency_avg',
-                    'manager_competency_avg',
-                    'peer_competency_avg',
-                    'overall_competency_avg',
-                    'kpi_achievement_score',
-                    'final_rating',
-                ],
+                'participant',
+                'summary',
+                'reviewer_stats',
             ]);
     });
 
     it('calibrates evaluation summary', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $admin = createTenantUserForEvaluationSummary($tenant, TenantUserRole::Admin);
-        $participant = PerformanceCycleParticipant::factory()->create();
+        $participant = PerformanceCycleParticipant::factory()->create([
+            'evaluation_status' => EvaluationStatus::Calibration,
+        ]);
         EvaluationSummary::factory()->create([
             'performance_cycle_participant_id' => $participant->id,
         ]);
 
         $response = $this->actingAs($admin)
-            ->postJson("/api/organization/participants/{$participant->id}/summary/calibrate", [
+            ->postJson("{$this->baseUrl}/api/organization/participants/{$participant->id}/summary/calibrate", [
                 'final_competency_score' => 4.2,
                 'final_kpi_score' => 95.0,
                 'final_overall_score' => 4.3,
@@ -291,8 +277,7 @@ describe('Evaluation Summary API', function () {
     });
 
     it('recalculates summary averages', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $admin = createTenantUserForEvaluationSummary($tenant, TenantUserRole::Admin);
         $participant = PerformanceCycleParticipant::factory()->create();
@@ -319,19 +304,18 @@ describe('Evaluation Summary API', function () {
         ]);
 
         $response = $this->actingAs($admin)
-            ->postJson("/api/organization/participants/{$participant->id}/summary/recalculate");
+            ->postJson("{$this->baseUrl}/api/organization/participants/{$participant->id}/summary/recalculate");
 
         $response->assertSuccessful();
 
         $summary = EvaluationSummary::where('performance_cycle_participant_id', $participant->id)->first();
-        expect($summary->self_competency_avg)->toBe(5.0); // Updated value
+        expect($summary->self_competency_avg)->toBe('5.00'); // Updated value
     });
 });
 
 describe('Evaluation Status Transitions', function () {
     it('transitions from not_started to self_in_progress when self review starts', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create([
             'evaluation_status' => EvaluationStatus::NotStarted,
@@ -352,8 +336,7 @@ describe('Evaluation Status Transitions', function () {
     });
 
     it('transitions to awaiting_reviewers when self review is submitted', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create([
             'evaluation_status' => EvaluationStatus::SelfInProgress,
@@ -377,8 +360,7 @@ describe('Evaluation Status Transitions', function () {
     });
 
     it('transitions to reviewing when reviewers start submitting', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create([
             'evaluation_status' => EvaluationStatus::AwaitingReviewers,
@@ -404,8 +386,7 @@ describe('Evaluation Status Transitions', function () {
     });
 
     it('transitions to calibration when all reviewers have submitted', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationSummary($tenant);
+        $tenant = $this->tenant;
 
         $participant = PerformanceCycleParticipant::factory()->create([
             'evaluation_status' => EvaluationStatus::Reviewing,

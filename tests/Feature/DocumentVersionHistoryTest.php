@@ -271,7 +271,7 @@ describe('New Version Upload', function () {
         $request->files->set('file', $newFile);
 
         $controller = new DocumentVersionController(new DocumentStorageService);
-        $response = $controller->store($request, 'test-tenant', $document);
+        $response = $controller->store($request, $document);
 
         expect($response->getStatusCode())->toBe(201);
 
@@ -324,7 +324,7 @@ describe('New Version Upload', function () {
         $request->files->set('file', $newFile);
 
         $controller = new DocumentVersionController(new DocumentStorageService);
-        $response = $controller->store($request, 'test-tenant', $document);
+        $response = $controller->store($request, $document);
 
         expect($response->getStatusCode())->toBe(201);
         expect($response->getData(true)['data']['version_number'])->toBe(4);

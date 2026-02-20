@@ -19,6 +19,7 @@ import {
     SidebarSeparator,
     useSidebar,
 } from '@/components/ui/sidebar';
+import { useSubscription } from '@/composables/useSubscription';
 import { useTenant } from '@/composables/useTenant';
 import { Link, usePage } from '@inertiajs/vue3';
 import {
@@ -48,6 +49,8 @@ import {
     FileText,
     Fingerprint,
     Flag,
+    Monitor,
+    UserRoundCheck,
     GitBranch,
     LayoutGrid,
     MapPin,
@@ -68,6 +71,7 @@ import {
     UsersRound,
     CalendarCheck,
     CalendarClock,
+    Lock,
 } from 'lucide-vue-next';
 import { computed, ref, watch, type Component, onMounted } from 'vue';
 
@@ -79,6 +83,7 @@ interface NavItem {
 }
 
 const { tenantName } = useTenant();
+const { hasModule } = useSubscription();
 const page = usePage();
 const { toggleSidebar, state } = useSidebar();
 
@@ -166,8 +171,19 @@ const timeAttendanceItems = computed(() => {
             { title: 'Work Schedules', href: '/organization/work-schedules', icon: Clock },
             { title: 'Holidays', href: '/organization/holidays', icon: CalendarDays },
             { title: 'Biometric Devices', href: '/organization/devices', icon: Fingerprint },
+            { title: 'Kiosks', href: '/organization/kiosks', icon: Monitor },
         );
     }
+
+    return items;
+});
+
+// Visitor Management items
+const visitorManagementItems = computed(() => {
+    const items: NavItem[] = [
+        { title: 'Visitors', href: '/visitors', icon: UserRoundCheck },
+        { title: 'Visitor Log', href: '/visitors/log', icon: History },
+    ];
 
     return items;
 });
@@ -366,6 +382,11 @@ const selfServiceItems = computed(() => {
             href: '/my/overtime-requests',
             icon: CalendarClock,
         },
+        {
+            title: 'My Visitors',
+            href: '/my/visitors',
+            icon: UserRoundCheck,
+        },
     ];
 
     if (canApproveLeaves.value) {
@@ -454,6 +475,10 @@ const bottomNavItems = computed(() => {
 
     if (canManageUsers.value) {
         items.push({ title: 'Users', href: '/users', icon: UsersRound });
+    }
+
+    if (canManageUsers.value) {
+        items.push({ title: 'Billing', href: '/billing', icon: CreditCard });
     }
 
     if (canViewAuditLogs.value) {
@@ -715,6 +740,21 @@ function isActive(href: string): boolean {
     if (href === '/team/compliance') {
         return currentPath.startsWith('/team/compliance');
     }
+    // My Visitors
+    if (href === '/my/visitors') {
+        return currentPath.startsWith('/my/visitors');
+    }
+    // Kiosks
+    if (href === '/organization/kiosks') {
+        return currentPath.startsWith('/organization/kiosks');
+    }
+    // Visitors
+    if (href === '/visitors') {
+        return currentPath === '/visitors' || (currentPath.startsWith('/visitors') && !currentPath.startsWith('/visitors/log'));
+    }
+    if (href === '/visitors/log') {
+        return currentPath.startsWith('/visitors/log');
+    }
     // Audit Logs
     if (href === '/settings/audit-logs') {
         return currentPath.startsWith('/settings/audit-logs');
@@ -722,6 +762,10 @@ function isActive(href: string): boolean {
     // Help Center
     if (href === '/help') {
         return currentPath.startsWith('/help');
+    }
+    // Billing
+    if (href === '/billing') {
+        return currentPath.startsWith('/billing');
     }
     // Settings Profile
     if (href === '/settings/profile') {
@@ -750,6 +794,7 @@ const savedState = loadSavedState();
 // Individual refs for each collapsible section
 const hrManagementOpen = ref(savedState.hrManagement ?? true);
 const timeAttendanceOpen = ref(savedState.timeAttendance ?? true);
+const visitorManagementOpen = ref(savedState.visitorManagement ?? true);
 const leaveManagementOpen = ref(savedState.leaveManagement ?? true);
 const recruitmentOpen = ref(savedState.recruitment ?? true);
 const trainingOpen = ref(savedState.training ?? true);
@@ -764,6 +809,7 @@ function saveState() {
     localStorage.setItem('sidebar-expanded-sections', JSON.stringify({
         hrManagement: hrManagementOpen.value,
         timeAttendance: timeAttendanceOpen.value,
+        visitorManagement: visitorManagementOpen.value,
         leaveManagement: leaveManagementOpen.value,
         recruitment: recruitmentOpen.value,
         training: trainingOpen.value,
@@ -775,7 +821,7 @@ function saveState() {
     }));
 }
 
-watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpen, trainingOpen, complianceOpen, performanceOpen, payrollOpen, reportsOpen, selfServiceOpen], saveState);
+watch([hrManagementOpen, timeAttendanceOpen, visitorManagementOpen, leaveManagementOpen, recruitmentOpen, trainingOpen, complianceOpen, performanceOpen, payrollOpen, reportsOpen, selfServiceOpen], saveState);
 </script>
 
 <template>
@@ -864,33 +910,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('hr_management') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             HR Management
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                hrManagementOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('hr_management')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    hrManagementOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('hr_management') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in hrManagementItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('hr_management')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('hr_management')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('hr_management')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -902,6 +962,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -921,33 +990,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('time_attendance') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Time & Attendance
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                timeAttendanceOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('time_attendance')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    timeAttendanceOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('time_attendance') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in timeAttendanceItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('time_attendance')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('time_attendance')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('time_attendance')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -959,6 +1042,95 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            </SidebarMenu>
+                        </SidebarGroupContent>
+                    </CollapsibleContent>
+                </SidebarGroup>
+            </Collapsible>
+
+            <!-- Visitor Management Section (hidden for Employee role, requires visitor_management module) -->
+            <Collapsible
+                v-if="!isEmployeeRole"
+                v-model:open="visitorManagementOpen"
+                class="mt-4"
+            >
+                <SidebarGroup>
+                    <CollapsibleTrigger
+                        v-if="!isCollapsed"
+                        class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
+                    >
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('visitor_management') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
+                            Visitor Management
+                        </span>
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('visitor_management')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    visitorManagementOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                        <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('visitor_management') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
+                            <SidebarMenu>
+                                <SidebarMenuItem
+                                    v-for="item in visitorManagementItems"
+                                    :key="item.href"
+                                >
+                                    <SidebarMenuButton
+                                        :as-child="hasModule('visitor_management')"
+                                        :class="[
+                                            'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                                            !hasModule('visitor_management')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                        ]"
+                                    >
+                                        <Link
+                                            v-if="hasModule('visitor_management')"
+                                            :href="item.href"
+                                            class="flex items-center gap-3"
+                                        >
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -978,33 +1150,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('leave_management') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Leave Management
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                leaveManagementOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('leave_management')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    leaveManagementOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('leave_management') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in leaveManagementItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('leave_management')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('leave_management')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('leave_management')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -1016,6 +1202,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -1024,7 +1219,7 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                 </SidebarGroup>
             </Collapsible>
 
-            <!-- Recruitment Section (hidden for Employee role) -->
+            <!-- Recruitment Section (hidden for Employee role, requires recruitment module) -->
             <Collapsible
                 v-if="!isEmployeeRole"
                 v-model:open="recruitmentOpen"
@@ -1035,33 +1230,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('recruitment') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Recruitment
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                recruitmentOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('recruitment')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    recruitmentOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('recruitment') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in recruitmentItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('recruitment')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('recruitment')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('recruitment')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -1073,6 +1282,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -1081,7 +1299,7 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                 </SidebarGroup>
             </Collapsible>
 
-            <!-- Training Section (Admin/HR only) -->
+            <!-- Training Section (Admin/HR only, requires training_development module) -->
             <Collapsible
                 v-if="canManageOrganization"
                 v-model:open="trainingOpen"
@@ -1092,33 +1310,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('training_development') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Training
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                trainingOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('training_development')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    trainingOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('training_development') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in trainingItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('training_development')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('training_development')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('training_development')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -1130,6 +1362,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -1138,7 +1379,7 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                 </SidebarGroup>
             </Collapsible>
 
-            <!-- Compliance Training Section (Admin/HR only) -->
+            <!-- Compliance Training Section (Admin/HR only, requires compliance_training module) -->
             <Collapsible
                 v-if="canManageOrganization"
                 v-model:open="complianceOpen"
@@ -1149,33 +1390,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('compliance_training') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Compliance
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                complianceOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('compliance_training')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    complianceOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('compliance_training') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in complianceItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('compliance_training')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('compliance_training')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('compliance_training')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -1187,6 +1442,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -1195,7 +1459,7 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                 </SidebarGroup>
             </Collapsible>
 
-            <!-- Performance Section (Admin/HR only) -->
+            <!-- Performance Section (Admin/HR only, requires performance_management module) -->
             <Collapsible
                 v-if="canManageOrganization"
                 v-model:open="performanceOpen"
@@ -1206,33 +1470,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('performance_management') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Performance
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                performanceOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('performance_management')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    performanceOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('performance_management') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in performanceItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('performance_management')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('performance_management')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('performance_management')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -1244,6 +1522,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -1263,33 +1550,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('payroll') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Payroll
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                payrollOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('payroll')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    payrollOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('payroll') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in payrollItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('payroll')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('payroll')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('payroll')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -1301,6 +1602,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -1320,33 +1630,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('hr_compliance') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Reports
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                reportsOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('hr_compliance')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    reportsOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('hr_compliance') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in reportsItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('hr_compliance')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('hr_compliance')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('hr_compliance')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -1358,6 +1682,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>
@@ -1376,33 +1709,47 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                         v-if="!isCollapsed"
                         class="flex w-full cursor-pointer items-center justify-between px-3 py-1"
                     >
-                        <span class="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
+                        <span :class="['text-xs font-semibold tracking-wider uppercase', hasModule('employee_self_service') ? 'text-slate-500 dark:text-slate-400' : 'text-slate-400 dark:text-slate-500']">
                             Self-Service
                         </span>
-                        <ChevronDown
-                            :class="[
-                                'h-4 w-4 text-slate-400 transition-transform',
-                                selfServiceOpen ? '' : '-rotate-90',
-                            ]"
-                        />
+                        <div class="flex items-center gap-1">
+                            <Lock v-if="!hasModule('employee_self_service')" class="h-3 w-3 text-slate-400 dark:text-slate-500" />
+                            <ChevronDown
+                                :class="[
+                                    'h-4 w-4 text-slate-400 transition-transform',
+                                    selfServiceOpen ? '' : '-rotate-90',
+                                ]"
+                            />
+                        </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
                         <SidebarGroupContent>
+                            <Link
+                                v-if="!hasModule('employee_self_service') && !isCollapsed"
+                                href="/billing"
+                                class="mx-3 mb-2 flex items-center gap-2 rounded-lg border border-dashed border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-700 dark:bg-amber-900/20 dark:text-amber-400 dark:hover:bg-amber-900/30"
+                            >
+                                <Lock class="h-3 w-3 shrink-0" />
+                                <span>Upgrade your plan to unlock</span>
+                            </Link>
                             <SidebarMenu>
                                 <SidebarMenuItem
                                     v-for="item in selfServiceItems"
                                     :key="item.href"
                                 >
                                     <SidebarMenuButton
-                                        as-child
+                                        :as-child="hasModule('employee_self_service')"
                                         :class="[
                                             'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            isActive(item.href)
-                                                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            !hasModule('employee_self_service')
+                                                ? 'pointer-events-none opacity-40'
+                                                : isActive(item.href)
+                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
                                         ]"
                                     >
                                         <Link
+                                            v-if="hasModule('employee_self_service')"
                                             :href="item.href"
                                             class="flex items-center gap-3"
                                         >
@@ -1414,6 +1761,15 @@ watch([hrManagementOpen, timeAttendanceOpen, leaveManagementOpen, recruitmentOpe
                                                 item.title
                                             }}</span>
                                         </Link>
+                                        <span v-else class="flex items-center gap-3">
+                                            <component
+                                                :is="item.icon"
+                                                class="h-5 w-5 shrink-0"
+                                            />
+                                            <span v-if="!isCollapsed">{{
+                                                item.title
+                                            }}</span>
+                                        </span>
                                     </SidebarMenuButton>
                                 </SidebarMenuItem>
                             </SidebarMenu>

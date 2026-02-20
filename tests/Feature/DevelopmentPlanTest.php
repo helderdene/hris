@@ -411,7 +411,7 @@ describe('API Endpoints', function () {
         $request->setUserResolver(fn () => $this->user);
         app()->instance('request', $request);
 
-        $response = $controller->index($request, 'test-tenant');
+        $response = $controller->index($request);
 
         expect($response)->toBeInstanceOf(\Inertia\Response::class);
     });
@@ -447,7 +447,7 @@ describe('API Endpoints', function () {
         $request->setUserResolver(fn () => $this->user);
         app()->instance('request', $request);
 
-        $response = $controller->show($request, 'test-tenant', $plan);
+        $response = $controller->show($request, $plan);
 
         expect($response)->toBeInstanceOf(\Inertia\Response::class);
     });
@@ -463,7 +463,7 @@ describe('API Endpoints', function () {
         $request->setUserResolver(fn () => $this->user);
         app()->instance('request', $request);
 
-        expect(fn () => $controller->show($request, 'test-tenant', $plan))
+        expect(fn () => $controller->show($request, $plan))
             ->toThrow(\Symfony\Component\HttpKernel\Exception\HttpException::class);
     });
 

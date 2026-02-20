@@ -36,12 +36,21 @@ class AttendanceLogResource extends JsonResource
             'confidence' => $this->resource->confidence,
             'confidence_percent' => $this->resource->confidence ? round((float) $this->resource->confidence, 1) : null,
             'verification_method' => $this->getVerificationMethod(),
+            'source' => $this->resource->source?->value ?? 'biometric',
+            'source_label' => $this->resource->source?->label() ?? 'Biometric',
             'device' => $this->when(
                 $this->resource->relationLoaded('biometricDevice') && $this->resource->biometricDevice,
                 fn () => [
                     'id' => $this->resource->biometricDevice->id,
                     'name' => $this->resource->biometricDevice->name,
                     'device_identifier' => $this->resource->biometricDevice->device_identifier,
+                ]
+            ),
+            'kiosk' => $this->when(
+                $this->resource->relationLoaded('kiosk') && $this->resource->kiosk,
+                fn () => [
+                    'id' => $this->resource->kiosk->id,
+                    'name' => $this->resource->kiosk->name,
                 ]
             ),
         ];

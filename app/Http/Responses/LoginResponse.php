@@ -36,10 +36,9 @@ class LoginResponse implements LoginResponseContract
             return $this->redirectToTenantSelector($request);
         }
 
-        // No tenants - redirect to create organization
-        // Super admins can still access via the super admin dashboard
+        // No tenants - super admins go to admin dashboard, others register
         if ($user->is_super_admin) {
-            return $this->redirectToDefault($request);
+            return $this->redirectToAdmin($request);
         }
 
         return redirect()->route('tenant.register');
@@ -50,6 +49,11 @@ class LoginResponse implements LoginResponseContract
      */
     protected function redirectToTenant(Request $request, $tenant): Response
     {
+        // Super admins with tenants still go to admin dashboard
+        if ($request->user()->is_super_admin) {
+            return $this->redirectToAdmin($request);
+        }
+
         // Create secure redirect token
         $token = TenantRedirectToken::create([
             'user_id' => $request->user()->id,
@@ -72,14 +76,19 @@ class LoginResponse implements LoginResponseContract
      */
     protected function redirectToTenantSelector(Request $request): Response
     {
+        // Super admins with multiple tenants go to admin dashboard
+        if ($request->user()->is_super_admin) {
+            return $this->redirectToAdmin($request);
+        }
+
         return redirect()->intended('/select-tenant');
     }
 
     /**
-     * Redirect to the default dashboard.
+     * Redirect to the platform admin dashboard.
      */
-    protected function redirectToDefault(Request $request): Response
+    protected function redirectToAdmin(Request $request): Response
     {
-        return redirect()->intended(config('fortify.home', '/dashboard'));
+        return redirect()->intended('/admin');
     }
 }

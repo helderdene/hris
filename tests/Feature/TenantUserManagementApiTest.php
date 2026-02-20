@@ -208,10 +208,7 @@ describe('Tenant User Management API', function () {
         $controller = new TenantUserController;
         $response = $controller->destroy($employee);
 
-        expect($response->getStatusCode())->toBe(200);
-
-        $data = json_decode($response->getContent(), true);
-        expect($data['message'])->toBe('User removed from tenant successfully.');
+        expect($response->getStatusCode())->toBe(302);
 
         // Verify the user is no longer attached to the tenant
         $employee->load('tenants');

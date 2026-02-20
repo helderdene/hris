@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\AttendanceSource;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -34,6 +35,8 @@ class AttendanceLog extends TenantModel
         'person_name',
         'captured_photo',
         'raw_payload',
+        'source',
+        'kiosk_id',
     ];
 
     /**
@@ -47,6 +50,7 @@ class AttendanceLog extends TenantModel
             'confidence' => 'decimal:2',
             'logged_at' => 'datetime',
             'raw_payload' => 'array',
+            'source' => AttendanceSource::class,
         ];
     }
 
@@ -64,5 +68,13 @@ class AttendanceLog extends TenantModel
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    /**
+     * Get the kiosk that recorded this log.
+     */
+    public function kiosk(): BelongsTo
+    {
+        return $this->belongsTo(Kiosk::class);
     }
 }

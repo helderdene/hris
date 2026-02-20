@@ -315,7 +315,7 @@ describe('Adjustment API Show', function () {
         $adjustment = EmployeeAdjustment::factory()->oneTimeAllowance()->create();
 
         $controller = new EmployeeAdjustmentController;
-        $response = $controller->show($tenant->slug, $adjustment);
+        $response = $controller->show($adjustment);
 
         $data = $response->resolve();
         expect($data['id'])->toBe($adjustment->id);
@@ -342,7 +342,7 @@ describe('Adjustment API Update', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = createUpdateAdjustmentRequest($data, $hrManager);
-        $response = $controller->update($request, $tenant->slug, $adjustment);
+        $response = $controller->update($request, $adjustment);
 
         $responseData = $response->resolve();
         expect($responseData['amount'])->toBe(2500.0);
@@ -367,7 +367,7 @@ describe('Adjustment API Update', function () {
         $controller = new EmployeeAdjustmentController;
         $request = createUpdateAdjustmentRequest($data, $hrManager);
 
-        expect(fn () => $controller->update($request, $tenant->slug, $adjustment))
+        expect(fn () => $controller->update($request, $adjustment))
             ->toThrow(Symfony\Component\HttpKernel\Exception\HttpException::class);
     });
 
@@ -388,7 +388,7 @@ describe('Adjustment API Update', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = createUpdateAdjustmentRequest($data, $hrManager);
-        $response = $controller->update($request, $tenant->slug, $adjustment);
+        $response = $controller->update($request, $adjustment);
 
         $adjustment->refresh();
         expect($adjustment->amount)->toBe('2500.00');
@@ -412,7 +412,7 @@ describe('Adjustment API Status Update', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = createUpdateAdjustmentStatusRequest($data, $hrManager);
-        $response = $controller->updateStatus($request, $tenant->slug, $adjustment);
+        $response = $controller->updateStatus($request, $adjustment);
 
         $responseData = $response->resolve();
         expect($responseData['status'])->toBe('on_hold');
@@ -436,7 +436,7 @@ describe('Adjustment API Status Update', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = createUpdateAdjustmentStatusRequest($data, $hrManager);
-        $response = $controller->updateStatus($request, $tenant->slug, $adjustment);
+        $response = $controller->updateStatus($request, $adjustment);
 
         $adjustment->refresh();
         expect($adjustment->status)->toBe(AdjustmentStatus::Active);
@@ -457,7 +457,7 @@ describe('Adjustment API Status Update', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = createUpdateAdjustmentStatusRequest($data, $hrManager);
-        $response = $controller->updateStatus($request, $tenant->slug, $adjustment);
+        $response = $controller->updateStatus($request, $adjustment);
 
         $adjustment->refresh();
         expect($adjustment->status)->toBe(AdjustmentStatus::Completed);
@@ -479,7 +479,7 @@ describe('Adjustment API Status Update', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = createUpdateAdjustmentStatusRequest($data, $hrManager);
-        $response = $controller->updateStatus($request, $tenant->slug, $adjustment);
+        $response = $controller->updateStatus($request, $adjustment);
 
         $adjustment->refresh();
         expect($adjustment->status)->toBe(AdjustmentStatus::Cancelled);
@@ -511,7 +511,7 @@ describe('Adjustment API Delete', function () {
         $adjustment = EmployeeAdjustment::factory()->create();
 
         $controller = new EmployeeAdjustmentController;
-        $response = $controller->destroy($tenant->slug, $adjustment);
+        $response = $controller->destroy($adjustment);
 
         expect($response->getStatusCode())->toBe(200);
 
@@ -546,7 +546,7 @@ describe('Adjustment API Delete', function () {
         ]);
 
         $controller = new EmployeeAdjustmentController;
-        $response = $controller->destroy($tenant->slug, $adjustment);
+        $response = $controller->destroy($adjustment);
 
         expect($response->getStatusCode())->toBe(422);
         expect($response->getData(true)['message'])->toContain('applied to payroll');
@@ -571,7 +571,7 @@ describe('Employee Adjustments Endpoint', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = Request::create('/api/employees/1/adjustments', 'GET');
-        $response = $controller->employeeAdjustments($request, $tenant->slug, $employee1);
+        $response = $controller->employeeAdjustments($request, $employee1);
 
         expect($response->count())->toBe(2);
     });
@@ -590,7 +590,7 @@ describe('Employee Adjustments Endpoint', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = Request::create('/api/employees/1/adjustments', 'GET', ['status' => 'active']);
-        $response = $controller->employeeAdjustments($request, $tenant->slug, $employee);
+        $response = $controller->employeeAdjustments($request, $employee);
 
         expect($response->count())->toBe(1);
     });
@@ -609,7 +609,7 @@ describe('Employee Adjustments Endpoint', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = Request::create('/api/employees/1/adjustments', 'GET', ['category' => 'earning']);
-        $response = $controller->employeeAdjustments($request, $tenant->slug, $employee);
+        $response = $controller->employeeAdjustments($request, $employee);
 
         expect($response->count())->toBe(1);
     });
@@ -629,7 +629,7 @@ describe('Employee Adjustments Endpoint', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = Request::create('/api/employees/1/adjustments', 'GET', ['active_only' => true]);
-        $response = $controller->employeeAdjustments($request, $tenant->slug, $employee);
+        $response = $controller->employeeAdjustments($request, $employee);
 
         expect($response->count())->toBe(1);
     });
@@ -666,7 +666,7 @@ describe('Period Adjustments Endpoint', function () {
 
         $controller = new EmployeeAdjustmentController;
         $request = Request::create('/api/payroll-periods/1/adjustments', 'GET');
-        $response = $controller->periodAdjustments($request, $tenant->slug, $payrollPeriod);
+        $response = $controller->periodAdjustments($request, $payrollPeriod);
 
         expect($response->count())->toBe(2);
     });

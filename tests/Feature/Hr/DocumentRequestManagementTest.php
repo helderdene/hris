@@ -136,7 +136,7 @@ it('allows admin to update document request status to processing', function () {
     $formRequest->setContainer(app());
     $formRequest->validateResolved();
 
-    $response = $controller->update($formRequest, 'acme', $documentRequest);
+    $response = $controller->update($formRequest, $documentRequest);
 
     $documentRequest->refresh();
     expect($documentRequest->status)->toBe(DocumentRequestStatus::Processing);
@@ -171,7 +171,7 @@ it('sets collected_at when status changes to collected', function () {
     $formRequest->setContainer(app());
     $formRequest->validateResolved();
 
-    $response = $controller->update($formRequest, 'acme', $documentRequest);
+    $response = $controller->update($formRequest, $documentRequest);
 
     $documentRequest->refresh();
     expect($documentRequest->status)->toBe(DocumentRequestStatus::Collected);

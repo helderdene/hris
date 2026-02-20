@@ -4,6 +4,8 @@ use App\Enums\DtrStatus;
 use App\Enums\ScheduleType;
 use App\Enums\TenantUserRole;
 use App\Http\Controllers\Api\DailyTimeRecordController;
+use App\Http\Requests\Api\CalculateDtrRequest;
+use App\Http\Requests\Api\ResolveDtrReviewRequest;
 use App\Http\Requests\DtrFilterRequest;
 use App\Models\AttendanceLog;
 use App\Models\BiometricDevice;
@@ -314,7 +316,7 @@ describe('DTR API Show', function () {
             app(DtrPeriodAggregator::class)
         );
 
-        $response = $controller->show($tenant->slug, $dtr);
+        $response = $controller->show($dtr);
 
         $data = $response->toArray(request());
         expect($data['id'])->toBe($dtr->id);
@@ -348,7 +350,7 @@ describe('DTR API Employee DTR', function () {
         );
 
         $request = createDtrFilterRequest();
-        $response = $controller->employeeDtr($request, $tenant->slug, $employee1);
+        $response = $controller->employeeDtr($request, $employee1);
 
         expect($response->count())->toBe(5);
     });
@@ -384,7 +386,7 @@ describe('DTR API Employee DTR', function () {
             'date_from' => '2025-01-12',
             'date_to' => '2025-01-18',
         ]);
-        $response = $controller->employeeDtr($request, $tenant->slug, $employee);
+        $response = $controller->employeeDtr($request, $employee);
 
         expect($response->count())->toBe(1);
     });
@@ -442,7 +444,7 @@ describe('DTR API Summary', function () {
         ]);
         app()->instance('request', $request);
 
-        $response = $controller->summary($request, $tenant->slug, $employee);
+        $response = $controller->summary($request, $employee);
 
         $data = $response->toArray(request());
 
@@ -474,7 +476,7 @@ describe('DTR API Approve Overtime', function () {
             app(DtrPeriodAggregator::class)
         );
 
-        $response = $controller->approveOvertime($tenant->slug, $dtr);
+        $response = $controller->approveOvertime($dtr);
 
         expect($response->getStatusCode())->toBe(200);
 
@@ -505,7 +507,7 @@ describe('DTR API Approve Overtime', function () {
             app(DtrPeriodAggregator::class)
         );
 
-        $response = $controller->approveOvertime($tenant->slug, $dtr);
+        $response = $controller->approveOvertime($dtr);
 
         expect($response->getStatusCode())->toBe(422);
 
@@ -534,19 +536,21 @@ describe('DTR API Resolve Review', function () {
             app(DtrPeriodAggregator::class)
         );
 
-        $request = Request::create('/api/time-attendance/dtr/resolve-review', 'POST', [
+        $request = ResolveDtrReviewRequest::create('/api/time-attendance/dtr/resolve-review', 'POST', [
+            'resolution_type' => 'no_change',
             'remarks' => 'Verified manually with supervisor',
         ]);
-        app()->instance('request', $request);
+        $request->setContainer(app());
+        $request->validateResolved();
 
-        $response = $controller->resolveReview($request, $tenant->slug, $dtr);
+        $response = $controller->resolveReview($request, $dtr);
 
         expect($response->getStatusCode())->toBe(200);
 
         $data = json_decode($response->getContent(), true);
-        expect($data['message'])->toBe('Review resolved successfully.');
+        expect($data['message'])->toBe('Review resolved.');
         expect($data['data']['needs_review'])->toBeFalse();
-        expect($data['data']['remarks'])->toBe('Verified manually with supervisor');
+        expect($data['data']['remarks'])->toContain('Verified manually with supervisor');
 
         $dtr->refresh();
         expect($dtr->needs_review)->toBeFalse();
@@ -571,10 +575,14 @@ describe('DTR API Resolve Review', function () {
             app(DtrPeriodAggregator::class)
         );
 
-        $request = Request::create('/api/time-attendance/dtr/resolve-review', 'POST');
-        app()->instance('request', $request);
+        $request = ResolveDtrReviewRequest::create('/api/time-attendance/dtr/resolve-review', 'POST', [
+            'resolution_type' => 'no_change',
+            'remarks' => 'Test remarks',
+        ]);
+        $request->setContainer(app());
+        $request->validateResolved();
 
-        $response = $controller->resolveReview($request, $tenant->slug, $dtr);
+        $response = $controller->resolveReview($request, $dtr);
 
         expect($response->getStatusCode())->toBe(422);
 
@@ -703,12 +711,13 @@ describe('DTR API Calculate', function () {
             app(DtrPeriodAggregator::class)
         );
 
-        $request = Request::create('/api/time-attendance/dtr/calculate', 'POST', [
+        $request = CalculateDtrRequest::create('/api/time-attendance/dtr/calculate', 'POST', [
             'date' => '2025-01-15',
         ]);
-        app()->instance('request', $request);
+        $request->setContainer(app());
+        $request->validateResolved();
 
-        $response = $controller->calculate($request, $tenant->slug, $employee);
+        $response = $controller->calculate($request, $employee);
 
         $data = $response->toArray(request());
 

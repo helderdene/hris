@@ -29,6 +29,9 @@
     --enterprise: #7c3aed;
     --enterprise-bg: #f5f0ff;
     --enterprise-border: #c7b3f4;
+    --custom: #b45309;
+    --custom-bg: #fffbeb;
+    --custom-border: #fbbf24;
     --serif: 'Instrument Serif', Georgia, serif;
     --sans: 'DM Sans', -apple-system, sans-serif;
     --mono: 'JetBrains Mono', 'SF Mono', monospace;
@@ -307,7 +310,7 @@
   /* ---- TIER CARDS ---- */
   .tier-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     margin: 24px 0 40px;
   }
@@ -332,6 +335,7 @@
     box-shadow: 0 0 0 1px var(--pro-border);
   }
   .tier-card.enterprise { border-color: var(--enterprise-border); }
+  .tier-card.custom { border-color: var(--custom-border); border-style: dashed; }
 
   .tier-card .tier-badge {
     display: inline-block;
@@ -370,6 +374,11 @@
     font-weight: 600;
   }
 
+  .tier-card.custom .tier-badge {
+    background: var(--custom-bg);
+    color: var(--custom);
+    border: 1px solid var(--custom-border);
+  }
   .tier-card.enterprise .tier-badge {
     background: var(--enterprise-bg);
     color: var(--enterprise);
@@ -448,6 +457,7 @@
   .tier-card.starter .check { background: var(--starter-bg); color: var(--starter); }
   .tier-card.pro .check { background: var(--pro-bg); color: var(--pro); }
   .tier-card.enterprise .check { background: var(--enterprise-bg); color: var(--enterprise); }
+  .tier-card.custom .check { background: var(--custom-bg); color: var(--custom); }
 
   .tier-card .tier-module.inherited {
     color: var(--ink-muted);
@@ -766,14 +776,19 @@
     <a href="#tiers">Subscription Tiers</a>
     <a href="#comparison">Feature Matrix</a>
     <a href="#pricing">Pricing Strategy</a>
+    <a href="#addons">Add-On Slots</a>
+    <a href="#custom-plan">Custom Plan</a>
     <a href="#trial">Trial Period</a>
+    <a href="#paymongo-limits">PayMongo Limitations</a>
   </div>
 
   <div class="nav-group">
     <div class="nav-group-label">Technical</div>
     <a href="#architecture">Architecture Decisions</a>
+    <a href="#paymongo-sdk">PayMongo SDK &amp; Config</a>
     <a href="#schema">Database Schema</a>
     <a href="#models">New Models</a>
+    <a href="#tenant-model">Tenant Model Changes</a>
     <a href="#gating">Feature Gating</a>
     <a href="#middleware">Middleware</a>
     <a href="#frontend">Frontend Gating</a>
@@ -785,6 +800,8 @@
     <a href="#sync">Employee Sync</a>
     <a href="#limits">Limit Enforcement</a>
     <a href="#trial-tech">Trial Expiration</a>
+    <a href="#notifications">Notifications</a>
+    <a href="#plan-seeder">Plan Seeder</a>
   </div>
 
   <div class="nav-group">
@@ -839,7 +856,7 @@
   <!-- ============================================ -->
 
   <h2 id="modules"><span class="part-num">Part 1 &mdash; Business Design</span>Module Inventory</h2>
-  <p>KasamaHR consists of 20 distinct functional modules:</p>
+  <p>KasamaHR consists of 21 distinct functional modules:</p>
 
   <div class="table-wrap">
     <table>
@@ -867,6 +884,7 @@
         <tr><td>18</td><td class="module-name">Background Check &amp; Reference</td><td>Background checks, documents, reference checks</td></tr>
         <tr><td>19</td><td class="module-name">Audit &amp; Security</td><td>Audit logs (model change tracking), password confirmation</td></tr>
         <tr><td>20</td><td class="module-name">Careers / Public Portal</td><td>Public careers page, job listings, public applications, offer response portal</td></tr>
+        <tr><td>21</td><td class="module-name">HR Analytics</td><td>HR analytics dashboard, workforce metrics, turnover analysis</td></tr>
       </tbody>
     </table>
   </div>
@@ -881,7 +899,7 @@
       <div class="tier-name">Starter</div>
       <div class="tier-desc">Core HR operations for small companies</div>
       <div class="tier-price">
-        <span class="amount">&peso;99</span>
+        <span class="amount">₱50</span>
         <span class="period">/employee/mo</span>
         <div class="min">Min 5 employees</div>
       </div>
@@ -904,7 +922,7 @@
       <div class="tier-name">Professional</div>
       <div class="tier-desc">Strategic HR for growing companies</div>
       <div class="tier-price">
-        <span class="amount">&peso;199</span>
+        <span class="amount">₱100</span>
         <span class="period">/employee/mo</span>
         <div class="min">Min 10 employees</div>
       </div>
@@ -926,7 +944,7 @@
       <div class="tier-name">Enterprise</div>
       <div class="tier-desc">Full platform for large organizations</div>
       <div class="tier-price">
-        <span class="amount">&peso;349</span>
+        <span class="amount">₱150</span>
         <span class="period">/employee/mo</span>
         <div class="min">Min 25 employees</div>
       </div>
@@ -937,6 +955,26 @@
       <div class="tier-module"><span class="check">&#10003;</span> Public Careers Portal</div>
       <div class="tier-divider">Unlimited biometric devices &amp; kiosks</div>
       <div class="tier-divider">Full API access &amp; SSO/SAML</div>
+      <div class="tier-divider">Dedicated account manager</div>
+    </div>
+
+    <!-- CUSTOM -->
+    <div class="tier-card custom">
+      <span class="tier-badge">Custom</span>
+      <div class="tier-name">Custom</div>
+      <div class="tier-desc">Sales-assisted plan for unique needs</div>
+      <div class="tier-price">
+        <span class="amount">Negotiated</span>
+        <span class="period">/employee/mo</span>
+        <div class="min">Per-deal pricing</div>
+      </div>
+      <div class="tier-modules-label">Pick &amp; choose from all 21 modules</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Cherry-picked modules</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Custom employee limits</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Custom device limits</div>
+      <div class="tier-module"><span class="check">&#10003;</span> Negotiated storage</div>
+      <div class="tier-divider">PayMongo or manual invoice billing</div>
+      <div class="tier-divider">Custom contract terms</div>
       <div class="tier-divider">Dedicated account manager</div>
     </div>
   </div>
@@ -951,48 +989,48 @@
   <div class="table-wrap">
     <table class="matrix-table">
       <thead>
-        <tr><th>Capability</th><th>Starter</th><th>Professional</th><th>Enterprise</th></tr>
+        <tr><th>Capability</th><th>Starter</th><th>Professional</th><th>Enterprise</th><th>Custom</th></tr>
       </thead>
       <tbody>
-        <tr class="section-row"><td colspan="4">Core HR</td></tr>
-        <tr><td>Employee Records</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Organization Management</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Time &amp; Attendance</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Biometric Integration</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Web Kiosk Clock-In <span class="planned-tag">Planned</span></td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Leave Management</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Payroll Processing</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Government Compliance Reports</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Employee Self-Service (Basic)</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr class="section-row"><td colspan="5">Core HR</td></tr>
+        <tr><td>Employee Records</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Organization Management</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Time &amp; Attendance</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Biometric Integration</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Web Kiosk Clock-In <span class="planned-tag">Planned</span></td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Leave Management</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Payroll Processing</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Government Compliance Reports</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Employee Self-Service (Basic)</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
 
-        <tr class="section-row"><td colspan="4">Strategic HR</td></tr>
-        <tr><td>Recruitment &amp; Hiring</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Onboarding &amp; Pre-boarding</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Training &amp; Development</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Performance Management</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Probationary Management</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Manager / Supervisor Tools</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Help Center</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>HR Analytics Dashboard</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td></tr>
+        <tr class="section-row"><td colspan="5">Strategic HR</td></tr>
+        <tr><td>Recruitment &amp; Hiring</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Onboarding &amp; Pre-boarding</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Training &amp; Development</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Performance Management</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Probationary Management</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Manager / Supervisor Tools</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Help Center</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>HR Analytics Dashboard</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
 
-        <tr class="section-row"><td colspan="4">Enterprise</td></tr>
-        <tr><td>Compliance Training</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Background &amp; Reference Checks</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Audit Logs</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Public Careers Portal</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
+        <tr class="section-row"><td colspan="5">Enterprise</td></tr>
+        <tr><td>Compliance Training</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Background &amp; Reference Checks</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Audit Logs</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
+        <tr><td>Public Careers Portal</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="limit-val">Pick &amp; choose</td></tr>
 
-        <tr class="section-row"><td colspan="4">Limits</td></tr>
-        <tr><td>Max Employees</td><td class="limit-val">50</td><td class="limit-val">250</td><td class="limit-val">Unlimited</td></tr>
-        <tr><td>Max Admin / HR Users</td><td class="limit-val">3</td><td class="limit-val">10</td><td class="limit-val">Unlimited</td></tr>
-        <tr><td>Max Departments</td><td class="limit-val">5</td><td class="limit-val">Unlimited</td><td class="limit-val">Unlimited</td></tr>
-        <tr><td>Max Biometric Devices</td><td class="limit-val">2</td><td class="limit-val">10</td><td class="limit-val">Unlimited</td></tr>
-        <tr><td>Storage</td><td class="limit-val">1 GB</td><td class="limit-val">10 GB</td><td class="limit-val">100 GB</td></tr>
+        <tr class="section-row"><td colspan="5">Limits</td></tr>
+        <tr><td>Max Employees</td><td class="limit-val">50</td><td class="limit-val">250</td><td class="limit-val">Unlimited</td><td class="limit-val">Negotiated</td></tr>
+        <tr><td>Max Admin / HR Users</td><td class="limit-val">3</td><td class="limit-val">10</td><td class="limit-val">Unlimited</td><td class="limit-val">Negotiated</td></tr>
+        <tr><td>Max Departments</td><td class="limit-val">5</td><td class="limit-val">Unlimited</td><td class="limit-val">Unlimited</td><td class="limit-val">Negotiated</td></tr>
+        <tr><td>Max Biometric Devices</td><td class="limit-val">2</td><td class="limit-val">10</td><td class="limit-val">Unlimited</td><td class="limit-val">Negotiated</td></tr>
+        <tr><td>Storage</td><td class="limit-val">1 GB</td><td class="limit-val">10 GB</td><td class="limit-val">100 GB</td><td class="limit-val">Negotiated</td></tr>
 
-        <tr class="section-row"><td colspan="4">Extras</td></tr>
-        <tr><td>API Access</td><td class="dash">&mdash;</td><td class="limit-val">Read-only</td><td class="limit-val">Full</td></tr>
-        <tr><td>Custom Branding</td><td class="limit-val">Logo only</td><td class="limit-val">Logo + Colors</td><td class="limit-val">Full White-Label</td></tr>
-        <tr><td>SSO / SAML</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td></tr>
-        <tr><td>Support</td><td class="limit-val">Email</td><td class="limit-val">Priority Email</td><td class="limit-val">Dedicated AM</td></tr>
+        <tr class="section-row"><td colspan="5">Extras</td></tr>
+        <tr><td>API Access</td><td class="dash">&mdash;</td><td class="limit-val">Read-only</td><td class="limit-val">Full</td><td class="limit-val">Negotiated</td></tr>
+        <tr><td>Custom Branding</td><td class="limit-val">Logo only</td><td class="limit-val">Logo + Colors</td><td class="limit-val">Full White-Label</td><td class="limit-val">Negotiated</td></tr>
+        <tr><td>SSO / SAML</td><td class="dash">&mdash;</td><td class="dash">&mdash;</td><td class="check-mark">&#10003;</td><td class="limit-val">Negotiated</td></tr>
+        <tr><td>Support</td><td class="limit-val">Email</td><td class="limit-val">Priority Email</td><td class="limit-val">Dedicated AM</td><td class="limit-val">Dedicated AM</td></tr>
       </tbody>
     </table>
   </div>
@@ -1007,15 +1045,98 @@
         <tr><th>Tier</th><th>Monthly (per employee)</th><th>Annual (per employee)</th><th>Savings</th></tr>
       </thead>
       <tbody>
-        <tr><td class="module-name">Starter</td><td>&peso;99/mo</td><td>&peso;990/yr</td><td>~17%</td></tr>
-        <tr><td class="module-name">Professional</td><td>&peso;199/mo</td><td>&peso;1,990/yr</td><td>~17%</td></tr>
-        <tr><td class="module-name">Enterprise</td><td>&peso;349/mo</td><td>&peso;3,490/yr</td><td>~17%</td></tr>
+        <tr><td class="module-name">Starter</td><td>₱50/mo</td><td>₱500/yr</td><td>~17%</td></tr>
+        <tr><td class="module-name">Professional</td><td>₱100/mo</td><td>₱1,000/yr</td><td>~17%</td></tr>
+        <tr><td class="module-name">Enterprise</td><td>₱150/mo</td><td>₱1,500/yr</td><td>~17%</td></tr>
+        <tr><td class="module-name">Custom</td><td>Negotiated</td><td>Negotiated</td><td>Per-deal</td></tr>
       </tbody>
     </table>
   </div>
 
-  <p><strong>Minimums:</strong> Starter &mdash; 5 employees (&peso;495/mo), Professional &mdash; 10 employees (&peso;1,990/mo), Enterprise &mdash; 25 employees (&peso;8,725/mo).</p>
+  <p><strong>Minimums:</strong> Starter &mdash; 5 employees (₱250/mo), Professional &mdash; 10 employees (₱1,000/mo), Enterprise &mdash; 25 employees (₱3,750/mo).</p>
   <p><strong>PayMongo implementation:</strong> Each tier has a base price per employee. PayMongo does not support per-seat <code>quantity</code> on subscriptions, so we use <strong>per-tenant dynamic plans</strong> where each tenant gets a unique PayMongo plan with <code>amount = unit_price x employee_count</code>, updated via API when employees are added or removed.</p>
+
+  <!-- ADD-ON SLOTS -->
+  <h3 id="addons">Add-On Slots</h3>
+  <p>Tenants can purchase additional capacity beyond their plan's included limits without upgrading to a higher tier. Add-ons are billed monthly on top of the base subscription.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Add-On</th><th>Unit</th><th>Price (per unit/mo)</th><th>Available On</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="module-name">Extra Employee Slots</td><td>Pack of 10 employees</td><td>₱25/mo</td><td>Starter, Professional</td></tr>
+        <tr><td class="module-name">Extra Biometric Devices</td><td>1 device</td><td>₱50/mo</td><td>Starter, Professional</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>Enterprise:</strong> Does not need add-ons &mdash; employees and biometric devices are already unlimited.</p>
+  </div>
+
+  <h4>How It Works</h4>
+  <ol style="margin: 0.5rem 0 1rem 1.5rem; line-height: 1.9;">
+    <li>Tenant admin navigates to <strong>Billing &rarr; Add-Ons</strong> page</li>
+    <li>Selects the add-on type and quantity (e.g., 2 packs of 10 employees = 20 extra slots)</li>
+    <li>System creates a one-time PayMongo payment or adds the amount to the next billing cycle</li>
+    <li>On successful payment, the tenant's effective limit increases immediately</li>
+    <li>Add-ons renew automatically with the subscription each billing cycle</li>
+    <li>Add-ons can be removed at any time &mdash; takes effect on the next billing cycle</li>
+  </ol>
+
+  <h4>Effective Limit Calculation</h4>
+  <div class="code-block">
+    <pre>effective_max_employees = plan.max_employees + (extra_employee_packs &times; <span class="num">10</span>)
+effective_max_devices   = plan.max_biometric_devices + extra_device_count</pre>
+  </div>
+  <p><strong>Example:</strong> Starter plan (50 employees, 2 devices) + 3 employee packs + 1 extra device = 80 employees, 3 devices.</p>
+
+  <h4>Downgrade Validation</h4>
+  <p>When removing add-ons or downgrading plans, the system validates that current usage fits within the new effective limits. If not, the tenant is shown specific warnings (e.g., &ldquo;You currently have 65 employees but the new limit would be 50. Please deactivate employees before removing this add-on.&rdquo;).</p>
+
+  <!-- CUSTOM PLAN -->
+  <h3 id="custom-plan">Custom Plan (Sales-Assisted)</h3>
+  <p>For organizations that need specific modules at scale but don&rsquo;t fit neatly into Starter, Professional, or Enterprise &mdash; e.g., a production plant with 2,000 employees that only needs core HR, payroll, and attendance.</p>
+
+  <h4>How It Works</h4>
+  <ol style="margin: 0.5rem 0 1rem 1.5rem; line-height: 1.9;">
+    <li>Client contacts sales or requests a custom quote via the billing page</li>
+    <li>Sales team creates a <strong>Custom plan</strong> via the Platform Admin Dashboard</li>
+    <li>The plan includes a hand-picked set of modules and a negotiated per-employee rate</li>
+    <li>Employee limits, device limits, and other constraints are set per-deal</li>
+    <li>Billing is handled through PayMongo (same per-tenant dynamic plan) or via invoice for large contracts</li>
+  </ol>
+
+  <h4>Custom Plan Configuration (Admin Dashboard)</h4>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Setting</th><th>Description</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">Plan Name</td><td>Custom label (e.g., &ldquo;Starter XL &mdash; Acme Manufacturing&rdquo;)</td></tr>
+        <tr><td class="module-name">Modules</td><td>Cherry-picked from the full 21-module list</td></tr>
+        <tr><td class="module-name">Per-Employee Rate</td><td>Negotiated price (e.g., ₱35/mo for high-volume Starter-only)</td></tr>
+        <tr><td class="module-name">Employee Limit</td><td>Set per-deal (e.g., 5,000) or unlimited</td></tr>
+        <tr><td class="module-name">Biometric Device Limit</td><td>Set per-deal or unlimited</td></tr>
+        <tr><td class="module-name">Billing Method</td><td>PayMongo subscription or manual invoice</td></tr>
+        <tr><td class="module-name">Contract Term</td><td>Monthly, annual, or custom (e.g., 2-year contract)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout">
+    <p><strong>Example &mdash; Acme Manufacturing:</strong> 2,000 factory workers needing only 9 Starter modules. <strong>Custom deal:</strong> ₱35/employee/mo &times; 2,000 = <strong>₱70,000/mo</strong> (vs ₱100,000/mo on standard Starter, or ₱200,000/mo on Professional for modules they don&rsquo;t need).</p>
+  </div>
+
+  <h4>Technical Implementation</h4>
+  <ul style="margin: 0.5rem 0 1rem 1.5rem; line-height: 1.9;">
+    <li>Custom plans use the same <code>plans</code> table with <code>is_custom = true</code></li>
+    <li>Modules assigned via <code>plan_modules</code> pivot (same as standard plans)</li>
+    <li><code>limits</code> JSON is fully configurable per-plan</li>
+    <li>Custom plans are <strong>not shown</strong> on the public pricing page &mdash; only assignable by super admins</li>
+    <li>Platform Admin Dashboard gets &ldquo;Create Custom Plan&rdquo; and &ldquo;Edit Custom Plan&rdquo; actions</li>
+  </ul>
 
   <!-- TRIAL -->
   <h3 id="trial">Trial Period</h3>
@@ -1032,8 +1153,18 @@
     </table>
   </div>
 
-  <div class="callout">
-    <p><strong>PayMongo Limitations:</strong> No proration (plan changes take effect next billing cycle). 24-hour payment window for first subscription. Cards + Maya only. No customer portal (billing UI built in-app). No native per-seat billing (uses per-tenant dynamic plans).</p>
+  <h3 id="paymongo-limits">PayMongo Limitations</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:240px">Limitation</th><th>Impact</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">No proration</td><td>Plan changes take effect on the next billing cycle, not mid-cycle</td></tr>
+        <tr><td class="module-name">24-hour payment window</td><td>First subscription payment must complete within 24 hours or PayMongo auto-cancels</td></tr>
+        <tr><td class="module-name">Cards + Maya only</td><td>Subscriptions only support card and Maya payment methods</td></tr>
+        <tr><td class="module-name">No customer portal</td><td>Must build billing management UI in-app (no Stripe Portal equivalent)</td></tr>
+        <tr><td class="module-name">No native per-seat billing</td><td>Must use per-tenant dynamic plans with manual amount updates</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <!-- ============================================ -->
@@ -1046,6 +1177,7 @@
     <table class="decision-table">
       <thead><tr><th>Decision</th><th>Choice</th><th>Rationale</th></tr></thead>
       <tbody>
+        <tr><td>Payment provider</td><td>PayMongo</td><td>Philippine-focused, PHP currency native, local payment methods</td></tr>
         <tr><td>Billable entity</td><td>Tenant model</td><td>Billing is per-organization, not per-user</td></tr>
         <tr><td>Billing DB</td><td>Platform database</td><td>Billing data is cross-tenant; must survive tenant DB operations</td></tr>
         <tr><td>Module gating</td><td>Middleware + Inertia shared props</td><td>Matches existing <code>EnsureRole</code> pattern; gates both backend and frontend</td></tr>
@@ -1055,8 +1187,50 @@
         <tr><td>Data on downgrade</td><td>Preserved, access restricted</td><td>Never delete customer data; reduces churn friction</td></tr>
         <tr><td>Webhook endpoint</td><td>Main domain (/paymongo/webhook)</td><td>Webhooks are application-wide, not tenant-specific</td></tr>
         <tr><td>Frontend gating</td><td>useSubscription composable</td><td>Follows existing <code>useTenant</code> composable pattern</td></tr>
+        <tr><td>Connection pattern</td><td><code>getConnectionName()</code> method</td><td>Matches existing <code>Tenant</code> model pattern (returns &lsquo;platform&rsquo; for MySQL, null for SQLite/testing)</td></tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- PAYMONGO SDK -->
+  <h3 id="paymongo-sdk">PayMongo SDK &amp; Configuration</h3>
+
+  <h4>Installation</h4>
+  <div class="code-block">
+    <div class="code-label">Terminal</div>
+    <pre>composer require paymongo/paymongo-php</pre>
+  </div>
+
+  <h4>Environment Variables</h4>
+  <div class="code-block">
+    <div class="code-label">.env</div>
+    <pre>PAYMONGO_SECRET_KEY=sk_test_...
+PAYMONGO_PUBLIC_KEY=pk_test_...
+PAYMONGO_WEBHOOK_SECRET=whsec_...</pre>
+  </div>
+
+  <h4>Configuration Files</h4>
+  <div class="code-block">
+    <div class="code-label">config/paymongo.php</div>
+    <pre><span class="kw">return</span> [
+    <span class="str">'secret_key'</span> => <span class="fn">env</span>(<span class="str">'PAYMONGO_SECRET_KEY'</span>),
+    <span class="str">'public_key'</span> => <span class="fn">env</span>(<span class="str">'PAYMONGO_PUBLIC_KEY'</span>),
+    <span class="str">'webhook_secret'</span> => <span class="fn">env</span>(<span class="str">'PAYMONGO_WEBHOOK_SECRET'</span>),
+];</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">config/billing.php</div>
+    <pre><span class="kw">return</span> [
+    <span class="str">'trial_days'</span> => <span class="fn">env</span>(<span class="str">'BILLING_TRIAL_DAYS'</span>, 14),
+    <span class="str">'trial_plan'</span> => <span class="fn">env</span>(<span class="str">'BILLING_TRIAL_PLAN'</span>, <span class="str">'professional'</span>),
+    <span class="str">'currency'</span> => <span class="str">'PHP'</span>,
+    <span class="str">'minimum_employees'</span> => [
+        <span class="str">'starter'</span> => 5,
+        <span class="str">'professional'</span> => 10,
+        <span class="str">'enterprise'</span> => 25,
+    ],
+];</pre>
   </div>
 
   <!-- MODULE ENUM -->
@@ -1096,6 +1270,28 @@
 }</pre>
   </div>
 
+  <!-- SUBSCRIPTION STATUS ENUM -->
+  <h3>Subscription Status Enum</h3>
+  <div class="code-block">
+    <div class="code-label">app/Enums/SubscriptionStatus.php</div>
+    <pre><span class="kw">enum</span> SubscriptionStatus: <span class="kw">string</span>
+{
+    <span class="kw">case</span> Active = <span class="str">'active'</span>;
+    <span class="kw">case</span> PastDue = <span class="str">'past_due'</span>;
+    <span class="kw">case</span> Unpaid = <span class="str">'unpaid'</span>;
+    <span class="kw">case</span> Cancelled = <span class="str">'cancelled'</span>;
+    <span class="kw">case</span> Incomplete = <span class="str">'incomplete'</span>;
+    <span class="kw">case</span> IncompleteCancelled = <span class="str">'incomplete_cancelled'</span>;
+
+    <span class="kw">public function</span> <span class="fn">label</span>(): <span class="kw">string</span> { <span class="cm">/* human-readable label */</span> }
+
+    <span class="kw">public function</span> <span class="fn">isActive</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this === self::Active;
+    }
+}</pre>
+  </div>
+
   <!-- SCHEMA -->
   <h3 id="schema">Database Schema</h3>
   <p>All billing tables live in the <strong>platform database</strong> alongside <code>tenants</code> and <code>users</code>.</p>
@@ -1108,6 +1304,8 @@
     $table-><span class="fn">string</span>(<span class="str">'slug'</span>)-><span class="fn">unique</span>();
     $table-><span class="fn">text</span>(<span class="str">'description'</span>)-><span class="fn">nullable</span>();
     $table-><span class="fn">boolean</span>(<span class="str">'is_active'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+    $table-><span class="fn">boolean</span>(<span class="str">'is_custom'</span>)-><span class="fn">default</span>(<span class="kw">false</span>);  <span class="cm">// true for sales-assisted custom plans</span>
+    $table-><span class="fn">foreignId</span>(<span class="str">'tenant_id'</span>)-><span class="fn">nullable</span>()-><span class="fn">constrained</span>()-><span class="fn">nullOnDelete</span>(); <span class="cm">// exclusive to tenant if set</span>
     $table-><span class="fn">integer</span>(<span class="str">'sort_order'</span>)-><span class="fn">default</span>(<span class="num">0</span>);
     $table-><span class="fn">json</span>(<span class="str">'limits'</span>);                    <span class="cm">// {"max_employees": 50, ...}</span>
     $table-><span class="fn">timestamps</span>();
@@ -1156,17 +1354,45 @@
     <pre>Schema::<span class="fn">create</span>(<span class="str">'subscriptions'</span>, <span class="kw">function</span> (Blueprint $table) {
     $table-><span class="fn">id</span>();
     $table-><span class="fn">foreignId</span>(<span class="str">'tenant_id'</span>)-><span class="fn">constrained</span>()-><span class="fn">cascadeOnDelete</span>();
-    $table-><span class="fn">foreignId</span>(<span class="str">'plan_id'</span>)-><span class="fn">constrained</span>();
-    $table-><span class="fn">foreignId</span>(<span class="str">'plan_price_id'</span>)-><span class="fn">constrained</span>();
-    $table-><span class="fn">string</span>(<span class="str">'paymongo_subscription_id'</span>)-><span class="fn">nullable</span>();
-    $table-><span class="fn">string</span>(<span class="str">'status'</span>);                   <span class="cm">// SubscriptionStatus enum</span>
-    $table-><span class="fn">integer</span>(<span class="str">'quantity'</span>);                <span class="cm">// employee count</span>
-    $table-><span class="fn">integer</span>(<span class="str">'amount'</span>);                  <span class="cm">// total in centavos</span>
-    $table-><span class="fn">timestamp</span>(<span class="str">'current_period_start'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">string</span>(<span class="str">'name'</span>)-><span class="fn">default</span>(<span class="str">'default'</span>);
+    $table-><span class="fn">string</span>(<span class="str">'paymongo_id'</span>)-><span class="fn">unique</span>()-><span class="fn">nullable</span>();
+    $table-><span class="fn">string</span>(<span class="str">'paymongo_plan_id'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">string</span>(<span class="str">'paymongo_status'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">foreignId</span>(<span class="str">'plan_price_id'</span>)-><span class="fn">nullable</span>()-><span class="fn">constrained</span>()-><span class="fn">nullOnDelete</span>();
+    $table-><span class="fn">integer</span>(<span class="str">'quantity'</span>)-><span class="fn">default</span>(<span class="num">1</span>);
     $table-><span class="fn">timestamp</span>(<span class="str">'current_period_end'</span>)-><span class="fn">nullable</span>();
-    $table-><span class="fn">timestamp</span>(<span class="str">'cancelled_at'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">timestamp</span>(<span class="str">'ends_at'</span>)-><span class="fn">nullable</span>();
     $table-><span class="fn">timestamps</span>();
+
+    $table-><span class="fn">index</span>([<span class="str">'tenant_id'</span>, <span class="str">'paymongo_status'</span>]);
 });</pre>
+  </div>
+
+  <h4>tenant_addons table</h4>
+  <div class="code-block">
+    <pre>Schema::<span class="fn">create</span>(<span class="str">'tenant_addons'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">id</span>();
+    $table-><span class="fn">foreignId</span>(<span class="str">'tenant_id'</span>)-><span class="fn">constrained</span>()-><span class="fn">cascadeOnDelete</span>();
+    $table-><span class="fn">string</span>(<span class="str">'type'</span>);                    <span class="cm">// "employee_slots", "biometric_devices"</span>
+    $table-><span class="fn">integer</span>(<span class="str">'quantity'</span>)-><span class="fn">default</span>(<span class="num">1</span>);   <span class="cm">// number of units purchased</span>
+    $table-><span class="fn">integer</span>(<span class="str">'price_per_unit'</span>);         <span class="cm">// in centavos per unit/mo</span>
+    $table-><span class="fn">string</span>(<span class="str">'currency'</span>)-><span class="fn">default</span>(<span class="str">'PHP'</span>);
+    $table-><span class="fn">boolean</span>(<span class="str">'is_active'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
+    $table-><span class="fn">timestamp</span>(<span class="str">'expires_at'</span>)-><span class="fn">nullable</span>(); <span class="cm">// null = renews with subscription</span>
+    $table-><span class="fn">timestamps</span>();
+
+    $table-><span class="fn">index</span>([<span class="str">'tenant_id'</span>, <span class="str">'type'</span>, <span class="str">'is_active'</span>]);
+});</pre>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Type</th><th>Unit per Quantity</th><th>Effect</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">employee_slots</td><td>10 employees</td><td>Adds <code>quantity &times; 10</code> to max_employees</td></tr>
+        <tr><td class="module-name">biometric_devices</td><td>1 device</td><td>Adds <code>quantity</code> to max_biometric_devices</td></tr>
+      </tbody>
+    </table>
   </div>
 
   <h4>Additions to tenants table</h4>
@@ -1180,7 +1406,7 @@
   </div>
 
   <div class="callout info">
-    <p><strong>Subscriptions table:</strong> Unlike Stripe/Cashier which manages its own subscriptions table, we maintain our own <code>subscriptions</code> table to track PayMongo subscription state. The <code>paymongo_subscription_id</code> column links to the PayMongo subscription resource, and <code>paymongo_customer_id</code> on tenants links to the PayMongo customer resource.</p>
+    <p><strong>Subscriptions table:</strong> Unlike Stripe/Cashier which manages its own subscriptions table, we maintain our own <code>subscriptions</code> table to track PayMongo subscription state. The <code>paymongo_id</code> column links to the PayMongo subscription resource, <code>paymongo_plan_id</code> links to the per-tenant dynamic plan, and <code>paymongo_customer_id</code> on tenants links to the PayMongo customer resource.</p>
   </div>
 
   <!-- MODELS -->
@@ -1194,10 +1420,14 @@
     <span class="kw">protected</span> $connection = <span class="str">'platform'</span>;
 
     <span class="kw">protected</span> $fillable = [<span class="str">'name'</span>, <span class="str">'slug'</span>, <span class="str">'description'</span>,
-                           <span class="str">'is_active'</span>, <span class="str">'sort_order'</span>, <span class="str">'limits'</span>];
+                           <span class="str">'is_active'</span>, <span class="str">'is_custom'</span>, <span class="str">'tenant_id'</span>, <span class="str">'sort_order'</span>, <span class="str">'limits'</span>];
 
     <span class="kw">protected function</span> <span class="fn">casts</span>(): <span class="kw">array</span> {
-        <span class="kw">return</span> [<span class="str">'limits'</span> => <span class="str">'array'</span>, <span class="str">'is_active'</span> => <span class="str">'boolean'</span>];
+        <span class="kw">return</span> [
+            <span class="str">'limits'</span> => <span class="str">'array'</span>,
+            <span class="str">'is_active'</span> => <span class="str">'boolean'</span>,
+            <span class="str">'is_custom'</span> => <span class="str">'boolean'</span>,
+        ];
     }
 
     <span class="kw">public function</span> <span class="fn">prices</span>(): HasMany       { <span class="kw">return</span> $this-><span class="fn">hasMany</span>(PlanPrice::class); }
@@ -1210,6 +1440,230 @@
 
     <span class="kw">public function</span> <span class="fn">getLimit</span>(<span class="kw">string</span> $key, mixed $default = <span class="kw">null</span>): mixed {
         <span class="kw">return</span> <span class="fn">data_get</span>($this->limits, $key, $default);
+    }
+}</pre>
+  </div>
+
+  <h4>PlanPrice model</h4>
+  <div class="code-block">
+    <div class="code-label">app/Models/PlanPrice.php</div>
+    <pre><span class="kw">class</span> PlanPrice <span class="kw">extends</span> Model
+{
+    <span class="kw">protected</span> $fillable = [<span class="str">'plan_id'</span>, <span class="str">'billing_interval'</span>, <span class="str">'price_per_unit'</span>, <span class="str">'currency'</span>, <span class="str">'is_active'</span>];
+
+    <span class="kw">public function</span> <span class="fn">plan</span>(): BelongsTo { <span class="kw">return</span> $this-><span class="fn">belongsTo</span>(Plan::class); }
+}</pre>
+  </div>
+
+  <h4>PlanModule model</h4>
+  <div class="code-block">
+    <div class="code-label">app/Models/PlanModule.php</div>
+    <pre><span class="kw">class</span> PlanModule <span class="kw">extends</span> Model
+{
+    <span class="kw">protected</span> $fillable = [<span class="str">'plan_id'</span>, <span class="str">'module'</span>];
+
+    <span class="kw">public function</span> <span class="fn">plan</span>(): BelongsTo { <span class="kw">return</span> $this-><span class="fn">belongsTo</span>(Plan::class); }
+}</pre>
+  </div>
+
+  <h4>Subscription model</h4>
+  <div class="code-block">
+    <div class="code-label">app/Models/Subscription.php</div>
+    <pre><span class="kw">class</span> Subscription <span class="kw">extends</span> Model
+{
+    <span class="kw">protected</span> $fillable = [
+        <span class="str">'tenant_id'</span>, <span class="str">'name'</span>, <span class="str">'paymongo_id'</span>, <span class="str">'paymongo_plan_id'</span>,
+        <span class="str">'paymongo_status'</span>, <span class="str">'plan_price_id'</span>, <span class="str">'quantity'</span>,
+        <span class="str">'current_period_end'</span>, <span class="str">'ends_at'</span>,
+    ];
+
+    <span class="kw">protected function</span> <span class="fn">casts</span>(): <span class="kw">array</span> {
+        <span class="kw">return</span> [
+            <span class="str">'paymongo_status'</span> => SubscriptionStatus::class,
+            <span class="str">'current_period_end'</span> => <span class="str">'datetime'</span>,
+            <span class="str">'ends_at'</span> => <span class="str">'datetime'</span>,
+        ];
+    }
+
+    <span class="kw">public function</span> <span class="fn">tenant</span>(): BelongsTo { <span class="kw">return</span> $this-><span class="fn">belongsTo</span>(Tenant::class); }
+    <span class="kw">public function</span> <span class="fn">planPrice</span>(): BelongsTo { <span class="kw">return</span> $this-><span class="fn">belongsTo</span>(PlanPrice::class); }
+
+    <span class="kw">public function</span> <span class="fn">active</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this->paymongo_status === SubscriptionStatus::Active
+            &amp;&amp; ($this->ends_at === <span class="kw">null</span> || $this->ends_at-><span class="fn">isFuture</span>());
+    }
+
+    <span class="kw">public function</span> <span class="fn">cancelled</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this->ends_at !== <span class="kw">null</span>;
+    }
+
+    <span class="kw">public function</span> <span class="fn">onGracePeriod</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this-><span class="fn">cancelled</span>() &amp;&amp; $this->ends_at-><span class="fn">isFuture</span>();
+    }
+}</pre>
+  </div>
+
+  <h4>TenantAddon model</h4>
+  <div class="code-block">
+    <div class="code-label">app/Models/TenantAddon.php</div>
+    <pre><span class="kw">class</span> TenantAddon <span class="kw">extends</span> Model
+{
+    <span class="kw">protected</span> $fillable = [<span class="str">'tenant_id'</span>, <span class="str">'type'</span>, <span class="str">'quantity'</span>,
+                           <span class="str">'price_per_unit'</span>, <span class="str">'currency'</span>, <span class="str">'is_active'</span>, <span class="str">'expires_at'</span>];
+
+    <span class="kw">protected function</span> <span class="fn">casts</span>(): <span class="kw">array</span> {
+        <span class="kw">return</span> [
+            <span class="str">'type'</span> => AddonType::class,
+            <span class="str">'is_active'</span> => <span class="str">'boolean'</span>,
+            <span class="str">'expires_at'</span> => <span class="str">'datetime'</span>,
+        ];
+    }
+
+    <span class="kw">public function</span> <span class="fn">tenant</span>(): BelongsTo { <span class="kw">return</span> $this-><span class="fn">belongsTo</span>(Tenant::class); }
+
+    <span class="cm">/** Total extra units this add-on provides */</span>
+    <span class="kw">public function</span> <span class="fn">extraUnits</span>(): <span class="kw">int</span> {
+        <span class="kw">return</span> $this->quantity * $this->type-><span class="fn">unitsPerQuantity</span>();
+    }
+
+    <span class="cm">/** Monthly cost of this add-on in centavos */</span>
+    <span class="kw">public function</span> <span class="fn">monthlyCost</span>(): <span class="kw">int</span> {
+        <span class="kw">return</span> $this->quantity * $this->price_per_unit;
+    }
+
+    <span class="kw">public function</span> <span class="fn">scopeActive</span>(Builder $query): Builder {
+        <span class="kw">return</span> $query-><span class="fn">where</span>(<span class="str">'is_active'</span>, <span class="kw">true</span>)
+            -><span class="fn">where</span>(<span class="kw">fn</span> ($q) => $q-><span class="fn">whereNull</span>(<span class="str">'expires_at'</span>)
+                                    -><span class="fn">orWhere</span>(<span class="str">'expires_at'</span>, <span class="str">'>'</span>, <span class="fn">now</span>()));
+    }
+}</pre>
+  </div>
+
+  <h4>AddonType Enum</h4>
+  <div class="code-block">
+    <div class="code-label">app/Enums/AddonType.php</div>
+    <pre><span class="kw">enum</span> AddonType: <span class="kw">string</span>
+{
+    <span class="kw">case</span> EmployeeSlots = <span class="str">'employee_slots'</span>;
+    <span class="kw">case</span> BiometricDevices = <span class="str">'biometric_devices'</span>;
+
+    <span class="cm">/** Number of units granted per quantity */</span>
+    <span class="kw">public function</span> <span class="fn">unitsPerQuantity</span>(): <span class="kw">int</span> {
+        <span class="kw">return match</span>($this) {
+            self::EmployeeSlots => <span class="num">10</span>,
+            self::BiometricDevices => <span class="num">1</span>,
+        };
+    }
+
+    <span class="cm">/** Default price per unit in centavos */</span>
+    <span class="kw">public function</span> <span class="fn">defaultPrice</span>(): <span class="kw">int</span> {
+        <span class="kw">return match</span>($this) {
+            self::EmployeeSlots => <span class="num">2500</span>,      <span class="cm">// ₱25/mo per pack of 10</span>
+            self::BiometricDevices => <span class="num">5000</span>,   <span class="cm">// ₱50/mo per device</span>
+        };
+    }
+}</pre>
+  </div>
+
+  <!-- TENANT MODEL CHANGES -->
+  <h3 id="tenant-model">Tenant Model Changes</h3>
+  <p>Add billing relationships, trial methods, and effective limit calculation to <code>app/Models/Tenant.php</code>:</p>
+
+  <div class="code-block">
+    <div class="code-label">app/Models/Tenant.php (additions)</div>
+    <pre><span class="kw">class</span> Tenant <span class="kw">extends</span> Model
+{
+    <span class="cm">// Add to $fillable: 'plan_id', 'paymongo_customer_id', 'trial_ends_at', 'employee_count_cache'</span>
+
+    <span class="kw">protected function</span> <span class="fn">casts</span>(): <span class="kw">array</span>
+    {
+        <span class="kw">return</span> [
+            <span class="cm">// ... existing casts</span>
+            <span class="str">'trial_ends_at'</span> => <span class="str">'datetime'</span>,
+        ];
+    }
+
+    <span class="kw">public function</span> <span class="fn">plan</span>(): BelongsTo
+    {
+        <span class="kw">return</span> $this-><span class="fn">belongsTo</span>(Plan::class);
+    }
+
+    <span class="kw">public function</span> <span class="fn">subscriptions</span>(): HasMany
+    {
+        <span class="kw">return</span> $this-><span class="fn">hasMany</span>(Subscription::class);
+    }
+
+    <span class="kw">public function</span> <span class="fn">subscription</span>(<span class="kw">string</span> $name = <span class="str">'default'</span>): ?Subscription
+    {
+        <span class="kw">return</span> $this-><span class="fn">subscriptions</span>()-><span class="fn">where</span>(<span class="str">'name'</span>, $name)-><span class="fn">first</span>();
+    }
+
+    <span class="kw">public function</span> <span class="fn">subscribed</span>(<span class="kw">string</span> $name = <span class="str">'default'</span>): <span class="kw">bool</span>
+    {
+        $subscription = $this-><span class="fn">subscription</span>($name);
+        <span class="kw">return</span> $subscription !== <span class="kw">null</span> &amp;&amp; $subscription-><span class="fn">active</span>();
+    }
+
+    <span class="kw">public function</span> <span class="fn">onTrial</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this->trial_ends_at !== <span class="kw">null</span> &amp;&amp; $this->trial_ends_at-><span class="fn">isFuture</span>();
+    }
+
+    <span class="kw">public function</span> <span class="fn">trialExpired</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this->trial_ends_at !== <span class="kw">null</span> &amp;&amp; $this->trial_ends_at-><span class="fn">isPast</span>();
+    }
+
+    <span class="kw">public function</span> <span class="fn">hasActiveAccess</span>(): <span class="kw">bool</span>
+    {
+        <span class="kw">return</span> $this-><span class="fn">onTrial</span>() || $this-><span class="fn">subscribed</span>(<span class="str">'default'</span>);
+    }
+
+    <span class="kw">public function</span> <span class="fn">addons</span>(): HasMany
+    {
+        <span class="kw">return</span> $this-><span class="fn">hasMany</span>(TenantAddon::class);
+    }
+
+    <span class="kw">public function</span> <span class="fn">activeAddons</span>(): HasMany
+    {
+        <span class="kw">return</span> $this-><span class="fn">addons</span>()-><span class="fn">active</span>();
+    }
+
+    <span class="kw">public function</span> <span class="fn">hasModule</span>(Module $module): <span class="kw">bool</span>
+    {
+        <span class="kw">if</span> (! $this->plan) { <span class="kw">return false</span>; }
+        <span class="kw">return</span> $this->plan-><span class="fn">hasModule</span>($module);
+    }
+
+    <span class="kw">public function</span> <span class="fn">availableModules</span>(): <span class="kw">array</span>
+    {
+        <span class="kw">if</span> (! $this->plan) { <span class="kw">return</span> []; }
+        <span class="kw">return</span> $this->plan->modules-><span class="fn">pluck</span>(<span class="str">'module'</span>)-><span class="fn">toArray</span>();
+    }
+
+    <span class="cm">/** Get effective limit including add-ons */</span>
+    <span class="kw">public function</span> <span class="fn">effectiveLimit</span>(<span class="kw">string</span> $key): <span class="kw">int</span>|<span class="kw">null</span>
+    {
+        $base = $this->plan?-><span class="fn">getLimit</span>($key);
+        <span class="kw">if</span> ($base === <span class="kw">null</span> || $base === -<span class="num">1</span>) { <span class="kw">return</span> $base; }
+
+        $addonType = <span class="kw">match</span> ($key) {
+            <span class="str">'max_employees'</span> => AddonType::EmployeeSlots,
+            <span class="str">'max_biometric_devices'</span> => AddonType::BiometricDevices,
+            <span class="kw">default</span> => <span class="kw">null</span>,
+        };
+
+        <span class="kw">if</span> (! $addonType) { <span class="kw">return</span> $base; }
+
+        $extra = $this-><span class="fn">activeAddons</span>()
+            -><span class="fn">where</span>(<span class="str">'type'</span>, $addonType->value)
+            -><span class="fn">get</span>()
+            -><span class="fn">sum</span>(<span class="kw">fn</span> (TenantAddon $addon) => $addon-><span class="fn">extraUnits</span>());
+
+        <span class="kw">return</span> $base + $extra;
     }
 }</pre>
   </div>
@@ -1229,10 +1683,13 @@
     <span class="kw">public function</span> <span class="fn">hasModule</span>(Module $module): <span class="kw">bool</span>
     <span class="kw">public function</span> <span class="fn">hasAnyModule</span>(Module ...$modules): <span class="kw">bool</span>
     <span class="kw">public function</span> <span class="fn">availableModules</span>(): <span class="kw">array</span>
-    <span class="kw">public function</span> <span class="fn">isWithinEmployeeLimit</span>(): <span class="kw">bool</span>
+    <span class="kw">public function</span> <span class="fn">isWithinEmployeeLimit</span>(): <span class="kw">bool</span>  <span class="cm">// uses effectiveLimit (plan + add-ons)</span>
     <span class="kw">public function</span> <span class="fn">isWithinUserLimit</span>(): <span class="kw">bool</span>
-    <span class="kw">public function</span> <span class="fn">isWithinDeviceLimit</span>(): <span class="kw">bool</span>
+    <span class="kw">public function</span> <span class="fn">isWithinDeviceLimit</span>(): <span class="kw">bool</span>   <span class="cm">// uses effectiveLimit (plan + add-ons)</span>
     <span class="kw">public function</span> <span class="fn">getLimit</span>(<span class="kw">string</span> $key, mixed $default = <span class="kw">null</span>): mixed
+    <span class="kw">public function</span> <span class="fn">getEffectiveLimit</span>(<span class="kw">string</span> $key): <span class="kw">int</span>|<span class="kw">null</span>  <span class="cm">// plan base + add-ons</span>
+    <span class="kw">public function</span> <span class="fn">activeAddons</span>(): Collection
+    <span class="kw">public function</span> <span class="fn">addonCostBreakdown</span>(): <span class="kw">array</span>  <span class="cm">// per-addon cost summary for billing UI</span>
 }</pre>
   </div>
 
@@ -1282,6 +1739,7 @@
         <tr><td class="module-name">probationary_management</td><td>Probationary route groups</td></tr>
         <tr><td class="module-name">manager_supervisor</td><td>Manager-specific route groups</td></tr>
         <tr><td class="module-name">help_center</td><td>Help center route groups</td></tr>
+        <tr><td class="module-name">hr_analytics</td><td>HR analytics route groups</td></tr>
         <tr><td class="module-name">compliance_training</td><td>Compliance route groups</td></tr>
         <tr><td class="module-name">background_check_reference</td><td>Background check route groups</td></tr>
         <tr><td class="module-name">audit_security</td><td>Audit log route groups</td></tr>
@@ -1377,14 +1835,20 @@ PAYMONGO_WEBHOOK_SECRET=whsec_...</pre>
   <div class="code-block">
     <div class="code-label">routes/tenant/web-billing.php</div>
     <pre>Route::<span class="fn">prefix</span>(<span class="str">'billing'</span>)-><span class="fn">middleware</span>(<span class="str">'ensure-role:admin'</span>)-><span class="fn">group</span>(<span class="kw">function</span> () {
-    Route::<span class="fn">get</span>(<span class="str">'/'</span>,              [BillingController::class, <span class="str">'index'</span>]);
-    Route::<span class="fn">get</span>(<span class="str">'/plans'</span>,         [BillingController::class, <span class="str">'plans'</span>]);
-    Route::<span class="fn">get</span>(<span class="str">'/upgrade'</span>,       [BillingController::class, <span class="str">'upgrade'</span>]);
-    Route::<span class="fn">post</span>(<span class="str">'/subscribe/{planPrice}'</span>, [BillingController::class, <span class="str">'subscribe'</span>]);
-    Route::<span class="fn">post</span>(<span class="str">'/change-plan/{planPrice}'</span>, [BillingController::class, <span class="str">'changePlan'</span>]);
-    Route::<span class="fn">post</span>(<span class="str">'/cancel'</span>,      [BillingController::class, <span class="str">'cancel'</span>]);
-    Route::<span class="fn">get</span>(<span class="str">'/success'</span>,      [BillingController::class, <span class="str">'success'</span>]);
-    Route::<span class="fn">get</span>(<span class="str">'/invoices'</span>,     [BillingController::class, <span class="str">'invoices'</span>]);
+    Route::<span class="fn">get</span>(<span class="str">'/'</span>,              [BillingController::class, <span class="str">'index'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.index'</span>);
+    Route::<span class="fn">get</span>(<span class="str">'/plans'</span>,         [BillingController::class, <span class="str">'plans'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.plans'</span>);
+    Route::<span class="fn">get</span>(<span class="str">'/upgrade'</span>,       [BillingController::class, <span class="str">'upgrade'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.upgrade'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/subscribe/{planPrice}'</span>, [BillingController::class, <span class="str">'subscribe'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.subscribe'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/change-plan/{planPrice}'</span>, [BillingController::class, <span class="str">'changePlan'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.change-plan'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/cancel'</span>,      [BillingController::class, <span class="str">'cancel'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.cancel'</span>);
+    Route::<span class="fn">get</span>(<span class="str">'/invoices'</span>,     [BillingController::class, <span class="str">'invoices'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.invoices'</span>);
+    Route::<span class="fn">get</span>(<span class="str">'/success'</span>,      [BillingController::class, <span class="str">'success'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.success'</span>);
+
+    <span class="cm">// Add-Ons</span>
+    Route::<span class="fn">get</span>(<span class="str">'/addons'</span>,       [BillingController::class, <span class="str">'addons'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.addons'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/addons/purchase'</span>, [BillingController::class, <span class="str">'purchaseAddon'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.addons.purchase'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/addons/{tenantAddon}/update'</span>, [BillingController::class, <span class="str">'updateAddon'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.addons.update'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/addons/{tenantAddon}/cancel'</span>, [BillingController::class, <span class="str">'cancelAddon'</span>])-><span class="fn">name</span>(<span class="str">'tenant.billing.addons.cancel'</span>);
 });</pre>
   </div>
 
@@ -1400,6 +1864,10 @@ PAYMONGO_WEBHOOK_SECRET=whsec_...</pre>
         <tr><td class="module-name">cancel</td><td>Cancel subscription (takes effect at period end)</td></tr>
         <tr><td class="module-name">success</td><td>Post-checkout success page after PayMongo payment</td></tr>
         <tr><td class="module-name">invoices</td><td>List all invoices with PDF download</td></tr>
+        <tr><td class="module-name">addons</td><td>Add-ons management page &mdash; current add-ons, available add-ons, usage vs limits</td></tr>
+        <tr><td class="module-name">purchaseAddon</td><td>Validates tier eligibility (not Enterprise), creates TenantAddon, updates PayMongo plan amount</td></tr>
+        <tr><td class="module-name">updateAddon</td><td>Changes add-on quantity, validates usage before decrease</td></tr>
+        <tr><td class="module-name">cancelAddon</td><td>Validates usage fits within reduced limits, deactivates on next billing cycle</td></tr>
       </tbody>
     </table>
   </div>
@@ -1471,12 +1939,14 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
 
   <!-- LIMITS -->
   <h3 id="limits">Limit Enforcement</h3>
+  <p>All limit checks use <code>effectiveLimit()</code> which includes add-on capacity. When a limit is reached, the error message offers both purchasing add-ons and upgrading as options.</p>
 
   <div class="code-block">
     <div class="code-label">Employee limit &mdash; EmployeeController::store()</div>
     <pre><span class="kw">if</span> (! $gate-><span class="fn">isWithinEmployeeLimit</span>()) {
     <span class="kw">return</span> <span class="fn">back</span>()-><span class="fn">withErrors</span>([
-        <span class="str">'limit'</span> => <span class="str">"You've reached your plan's employee limit. Please upgrade."</span>
+        <span class="str">'limit'</span> => <span class="str">"You've reached your employee limit ({$gate-><span class="fn">getEffectiveLimit</span>(<span class="str">'max_employees'</span>)}). "</span>
+            . <span class="str">"You can purchase additional employee slots or upgrade your plan."</span>
     ]);
 }</pre>
   </div>
@@ -1485,7 +1955,8 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
     <div class="code-label">Biometric device limit</div>
     <pre><span class="kw">if</span> (! $gate-><span class="fn">isWithinDeviceLimit</span>()) {
     <span class="kw">return</span> <span class="fn">back</span>()-><span class="fn">withErrors</span>([
-        <span class="str">'limit'</span> => <span class="str">"You've reached your plan's biometric device limit. Please upgrade."</span>
+        <span class="str">'limit'</span> => <span class="str">"You've reached your device limit ({$gate-><span class="fn">getEffectiveLimit</span>(<span class="str">'max_biometric_devices'</span>)}). "</span>
+            . <span class="str">"You can purchase additional device slots or upgrade your plan."</span>
     ]);
 }</pre>
   </div>
@@ -1508,6 +1979,29 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
 
   <p>Scheduled command <code>billing:check-trials</code> runs daily to notify admins of expired trials.</p>
 
+  <!-- NOTIFICATIONS -->
+  <h3 id="notifications">Notifications</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Notification</th><th>Trigger</th><th>Recipients</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">TrialExpiredNotification</td><td>Trial period ends with no subscription</td><td>Tenant admin users</td></tr>
+        <tr><td class="module-name">PaymentFailedNotification</td><td>PayMongo invoice payment fails</td><td>Tenant admin users</td></tr>
+        <tr><td class="module-name">SubscriptionCancelledNotification</td><td>Subscription cancelled</td><td>Tenant admin users</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- PLAN SEEDER -->
+  <h3 id="plan-seeder">Plan Seeder</h3>
+  <div class="code-block">
+    <div class="code-label">database/seeders/PlanSeeder.php</div>
+    <pre><span class="cm">// Seeds 3 plans (Starter, Professional, Enterprise)</span>
+<span class="cm">// Each plan gets 2 prices (monthly, yearly) with price_per_unit in centavos</span>
+<span class="cm">// Each plan gets its module assignments via plan_modules</span>
+<span class="cm">// PayMongo plan IDs are NOT seeded (created dynamically per-tenant)</span></pre>
+  </div>
+
   <!-- ============================================ -->
   <!-- PART 3: ROADMAP                              -->
   <!-- ============================================ -->
@@ -1523,13 +2017,16 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
       <div class="phase-content">
         <h4>Foundation</h4>
         <ul>
-          <li>Install PayMongo PHP SDK</li>
-          <li>Create platform migrations for plans, plan_prices, plan_modules, subscriptions</li>
-          <li>Create Module and SubscriptionStatus enums</li>
-          <li>Create migration to add billing columns to tenants table (plan_id, paymongo_customer_id, trial_ends_at, employee_count_cache)</li>
-          <li>Create Plan, PlanPrice, PlanModule, Subscription models</li>
-          <li>Add plan relationship to Tenant model</li>
-          <li>Create config/billing.php, config/paymongo.php, and PlanSeeder</li>
+          <li>Install PayMongo PHP SDK (<code>composer require paymongo/paymongo-php</code>)</li>
+          <li>Create <code>Module</code> enum (<code>app/Enums/Module.php</code>)</li>
+          <li>Create <code>SubscriptionStatus</code> enum (<code>app/Enums/SubscriptionStatus.php</code>)</li>
+          <li>Create <code>config/billing.php</code> and <code>config/paymongo.php</code></li>
+          <li>Create platform migration for <code>plans</code>, <code>plan_prices</code>, <code>plan_modules</code>, <code>subscriptions</code></li>
+          <li>Create migration to add billing columns to <code>tenants</code> table</li>
+          <li>Create <code>Plan</code>, <code>PlanPrice</code>, <code>PlanModule</code>, <code>Subscription</code>, <code>TenantAddon</code> models</li>
+          <li>Add plan/subscription relationships and trial methods to <code>Tenant</code> model</li>
+          <li>Create <code>PlanSeeder</code></li>
+          <li>Create model factories (<code>PlanFactory</code>, <code>SubscriptionFactory</code>)</li>
         </ul>
       </div>
     </div>
@@ -1540,15 +2037,13 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
         <span class="week">Week 2&ndash;3</span>
       </div>
       <div class="phase-content">
-        <h4>Feature Gating</h4>
+        <h4>PayMongo Service Layer</h4>
         <ul>
-          <li>Create FeatureGateService</li>
-          <li>Create EnsureModuleAccess and EnsureActiveSubscription middleware</li>
-          <li>Register middlewares in bootstrap/app.php</li>
-          <li>Apply module middleware to Professional and Enterprise route groups</li>
-          <li>Extend HandleInertiaRequests with subscription/module shared props</li>
-          <li>Create useSubscription composable</li>
-          <li>Update TenantSidebar.vue with hasModule() visibility checks</li>
+          <li>Create <code>PayMongoServiceProvider</code> (singleton client)</li>
+          <li>Create <code>PayMongoCustomerService</code> (create/get/update customers)</li>
+          <li>Create <code>PayMongoSubscriptionService</code> (create/update/cancel subscriptions, per-tenant plans)</li>
+          <li>Create <code>PayMongoWebhookService</code> (signature validation, event routing)</li>
+          <li>Create <code>PayMongoService</code> facade class</li>
         </ul>
       </div>
     </div>
@@ -1559,15 +2054,17 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
         <span class="week">Week 3&ndash;4</span>
       </div>
       <div class="phase-content">
-        <h4>Billing UI &amp; PayMongo</h4>
+        <h4>Feature Gating</h4>
         <ul>
-          <li>Create BillingController with Inertia pages (Plans, Dashboard, Upgrade, Success)</li>
-          <li>Create PayMongoWebhookController</li>
-          <li>Create PayMongo service classes (PayMongoService, PayMongoCustomerService, PayMongoSubscriptionService, PayMongoWebhookService)</li>
-          <li>Add billing and webhook routes</li>
-          <li>Modify TenantRegistrationController for trial provisioning</li>
-          <li>Create UpdateBillingQuantity job and EmployeeObserver</li>
-          <li>Create scheduled commands (billing:sync-quantities, billing:check-trials)</li>
+          <li>Create <code>FeatureGateService</code></li>
+          <li>Create <code>EnsureModuleAccess</code> middleware</li>
+          <li>Create <code>EnsureActiveSubscription</code> middleware</li>
+          <li>Register middlewares in <code>bootstrap/app.php</code></li>
+          <li>Apply <code>module</code> middleware to all Professional and Enterprise route groups</li>
+          <li>Add <code>subscribed</code> middleware to tenant middleware group</li>
+          <li>Extend <code>HandleInertiaRequests</code> with subscription/module shared props</li>
+          <li>Create <code>useSubscription</code> composable (<code>resources/js/composables/useSubscription.ts</code>)</li>
+          <li>Update <code>TenantSidebar.vue</code> with <code>hasModule()</code> visibility checks</li>
         </ul>
       </div>
     </div>
@@ -1578,13 +2075,14 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
         <span class="week">Week 4&ndash;5</span>
       </div>
       <div class="phase-content">
-        <h4>Limit Enforcement &amp; Polish</h4>
+        <h4>Billing UI &amp; Routes</h4>
         <ul>
-          <li>Add employee, user, device, and storage limit checks</li>
-          <li>Create upgrade prompt Vue components (banner, modal)</li>
-          <li>Add trial expiration banner to tenant layout</li>
-          <li>Implement downgrade validation logic</li>
-          <li>Create notification classes (TrialExpired, PaymentFailed, SubscriptionCancelled)</li>
+          <li>Create <code>BillingController</code> with Inertia pages</li>
+          <li>Create billing Inertia pages: Index, Plans, Upgrade, Addons, Success</li>
+          <li>Create <code>PayMongoWebhookController</code></li>
+          <li>Add billing routes (<code>routes/tenant/web-billing.php</code>)</li>
+          <li>Add webhook route (<code>routes/platform.php</code>)</li>
+          <li>Modify <code>TenantRegistrationController</code> for trial provisioning + PayMongo customer</li>
         </ul>
       </div>
     </div>
@@ -1595,13 +2093,18 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
         <span class="week">Week 5&ndash;6</span>
       </div>
       <div class="phase-content">
-        <h4>Testing &amp; Hardening</h4>
+        <h4>Employee Sync, Limits, Notifications</h4>
         <ul>
-          <li>Feature tests for FeatureGateService, middleware, and billing controller</li>
-          <li>Feature tests for upgrade/downgrade, trial expiration, and employee sync</li>
-          <li>Integration tests for PayMongo webhooks (test mode)</li>
-          <li>Browser tests for billing UI</li>
-          <li>Test all modules are correctly gated per tier</li>
+          <li>Create <code>UpdateBillingQuantity</code> job</li>
+          <li>Create <code>EmployeeObserver</code> to dispatch billing sync</li>
+          <li>Create <code>SyncBillingQuantities</code> nightly command</li>
+          <li>Create <code>CheckExpiredTrials</code> daily command</li>
+          <li>Schedule commands in <code>routes/console.php</code></li>
+          <li>Add employee limit check to <code>EmployeeController::store()</code></li>
+          <li>Add user limit check to invitation/user creation flows</li>
+          <li>Add device limit check to biometric device creation</li>
+          <li>Integrate add-on costs into <code>UpdateBillingQuantity</code> PayMongo plan amount calculation</li>
+          <li>Create notification classes (TrialExpired, PaymentFailed, SubscriptionCancelled)</li>
         </ul>
       </div>
     </div>
@@ -1614,12 +2117,15 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
       <div class="phase-content">
         <h4>Platform Admin Dashboard</h4>
         <ul>
-          <li>Create PlatformAdminController with dashboard, tenant list, tenant detail</li>
-          <li>Create Admin Vue pages (Dashboard, Tenants/Index, Tenants/Show)</li>
-          <li>Create admin layout (layouts/admin/Layout.vue)</li>
-          <li>Add /admin/* route group to routes/platform.php</li>
-          <li>Implement tenant management actions (extend trial, assign plan, cancel subscription)</li>
-          <li>Implement impersonation via secure redirect token</li>
+          <li>Create <code>PlatformAdminController</code> with dashboard, tenant list, tenant detail actions</li>
+          <li>Create admin layout (<code>resources/js/layouts/admin/Layout.vue</code>)</li>
+          <li>Create <code>Admin/Dashboard.vue</code> with aggregate stats</li>
+          <li>Create <code>Admin/Tenants/Index.vue</code> with search/filter/sort</li>
+          <li>Create <code>Admin/Tenants/Show.vue</code> with subscription actions</li>
+          <li>Add <code>/admin/*</code> routes to <code>routes/platform.php</code></li>
+          <li>Implement extend trial, assign plan, cancel subscription actions</li>
+          <li>Create custom plan CRUD (Create, Edit pages + controller actions)</li>
+          <li>Implement impersonation redirect (secure token pattern)</li>
         </ul>
       </div>
     </div>
@@ -1630,29 +2136,18 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
         <span class="week">Week 7&ndash;8</span>
       </div>
       <div class="phase-content">
-        <h4>Admin Testing &amp; Integration</h4>
+        <h4>Testing</h4>
         <ul>
-          <li>Feature tests for PlatformAdminController (authorization, CRUD, actions)</li>
-          <li>Browser tests for admin dashboard and tenant management UI</li>
-          <li>End-to-end tests for impersonation flow</li>
-          <li>Integration tests for subscription management from admin</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="roadmap-phase">
-      <div class="phase-badge">
-        <span class="num">Phase 8</span>
-        <span class="week">Week 9&ndash;10</span>
-      </div>
-      <div class="phase-content">
-        <h4>Web Kiosk Clock-In <span class="planned-tag">Planned</span></h4>
-        <ul>
-          <li>Kiosk terminal model, controllers, and middleware</li>
-          <li>Full-screen kiosk terminal UI (Vue)</li>
-          <li>Self-service clock-in feature</li>
-          <li>Anti-fraud measures (IP whitelist, geofencing, photo capture)</li>
-          <li>Add source column to attendance_logs</li>
+          <li>Feature tests for <code>FeatureGateService</code> (module access, limits, effective limits with add-ons)</li>
+          <li>Feature tests for <code>EnsureModuleAccess</code> middleware</li>
+          <li>Feature tests for <code>EnsureActiveSubscription</code> middleware</li>
+          <li>Feature tests for <code>BillingController</code> (including add-on purchase, update, cancel)</li>
+          <li>Feature tests for <code>TenantAddon</code> (effective limits, addon cost calculation, validation on removal)</li>
+          <li>Feature tests for webhook handling</li>
+          <li>Feature tests for employee count sync</li>
+          <li>Feature tests for trial status and expiration</li>
+          <li>Feature tests for <code>PlanSeeder</code></li>
+          <li>Feature tests for <code>PlatformAdminController</code> (dashboard stats, tenant management, subscription overrides)</li>
         </ul>
       </div>
     </div>
@@ -1665,12 +2160,14 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
     <table class="file-table">
       <thead><tr><th>File</th><th>Purpose</th></tr></thead>
       <tbody>
+        <tr><td>app/Enums/AddonType.php</td><td>Add-on type identifiers (employee_slots, biometric_devices)</td></tr>
         <tr><td>app/Enums/Module.php</td><td>Module identifiers for gating</td></tr>
         <tr><td>app/Enums/SubscriptionStatus.php</td><td>Subscription status enum (active, past_due, cancelled, expired)</td></tr>
         <tr><td>app/Models/Plan.php</td><td>Subscription plan model</td></tr>
         <tr><td>app/Models/PlanPrice.php</td><td>Plan pricing per billing interval</td></tr>
         <tr><td>app/Models/PlanModule.php</td><td>Plan-to-module pivot</td></tr>
         <tr><td>app/Models/Subscription.php</td><td>Tenant subscription model</td></tr>
+        <tr><td>app/Models/TenantAddon.php</td><td>Tenant add-on slots model</td></tr>
         <tr><td>app/Services/FeatureGateService.php</td><td>Centralized module/limit checks</td></tr>
         <tr><td>app/Services/Billing/PayMongoService.php</td><td>Core PayMongo API client wrapper</td></tr>
         <tr><td>app/Services/Billing/PayMongoCustomerService.php</td><td>PayMongo customer creation and management</td></tr>
@@ -1694,10 +2191,12 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
         <tr><td>database/seeders/PlanSeeder.php</td><td>Seed default plans with modules</td></tr>
         <tr><td>database/factories/PlanFactory.php</td><td>Plan model factory for testing</td></tr>
         <tr><td>database/factories/SubscriptionFactory.php</td><td>Subscription model factory for testing</td></tr>
+        <tr><td>database/factories/TenantAddonFactory.php</td><td>TenantAddon model factory for testing</td></tr>
         <tr><td>resources/js/composables/useSubscription.ts</td><td>Frontend subscription composable</td></tr>
         <tr><td>resources/js/pages/Billing/Index.vue</td><td>Billing dashboard page</td></tr>
         <tr><td>resources/js/pages/Billing/Plans.vue</td><td>Plan comparison page</td></tr>
         <tr><td>resources/js/pages/Billing/Upgrade.vue</td><td>Upgrade prompt page</td></tr>
+        <tr><td>resources/js/pages/Billing/Addons.vue</td><td>Add-ons management page</td></tr>
         <tr><td>resources/js/pages/Billing/Success.vue</td><td>Post-checkout success page</td></tr>
         <tr><td>resources/js/pages/Admin/Dashboard.vue</td><td>Platform admin overview dashboard</td></tr>
         <tr><td>resources/js/pages/Admin/Tenants/Index.vue</td><td>Searchable/filterable tenant list</td></tr>
@@ -1742,14 +2241,28 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
   <h3>Routes</h3>
   <div class="code-block">
     <div class="code-label">routes/platform.php &mdash; Admin route group</div>
-    <pre>Route::<span class="fn">prefix</span>(<span class="str">'admin'</span>)-><span class="fn">middleware</span>([<span class="str">'auth'</span>, <span class="str">'ensure-role:super_admin'</span>])-><span class="fn">group</span>(<span class="kw">function</span> () {
-    Route::<span class="fn">get</span>(<span class="str">'/'</span>,                    [PlatformAdminController::class, <span class="str">'dashboard'</span>]);
-    Route::<span class="fn">get</span>(<span class="str">'/tenants'</span>,             [PlatformAdminController::class, <span class="str">'tenants'</span>]);
-    Route::<span class="fn">get</span>(<span class="str">'/tenants/{tenant}'</span>,    [PlatformAdminController::class, <span class="str">'show'</span>]);
-    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/extend-trial'</span>,       [PlatformAdminController::class, <span class="str">'extendTrial'</span>]);
-    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/assign-plan'</span>,        [PlatformAdminController::class, <span class="str">'assignPlan'</span>]);
-    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/cancel-subscription'</span>, [PlatformAdminController::class, <span class="str">'cancelSubscription'</span>]);
-    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/impersonate'</span>,        [PlatformAdminController::class, <span class="str">'impersonate'</span>]);
+    <pre>Route::<span class="fn">prefix</span>(<span class="str">'admin'</span>)-><span class="fn">middleware</span>([<span class="str">'auth'</span>, <span class="str">'can:super-admin'</span>])-><span class="fn">group</span>(<span class="kw">function</span> () {
+    <span class="cm">// Dashboard</span>
+    Route::<span class="fn">get</span>(<span class="str">'/'</span>,                    [PlatformAdminController::class, <span class="str">'dashboard'</span>])-><span class="fn">name</span>(<span class="str">'admin.dashboard'</span>);
+
+    <span class="cm">// Tenant management</span>
+    Route::<span class="fn">get</span>(<span class="str">'/tenants'</span>,             [PlatformAdminController::class, <span class="str">'tenants'</span>])-><span class="fn">name</span>(<span class="str">'admin.tenants.index'</span>);
+    Route::<span class="fn">get</span>(<span class="str">'/tenants/{tenant}'</span>,    [PlatformAdminController::class, <span class="str">'showTenant'</span>])-><span class="fn">name</span>(<span class="str">'admin.tenants.show'</span>);
+
+    <span class="cm">// Subscription overrides</span>
+    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/extend-trial'</span>,       [PlatformAdminController::class, <span class="str">'extendTrial'</span>])-><span class="fn">name</span>(<span class="str">'admin.tenants.extend-trial'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/assign-plan'</span>,        [PlatformAdminController::class, <span class="str">'assignPlan'</span>])-><span class="fn">name</span>(<span class="str">'admin.tenants.assign-plan'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/tenants/{tenant}/cancel-subscription'</span>, [PlatformAdminController::class, <span class="str">'cancelSubscription'</span>])-><span class="fn">name</span>(<span class="str">'admin.tenants.cancel-subscription'</span>);
+
+    <span class="cm">// Plan management</span>
+    Route::<span class="fn">get</span>(<span class="str">'/plans'</span>,                          [PlatformAdminController::class, <span class="str">'plans'</span>])-><span class="fn">name</span>(<span class="str">'admin.plans.index'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/plans/{plan}/toggle'</span>,             [PlatformAdminController::class, <span class="str">'togglePlan'</span>])-><span class="fn">name</span>(<span class="str">'admin.plans.toggle'</span>);
+
+    <span class="cm">// Custom plan management</span>
+    Route::<span class="fn">get</span>(<span class="str">'/plans/custom/create'</span>,              [PlatformAdminController::class, <span class="str">'createCustomPlan'</span>])-><span class="fn">name</span>(<span class="str">'admin.plans.custom.create'</span>);
+    Route::<span class="fn">post</span>(<span class="str">'/plans/custom'</span>,                    [PlatformAdminController::class, <span class="str">'storeCustomPlan'</span>])-><span class="fn">name</span>(<span class="str">'admin.plans.custom.store'</span>);
+    Route::<span class="fn">get</span>(<span class="str">'/plans/custom/{plan}/edit'</span>,          [PlatformAdminController::class, <span class="str">'editCustomPlan'</span>])-><span class="fn">name</span>(<span class="str">'admin.plans.custom.edit'</span>);
+    Route::<span class="fn">put</span>(<span class="str">'/plans/custom/{plan}'</span>,              [PlatformAdminController::class, <span class="str">'updateCustomPlan'</span>])-><span class="fn">name</span>(<span class="str">'admin.plans.custom.update'</span>);
 });</pre>
   </div>
 
@@ -1765,6 +2278,9 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
         <tr><td class="module-name">Assign Plan</td><td>Manually assign or change a tenant's plan (for sales-assisted onboarding or custom deals)</td></tr>
         <tr><td class="module-name">Cancel Subscription</td><td>Administratively cancel a tenant's subscription</td></tr>
         <tr><td class="module-name">Impersonate</td><td>Access a tenant's dashboard as if logged in as their admin user</td></tr>
+        <tr><td class="module-name">Plan List</td><td>View all plans with toggle to activate/deactivate</td></tr>
+        <tr><td class="module-name">Create Custom Plan</td><td>Form with module picker, per-employee rate, limits, optional tenant assignment, billing method, contract term</td></tr>
+        <tr><td class="module-name">Edit Custom Plan</td><td>Edit modules, limits, and pricing for existing custom plans (is_custom = true only)</td></tr>
       </tbody>
     </table>
   </div>
@@ -1815,22 +2331,70 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
   <h3>Kiosk Terminal Mode</h3>
   <p>A dedicated full-screen web page designed to run on a shared tablet or computer at an office entrance.</p>
   <p><strong>URL:</strong> <code>https://{tenant}.kasamahr.com/kiosk</code> (or unique kiosk token URL)</p>
-  <p><strong>Flow:</strong> Employee enters PIN/code &rarr; System shows name + photo &rarr; Employee taps "Clock In" or "Clock Out" &rarr; <code>AttendanceLog</code> created with <code>source = 'kiosk'</code> &rarr; Confirmation shown &rarr; Returns to PIN screen.</p>
+  <p><strong>Authentication:</strong> Kiosk session authenticated by an admin; individual employees identify via a dedicated <strong>Kiosk PIN</strong>.</p>
+  <p><strong>Flow:</strong> Employee enters 4&ndash;6 digit Kiosk PIN &rarr; System shows name, photo &amp; employee code for confirmation &rarr; Employee taps &ldquo;Clock In&rdquo; or &ldquo;Clock Out&rdquo; &rarr; <code>AttendanceLog</code> created with <code>source = 'kiosk'</code> &rarr; Confirmation shown &rarr; Returns to PIN screen.</p>
+
+  <h3>Kiosk PIN</h3>
+  <p>A dedicated numeric PIN used exclusively for kiosk identification, separate from the employee&rsquo;s login credentials.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th style="width:180px">Property</th><th>Details</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">Auto-generated</td><td>Random 4&ndash;6 digit PIN generated when kiosk feature is enabled or new employee is created</td></tr>
+        <tr><td class="module-name">Stored securely</td><td>Hashed in the database using <code>Hash::make()</code>, like a password</td></tr>
+        <tr><td class="module-name">Shown once</td><td>Displayed via Self-Service dashboard under &ldquo;My DTR &rarr; Kiosk PIN&rdquo;, or provided by HR during onboarding</td></tr>
+        <tr><td class="module-name">Resettable</td><td>By the employee (Self-Service) or by an HR admin</td></tr>
+        <tr><td class="module-name">Unique per tenant</td><td>Validated with a unique constraint scoped to the tenant database</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout info">
+    <p><strong>Why not use employee code?</strong> Employee codes are often sequential (EMP-0001, EMP-0002) and easy to guess. A random PIN prevents colleagues from clocking in for each other. Combined with the photo confirmation step, this provides reasonable identity verification for a shared terminal.</p>
+  </div>
 
   <h3>Self-Service Clock-In (Optional Enhancement)</h3>
-  <p>Allow employees to clock in/out from their own device via the Employee Self-Service dashboard. Optionally restricted by IP whitelist or geolocation. Creates <code>AttendanceLog</code> with <code>source = 'self_service'</code>.</p>
+  <p>Allow employees to clock in/out from their own device via the Employee Self-Service dashboard. Creates <code>AttendanceLog</code> with <code>source = 'self_service'</code>. Location verification is configurable per work location.</p>
+
+  <h3>Location Verification (Self-Service)</h3>
+  <p>Self-service clock-in can be restricted by location to prevent remote abuse. Admins configure which checks apply per work location.</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Method</th><th>How It Works</th><th>Best For</th><th>Spoofing Risk</th></tr></thead>
+      <tbody>
+        <tr><td class="module-name">IP Whitelist</td><td>Check if employee&rsquo;s IP matches approved office network IPs</td><td>Office workers on static IP networks</td><td>Low</td></tr>
+        <tr><td class="module-name">Geofencing (GPS)</td><td>Browser Geolocation API returns lat/lng; backend calculates Haversine distance to office and rejects if beyond allowed radius</td><td>Field/mobile workers, satellite offices</td><td>Medium</td></tr>
+        <tr><td class="module-name">Both required</td><td>Must pass IP check AND GPS check</td><td>High-security environments</td><td>Low</td></tr>
+        <tr><td class="module-name">Any (default)</td><td>Pass either IP or GPS check</td><td>Flexible office policies</td><td>Medium</td></tr>
+        <tr><td class="module-name">None</td><td>No location restriction</td><td>Fully remote teams</td><td>N/A</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p><strong>Geofencing implementation:</strong> Frontend uses <code>navigator.geolocation.getCurrentPosition()</code> with <code>enableHighAccuracy: true</code>. Coordinates and accuracy are submitted with the clock-in request. Backend rejects if <code>accuracy &gt; 200m</code> (unreliable data) or if Haversine distance exceeds the configured radius (e.g., 150m).</p>
+
+  <p><strong>GPS spoofing mitigations:</strong> Reject low-accuracy readings &middot; Combine GPS with IP whitelist (<code>location_check = 'both'</code>) &middot; Photo capture for manual audit &middot; Anomaly detection for impossible location jumps.</p>
 
   <h3>Anti-Fraud Measures</h3>
   <div class="measure-grid">
     <div class="measure-card">
+      <div class="measure-icon">&#128273;</div>
+      <div class="measure-name">Kiosk PIN</div>
+      <div class="measure-desc">Dedicated random numeric PIN per employee, hashed in DB &mdash; not guessable like sequential employee codes</div>
+    </div>
+    <div class="measure-card">
       <div class="measure-icon">&#128274;</div>
       <div class="measure-name">IP Whitelisting</div>
-      <div class="measure-desc">Restrict kiosk clock-in to specific office IP addresses</div>
+      <div class="measure-desc">Restrict kiosk and self-service clock-in to specific office IP addresses</div>
     </div>
     <div class="measure-card">
       <div class="measure-icon">&#128205;</div>
-      <div class="measure-name">Geofencing</div>
-      <div class="measure-desc">Require GPS location within a radius of the office for self-service</div>
+      <div class="measure-name">Geofencing (GPS)</div>
+      <div class="measure-desc">Require GPS location within a radius of the office; reject if accuracy &gt; 200m</div>
+    </div>
+    <div class="measure-card">
+      <div class="measure-icon">&#127919;</div>
+      <div class="measure-name">GPS Accuracy Check</div>
+      <div class="measure-desc">Reject geolocation readings with poor accuracy (spoofed locations often report 0 or extreme values)</div>
     </div>
     <div class="measure-card">
       <div class="measure-icon">&#128247;</div>
@@ -1845,12 +2409,17 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
     <div class="measure-card">
       <div class="measure-icon">&#128269;</div>
       <div class="measure-name">Admin Audit</div>
-      <div class="measure-desc">All kiosk entries flagged with source for easy audit filtering</div>
+      <div class="measure-desc">All kiosk/self-service entries flagged with source for easy audit filtering</div>
     </div>
     <div class="measure-card">
       <div class="measure-icon">&#128241;</div>
       <div class="measure-name">Device Binding</div>
       <div class="measure-desc">Bind kiosk sessions to specific device fingerprints</div>
+    </div>
+    <div class="measure-card">
+      <div class="measure-icon">&#9888;</div>
+      <div class="measure-name">Anomaly Detection</div>
+      <div class="measure-desc">Flag employees clocking in from locations far apart within short time windows</div>
     </div>
   </div>
 
@@ -1884,6 +2453,14 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
   </div>
 
   <div class="code-block">
+    <div class="code-label">Add kiosk_pin to employees table</div>
+    <pre>Schema::<span class="fn">table</span>(<span class="str">'employees'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">string</span>(<span class="str">'kiosk_pin'</span>)-><span class="fn">nullable</span>();              <span class="cm">// hashed PIN</span>
+    $table-><span class="fn">timestamp</span>(<span class="str">'kiosk_pin_changed_at'</span>)-><span class="fn">nullable</span>();
+});</pre>
+  </div>
+
+  <div class="code-block">
     <div class="code-label">Create kiosks table</div>
     <pre>Schema::<span class="fn">create</span>(<span class="str">'kiosks'</span>, <span class="kw">function</span> (Blueprint $table) {
     $table-><span class="fn">id</span>();
@@ -1895,6 +2472,17 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
     $table-><span class="fn">boolean</span>(<span class="str">'is_active'</span>)-><span class="fn">default</span>(<span class="kw">true</span>);
     $table-><span class="fn">timestamp</span>(<span class="str">'last_activity_at'</span>)-><span class="fn">nullable</span>();
     $table-><span class="fn">timestamps</span>();
+});</pre>
+  </div>
+
+  <div class="code-block">
+    <div class="code-label">Add geofencing to work_locations table</div>
+    <pre>Schema::<span class="fn">table</span>(<span class="str">'work_locations'</span>, <span class="kw">function</span> (Blueprint $table) {
+    $table-><span class="fn">decimal</span>(<span class="str">'latitude'</span>, <span class="num">10</span>, <span class="num">7</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">decimal</span>(<span class="str">'longitude'</span>, <span class="num">10</span>, <span class="num">7</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">integer</span>(<span class="str">'geofence_radius'</span>)-><span class="fn">nullable</span>();     <span class="cm">// meters</span>
+    $table-><span class="fn">json</span>(<span class="str">'ip_whitelist'</span>)-><span class="fn">nullable</span>();
+    $table-><span class="fn">string</span>(<span class="str">'location_check'</span>)-><span class="fn">default</span>(<span class="str">'any'</span>);   <span class="cm">// "ip", "gps", "both", "any", "none"</span>
 });</pre>
   </div>
 
@@ -1910,6 +2498,25 @@ PayMongoCustomerService::<span class="fn">createOrGet</span>($tenant);</pre>
         <tr><td>resources/js/pages/Kiosk/Terminal.vue</td><td>Full-screen kiosk clock-in UI</td></tr>
         <tr><td>resources/js/pages/Kiosk/Index.vue</td><td>Admin kiosk management page</td></tr>
         <tr><td>resources/js/pages/Kiosk/Create.vue</td><td>Admin kiosk registration form</td></tr>
+        <tr><td>database/migrations/tenant/xxxx_add_kiosk_pin_to_employees.php</td><td>Add kiosk_pin and kiosk_pin_changed_at columns</td></tr>
+        <tr><td>database/migrations/tenant/xxxx_add_source_to_attendance_logs.php</td><td>Add source column</td></tr>
+        <tr><td>database/migrations/tenant/xxxx_create_kiosks_table.php</td><td>Kiosks table</td></tr>
+        <tr><td>database/migrations/tenant/xxxx_add_geofence_to_work_locations.php</td><td>Add latitude, longitude, geofence_radius, ip_whitelist, location_check</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h4>Modified Files</h4>
+  <div class="table-wrap">
+    <table class="file-table">
+      <thead><tr><th>File</th><th>Change</th></tr></thead>
+      <tbody>
+        <tr><td>app/Services/Dtr/DtrCalculationService.php</td><td>Handle kiosk and self-service attendance log entries (same punch logic, different source)</td></tr>
+        <tr><td>app/Models/AttendanceLog.php</td><td>Add <code>source</code> attribute, scope for filtering by source</td></tr>
+        <tr><td>app/Models/Employee.php</td><td>Add <code>kiosk_pin</code> (hidden), PIN verification method, PIN generation</td></tr>
+        <tr><td>app/Models/WorkLocation.php</td><td>Add geofence attributes, <code>isWithinGeofence(lat, lng)</code> method</td></tr>
+        <tr><td>resources/js/components/TenantSidebar.vue</td><td>Add kiosk management link under Time &amp; Attendance</td></tr>
+        <tr><td>resources/js/pages/SelfService/MyDtr.vue</td><td>Add clock-in/out button (if self-service enabled), Kiosk PIN display/reset</td></tr>
       </tbody>
     </table>
   </div>

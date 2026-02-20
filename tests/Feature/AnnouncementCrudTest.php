@@ -151,7 +151,7 @@ it('updates an announcement', function () {
     $request->validateResolved();
 
     $controller = new AnnouncementController;
-    $response = $controller->update($request, 'acme', $announcement);
+    $response = $controller->update($request, $announcement);
 
     expect($response->resource->title)->toBe('Updated Title');
 });

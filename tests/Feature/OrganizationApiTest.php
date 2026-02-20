@@ -128,9 +128,9 @@ describe('Department API', function () {
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
-        expect($data['data']['name'])->toBe('Engineering');
-        expect($data['data']['code'])->toBe('ENG');
-        $parentDeptId = $data['data']['id'];
+        expect($data['name'])->toBe('Engineering');
+        expect($data['code'])->toBe('ENG');
+        $parentDeptId = $data['id'];
 
         // Test CREATE - department with parent
         $childRequest = createStoreDepartmentRequest([
@@ -144,7 +144,7 @@ describe('Department API', function () {
         $childData = json_decode($childResponse->getContent(), true);
 
         expect($childResponse->getStatusCode())->toBe(201);
-        expect($childData['data']['parent']['id'])->toBe($parentDeptId);
+        expect($childData['parent']['id'])->toBe($parentDeptId);
 
         // Test READ - list hierarchy
         $listResponse = $controller->index();
@@ -268,14 +268,14 @@ describe('SalaryGrade API', function () {
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
-        expect($data['data']['name'])->toBe('Grade A');
-        expect(count($data['data']['steps']))->toBe(3);
-        $gradeId = $data['data']['id'];
+        expect($data['name'])->toBe('Grade A');
+        expect(count($data['steps']))->toBe(3);
+        $gradeId = $data['id'];
 
         // Verify steps were created with correct ordering
-        expect($data['data']['steps'][0]['step_number'])->toBe(1);
-        expect($data['data']['steps'][1]['step_number'])->toBe(2);
-        expect($data['data']['steps'][2]['step_number'])->toBe(3);
+        expect($data['steps'][0]['step_number'])->toBe(1);
+        expect($data['steps'][1]['step_number'])->toBe(2);
+        expect($data['steps'][2]['step_number'])->toBe(3);
 
         // Test READ - list
         $listResponse = $controller->index();
@@ -340,9 +340,9 @@ describe('Position API', function () {
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
-        expect($data['data']['title'])->toBe('Senior Software Engineer');
-        expect($data['data']['salary_grade']['id'])->toBe($salaryGrade->id);
-        $positionId = $data['data']['id'];
+        expect($data['title'])->toBe('Senior Software Engineer');
+        expect($data['salary_grade']['id'])->toBe($salaryGrade->id);
+        $positionId = $data['id'];
 
         // Test READ - list
         $request = \Illuminate\Http\Request::create('/api/organization/positions', 'GET');
@@ -471,10 +471,10 @@ describe('WorkLocation API', function () {
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
-        expect($data['data']['name'])->toBe('Main Headquarters');
-        expect($data['data']['metadata']['phone'])->toBe('+1-555-123-4567');
-        expect($data['data']['metadata']['capacity'])->toBe(150);
-        $locationId = $data['data']['id'];
+        expect($data['name'])->toBe('Main Headquarters');
+        expect($data['metadata']['phone'])->toBe('+1-555-123-4567');
+        expect($data['metadata']['capacity'])->toBe(150);
+        $locationId = $data['id'];
 
         // Test READ - list
         $listResponse = $controller->index();

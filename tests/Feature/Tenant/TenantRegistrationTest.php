@@ -13,15 +13,28 @@ use App\Models\TenantRedirectToken;
 use App\Models\User;
 use App\Services\Tenant\TenantDatabaseManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
     config(['app.main_domain' => 'kasamahr.test']);
+
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
 });
 
 it('creates tenant with valid slug during registration', function () {
     $user = User::factory()->withoutTwoFactor()->create();
+
+    // Mock the TenantDatabaseManager to avoid running migrations again
+    // (tenant migrations already run in beforeEach on the default connection)
+    $mockManager = Mockery::mock(TenantDatabaseManager::class);
+    $mockManager->shouldReceive('createSchema');
+    $mockManager->shouldReceive('migrateSchema');
+    $this->app->instance(TenantDatabaseManager::class, $mockManager);
 
     $response = $this->actingAs($user)->post(route('tenant.register.store'), [
         'name' => 'Acme Corporation',

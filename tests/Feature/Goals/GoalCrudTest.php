@@ -7,17 +7,13 @@ use App\Models\Employee;
 use App\Models\Goal;
 use App\Models\GoalKeyResult;
 use App\Models\GoalMilestone;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
-
-function bindTenantContextForGoal(Tenant $tenant): void
-{
-    app()->instance('tenant', $tenant);
-}
 
 function createTenantUserForGoalApi(Tenant $tenant, TenantUserRole $role, array $userAttributes = []): User
 {
@@ -38,17 +34,19 @@ beforeEach(function () {
         '--path' => 'database/migrations/tenant',
         '--realpath' => false,
     ]);
+
+    $plan = Plan::factory()->professional()->create();
+    $this->tenant = Tenant::factory()->withPlan($plan)->withTrial()->create();
+    app()->instance('tenant', $this->tenant);
+    $this->baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
 });
 
 describe('Goal CRUD Operations', function () {
     it('creates an OKR objective with key results', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->postJson('/api/my/goals', [
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/my/goals", [
             'goal_type' => 'okr_objective',
             'title' => 'Increase Customer Satisfaction',
             'description' => 'Improve NPS score by Q2',
@@ -84,13 +82,10 @@ describe('Goal CRUD Operations', function () {
     });
 
     it('creates a SMART goal with milestones', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->postJson('/api/my/goals', [
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/my/goals", [
             'goal_type' => 'smart_goal',
             'title' => 'Complete Project Management Certification',
             'description' => 'Obtain PMP certification',
@@ -124,14 +119,11 @@ describe('Goal CRUD Operations', function () {
     });
 
     it('updates a goal', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->draft()->create();
 
-        $response = $this->actingAs($user)->putJson("/api/my/goals/{$goal->id}", [
+        $response = $this->actingAs($user)->putJson("{$this->baseUrl}/api/my/goals/{$goal->id}", [
             'title' => 'Updated Goal Title',
             'priority' => 'critical',
         ]);
@@ -144,84 +136,69 @@ describe('Goal CRUD Operations', function () {
     });
 
     it('lists employee goals with filters', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         Goal::factory()->for($employee)->okr()->active()->count(3)->create();
         Goal::factory()->for($employee)->smart()->completed()->count(2)->create();
 
-        $response = $this->actingAs($user)->getJson('/api/my/goals');
+        $response = $this->actingAs($user)->getJson("{$this->baseUrl}/api/my/goals");
         $response->assertSuccessful();
 
         $data = $response->json('data');
         expect($data)->toHaveCount(5);
 
         // Test filter by goal type
-        $response = $this->actingAs($user)->getJson('/api/my/goals?goal_type=okr_objective');
+        $response = $this->actingAs($user)->getJson("{$this->baseUrl}/api/my/goals?goal_type=okr_objective");
         $response->assertSuccessful();
         expect($response->json('data'))->toHaveCount(3);
 
         // Test filter by status
-        $response = $this->actingAs($user)->getJson('/api/my/goals?status=completed');
+        $response = $this->actingAs($user)->getJson("{$this->baseUrl}/api/my/goals?status=completed");
         $response->assertSuccessful();
         expect($response->json('data'))->toHaveCount(2);
     });
 
     it('shows goal detail with relationships', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->okr()->create();
         GoalKeyResult::factory()->for($goal)->count(3)->create();
 
-        $response = $this->actingAs($user)->getJson("/api/my/goals/{$goal->id}");
+        $response = $this->actingAs($user)->getJson("{$this->baseUrl}/api/my/goals/{$goal->id}");
 
         $response->assertSuccessful();
-        $data = $response->json('data');
+        $data = $response->json();
 
         expect($data['id'])->toBe($goal->id)
             ->and($data['key_results'])->toHaveCount(3);
     });
 
     it('deletes a draft goal', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->draft()->create();
 
-        $response = $this->actingAs($user)->deleteJson("/api/my/goals/{$goal->id}");
+        $response = $this->actingAs($user)->deleteJson("{$this->baseUrl}/api/my/goals/{$goal->id}");
 
         $response->assertSuccessful();
         expect(Goal::find($goal->id))->toBeNull();
     });
 
     it('prevents deletion of active goals', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->active()->create();
 
-        $response = $this->actingAs($user)->deleteJson("/api/my/goals/{$goal->id}");
+        $response = $this->actingAs($user)->deleteJson("{$this->baseUrl}/api/my/goals/{$goal->id}");
 
-        $response->assertForbidden();
+        $response->assertUnprocessable();
     });
 });
 
 describe('Goal Progress', function () {
     it('calculates OKR progress from key results', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->okr()->create([
             'progress_percentage' => 0,
@@ -232,12 +209,14 @@ describe('Goal Progress', function () {
             'target_value' => 100,
             'starting_value' => 0,
             'current_value' => 50,
+            'achievement_percentage' => 50,
             'weight' => 1,
         ]);
         GoalKeyResult::factory()->for($goal)->create([
             'target_value' => 100,
             'starting_value' => 0,
             'current_value' => 100,
+            'achievement_percentage' => 100,
             'weight' => 1,
         ]);
 
@@ -245,14 +224,11 @@ describe('Goal Progress', function () {
         $goal->refresh();
 
         // Average of 50% and 100% = 75%
-        expect($goal->progress_percentage)->toBe(75.0);
+        expect((float) $goal->progress_percentage)->toBe(75.0);
     });
 
     it('calculates SMART goal progress from milestones', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->smart()->create([
             'progress_percentage' => 0,
@@ -266,14 +242,11 @@ describe('Goal Progress', function () {
         $goal->refresh();
 
         // 2 of 4 milestones complete = 50%
-        expect($goal->progress_percentage)->toBe(50.0);
+        expect((float) $goal->progress_percentage)->toBe(50.0);
     });
 
     it('records progress entry for key result', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->okr()->create();
         $keyResult = GoalKeyResult::factory()->for($goal)->create([
@@ -283,9 +256,9 @@ describe('Goal Progress', function () {
         ]);
 
         $response = $this->actingAs($user)->postJson(
-            "/api/performance/goals/{$goal->id}/key-results/{$keyResult->id}/progress",
+            "{$this->baseUrl}/api/performance/goals/{$goal->id}/key-results/{$keyResult->id}/progress",
             [
-                'progress_value' => 75,
+                'value' => 75,
                 'notes' => 'Good progress this month',
             ]
         );
@@ -293,21 +266,18 @@ describe('Goal Progress', function () {
         $response->assertSuccessful();
 
         $keyResult->refresh();
-        expect($keyResult->current_value)->toBe(75.0)
+        expect((float) $keyResult->current_value)->toBe(75.0)
             ->and($keyResult->progressEntries)->toHaveCount(1);
     });
 
     it('toggles milestone completion', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
         $goal = Goal::factory()->for($employee)->smart()->create();
         $milestone = GoalMilestone::factory()->for($goal)->create(['is_completed' => false]);
 
         $response = $this->actingAs($user)->postJson(
-            "/api/performance/goals/{$goal->id}/milestones/{$milestone->id}/toggle"
+            "{$this->baseUrl}/api/performance/goals/{$goal->id}/milestones/{$milestone->id}/toggle"
         );
 
         $response->assertSuccessful();
@@ -318,7 +288,7 @@ describe('Goal Progress', function () {
 
         // Toggle back
         $response = $this->actingAs($user)->postJson(
-            "/api/performance/goals/{$goal->id}/milestones/{$milestone->id}/toggle"
+            "{$this->baseUrl}/api/performance/goals/{$goal->id}/milestones/{$milestone->id}/toggle"
         );
 
         $milestone->refresh();
@@ -328,13 +298,10 @@ describe('Goal Progress', function () {
 
 describe('Goal Validation', function () {
     it('requires title and dates', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         Employee::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->postJson('/api/my/goals', [
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/my/goals", [
             'goal_type' => 'okr_objective',
         ]);
 
@@ -343,13 +310,10 @@ describe('Goal Validation', function () {
     });
 
     it('validates due date is after start date', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         Employee::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->postJson('/api/my/goals', [
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/my/goals", [
             'goal_type' => 'okr_objective',
             'title' => 'Test Goal',
             'start_date' => now()->addMonth()->format('Y-m-d'),
@@ -361,13 +325,10 @@ describe('Goal Validation', function () {
     });
 
     it('validates goal type enum', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForGoal($tenant);
-
-        $user = createTenantUserForGoalApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForGoalApi($this->tenant, TenantUserRole::Admin);
         Employee::factory()->create(['user_id' => $user->id]);
 
-        $response = $this->actingAs($user)->postJson('/api/my/goals', [
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/my/goals", [
             'goal_type' => 'invalid_type',
             'title' => 'Test Goal',
             'start_date' => now()->format('Y-m-d'),

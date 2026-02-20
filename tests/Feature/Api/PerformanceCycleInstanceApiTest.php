@@ -455,7 +455,7 @@ describe('PerformanceCycleInstance API', function () {
         $controller = new PerformanceCycleInstanceController(new PerformanceCycleInstanceService);
 
         $statusRequest = createUpdatePerformanceCycleInstanceStatusRequest(['status' => 'active'], $admin);
-        $response = $controller->updateStatus($statusRequest, $tenant->slug, $instance);
+        $response = $controller->updateStatus($statusRequest, $instance);
 
         // Resource was returned successfully
         expect($response)->toBeInstanceOf(\App\Http\Resources\PerformanceCycleInstanceResource::class);
@@ -481,7 +481,7 @@ describe('PerformanceCycleInstance API', function () {
         $controller = new PerformanceCycleInstanceController(new PerformanceCycleInstanceService);
 
         $statusRequest = createUpdatePerformanceCycleInstanceStatusRequest(['status' => 'in_evaluation'], $admin);
-        $response = $controller->updateStatus($statusRequest, $tenant->slug, $instance);
+        $response = $controller->updateStatus($statusRequest, $instance);
 
         // Resource was returned successfully
         expect($response)->toBeInstanceOf(\App\Http\Resources\PerformanceCycleInstanceResource::class);
@@ -507,7 +507,7 @@ describe('PerformanceCycleInstance API', function () {
         $controller = new PerformanceCycleInstanceController(new PerformanceCycleInstanceService);
 
         $statusRequest = createUpdatePerformanceCycleInstanceStatusRequest(['status' => 'closed'], $admin);
-        $response = $controller->updateStatus($statusRequest, $tenant->slug, $instance);
+        $response = $controller->updateStatus($statusRequest, $instance);
 
         // Resource was returned successfully
         expect($response)->toBeInstanceOf(\App\Http\Resources\PerformanceCycleInstanceResource::class);
@@ -536,7 +536,7 @@ describe('PerformanceCycleInstance API', function () {
         // Try to transition from draft directly to closed (invalid)
         $statusRequest = createUpdatePerformanceCycleInstanceStatusRequest(['status' => 'closed'], $admin);
 
-        expect(fn () => $controller->updateStatus($statusRequest, $tenant->slug, $instance))
+        expect(fn () => $controller->updateStatus($statusRequest, $instance))
             ->toThrow(\Symfony\Component\HttpKernel\Exception\HttpException::class);
     });
 
@@ -568,7 +568,7 @@ describe('PerformanceCycleInstance API', function () {
         ];
 
         $updateRequest = createUpdatePerformanceCycleInstanceRequest($updateData, $admin, $instance->id);
-        $response = $controller->update($updateRequest, $tenant->slug, $instance);
+        $response = $controller->update($updateRequest, $instance);
 
         $data = $response->toArray(request());
         expect($data['name'])->toBe('Updated Name');
@@ -590,7 +590,7 @@ describe('PerformanceCycleInstance API', function () {
 
         $controller = new PerformanceCycleInstanceController(new PerformanceCycleInstanceService);
 
-        $response = $controller->destroy($tenant->slug, $instance);
+        $response = $controller->destroy($instance);
 
         expect($response->getStatusCode())->toBe(204);
 
@@ -613,7 +613,7 @@ describe('PerformanceCycleInstance API', function () {
 
         $controller = new PerformanceCycleInstanceController(new PerformanceCycleInstanceService);
 
-        $response = $controller->destroy($tenant->slug, $instance);
+        $response = $controller->destroy($instance);
 
         expect($response->getStatusCode())->toBe(422);
 

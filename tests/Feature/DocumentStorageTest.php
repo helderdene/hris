@@ -19,6 +19,14 @@ use Illuminate\Support\Facades\Validator;
 uses(RefreshDatabase::class);
 
 beforeEach(function () {
+    // Share the default connection's PDO with the tenant connection so that
+    // Rule::exists('tenant.document_categories', 'id') queries the same in-memory database
+    $defaultConnection = config('database.default');
+    config(['database.connections.tenant' => config("database.connections.{$defaultConnection}")]);
+    \Illuminate\Support\Facades\DB::purge('tenant');
+    $pdo = \Illuminate\Support\Facades\DB::connection($defaultConnection)->getPdo();
+    \Illuminate\Support\Facades\DB::connection('tenant')->setPdo($pdo);
+
     // Run tenant-specific migrations for testing
     Artisan::call('migrate', [
         '--path' => 'database/migrations/tenant',

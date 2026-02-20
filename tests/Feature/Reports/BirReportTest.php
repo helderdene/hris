@@ -5,6 +5,7 @@ use App\Enums\PayrollEntryStatus;
 use App\Enums\TenantUserRole;
 use App\Http\Controllers\Api\BirReportController;
 use App\Http\Controllers\Reports\BirReportPageController;
+use App\Http\Requests\Api\PreviewBirReportRequest;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\PayrollEntry;
@@ -14,7 +15,6 @@ use App\Models\User;
 use App\Services\Reports\Bir1601cReportGenerator;
 use App\Services\Reports\BirReportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
 
@@ -331,11 +331,13 @@ describe('BIR Report API Controller', function () {
             'status' => PayrollEntryStatus::Approved,
         ]);
 
-        $request = Request::create('/api/reports/bir/preview', 'POST', [
+        $request = PreviewBirReportRequest::create('/api/reports/bir/preview', 'POST', [
             'report_type' => '1601c',
             'year' => 2026,
             'month' => 1,
         ]);
+        $request->setContainer(app());
+        $request->validateResolved();
 
         $controller = new BirReportController(app(BirReportService::class));
         $response = $controller->preview($request);
@@ -354,11 +356,13 @@ describe('BIR Report API Controller', function () {
 
         Gate::define('can-manage-organization', fn () => true);
 
-        $request = Request::create('/api/reports/bir/preview', 'POST', [
+        $request = PreviewBirReportRequest::create('/api/reports/bir/preview', 'POST', [
             'report_type' => 'invalid',
             'year' => 2026,
             'month' => 1,
         ]);
+        $request->setContainer(app());
+        $request->validateResolved();
 
         $controller = new BirReportController(app(BirReportService::class));
         $response = $controller->preview($request);

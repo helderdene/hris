@@ -15,36 +15,21 @@ use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
 
-function bindTenantContextForEvaluationResponse(Tenant $tenant): void
-{
-    app()->instance('tenant', $tenant);
-}
-
-function createTenantUserWithEmployeeForEvaluationResponse(Tenant $tenant, TenantUserRole $role): User
-{
-    $employee = Employee::factory()->create();
-    $user = User::factory()->create(['employee_id' => $employee->id]);
-    $user->tenants()->attach($tenant->id, [
-        'role' => $role->value,
-        'invited_at' => now(),
-        'invitation_accepted_at' => now(),
-    ]);
-
-    return $user;
-}
-
 beforeEach(function () {
     config(['app.main_domain' => 'kasamahr.test']);
     Artisan::call('migrate', [
         '--path' => 'database/migrations/tenant',
         '--realpath' => false,
     ]);
+
+    $this->tenant = Tenant::factory()->create();
+    app()->instance('tenant', $this->tenant);
+    $this->baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
 });
 
 describe('EvaluationResponse Model', function () {
     it('creates an evaluation response with correct attributes', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $reviewer = EvaluationReviewer::factory()->create();
 
@@ -64,8 +49,7 @@ describe('EvaluationResponse Model', function () {
     });
 
     it('belongs to an evaluation reviewer', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $reviewer = EvaluationReviewer::factory()->create();
         $response = EvaluationResponse::factory()->create([
@@ -77,8 +61,7 @@ describe('EvaluationResponse Model', function () {
     });
 
     it('has many competency ratings', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $response = EvaluationResponse::factory()->create();
 
@@ -103,8 +86,7 @@ describe('EvaluationResponse Model', function () {
     });
 
     it('can save as draft', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $response = EvaluationResponse::factory()->create([
             'is_draft' => true,
@@ -121,8 +103,7 @@ describe('EvaluationResponse Model', function () {
     });
 
     it('can be submitted', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $response = EvaluationResponse::factory()->draft()->create();
 
@@ -133,8 +114,7 @@ describe('EvaluationResponse Model', function () {
     });
 
     it('calculates average competency rating', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $response = EvaluationResponse::factory()->create();
 
@@ -172,8 +152,7 @@ describe('EvaluationResponse Model', function () {
 
 describe('EvaluationService - Response Management', function () {
     it('saves evaluation draft', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $reviewer = EvaluationReviewer::factory()->inProgress()->create();
 
@@ -192,8 +171,7 @@ describe('EvaluationService - Response Management', function () {
     });
 
     it('submits evaluation and updates reviewer status', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $reviewer = EvaluationReviewer::factory()->inProgress()->create();
         $response = EvaluationResponse::factory()->draft()->create([
@@ -212,8 +190,7 @@ describe('EvaluationService - Response Management', function () {
     });
 
     it('declines review and updates status', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
         $reviewer = EvaluationReviewer::factory()->create([
             'status' => EvaluationReviewerStatus::Pending,
@@ -231,11 +208,10 @@ describe('EvaluationService - Response Management', function () {
 
 describe('Evaluation Response API', function () {
     it('gets response for a reviewer', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
-        $employee = Employee::factory()->create();
-        $user = User::factory()->create(['employee_id' => $employee->id]);
+        $user = User::factory()->create();
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
         $user->tenants()->attach($tenant->id, [
             'role' => TenantUserRole::Employee->value,
             'invited_at' => now(),
@@ -250,11 +226,14 @@ describe('Evaluation Response API', function () {
         ]);
 
         $response = $this->actingAs($user)
-            ->getJson("/api/evaluation-reviewers/{$reviewer->id}/response");
+            ->getJson("{$this->baseUrl}/api/evaluation-reviewers/{$reviewer->id}/response");
 
         $response->assertSuccessful()
             ->assertJsonStructure([
-                'data' => [
+                'reviewer',
+                'participant',
+                'competencies',
+                'response' => [
                     'id',
                     'strengths',
                     'areas_for_improvement',
@@ -266,11 +245,10 @@ describe('Evaluation Response API', function () {
     });
 
     it('saves response draft', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
-        $employee = Employee::factory()->create();
-        $user = User::factory()->create(['employee_id' => $employee->id]);
+        $user = User::factory()->create();
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
         $user->tenants()->attach($tenant->id, [
             'role' => TenantUserRole::Employee->value,
             'invited_at' => now(),
@@ -283,7 +261,7 @@ describe('Evaluation Response API', function () {
         ]);
 
         $response = $this->actingAs($user)
-            ->postJson("/api/evaluation-reviewers/{$reviewer->id}/response", [
+            ->postJson("{$this->baseUrl}/api/evaluation-reviewers/{$reviewer->id}/response", [
                 'strengths' => 'Excellent problem solving',
                 'areas_for_improvement' => 'Time management',
                 'overall_comments' => 'Great year',
@@ -300,11 +278,10 @@ describe('Evaluation Response API', function () {
     });
 
     it('submits response', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
-        $employee = Employee::factory()->create();
-        $user = User::factory()->create(['employee_id' => $employee->id]);
+        $user = User::factory()->create();
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
         $user->tenants()->attach($tenant->id, [
             'role' => TenantUserRole::Employee->value,
             'invited_at' => now(),
@@ -319,7 +296,7 @@ describe('Evaluation Response API', function () {
         ]);
 
         $response = $this->actingAs($user)
-            ->postJson("/api/evaluation-reviewers/{$reviewer->id}/response", [
+            ->postJson("{$this->baseUrl}/api/evaluation-reviewers/{$reviewer->id}/response", [
                 'strengths' => 'Updated strengths',
                 'areas_for_improvement' => 'Updated areas',
                 'overall_comments' => 'Final comments',
@@ -335,11 +312,10 @@ describe('Evaluation Response API', function () {
     });
 
     it('declines review', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
-        $employee = Employee::factory()->create();
-        $user = User::factory()->create(['employee_id' => $employee->id]);
+        $user = User::factory()->create();
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
         $user->tenants()->attach($tenant->id, [
             'role' => TenantUserRole::Employee->value,
             'invited_at' => now(),
@@ -352,7 +328,7 @@ describe('Evaluation Response API', function () {
         ]);
 
         $response = $this->actingAs($user)
-            ->postJson("/api/evaluation-reviewers/{$reviewer->id}/decline", [
+            ->postJson("{$this->baseUrl}/api/evaluation-reviewers/{$reviewer->id}/decline", [
                 'reason' => 'I do not work closely with this person',
             ]);
 
@@ -364,13 +340,12 @@ describe('Evaluation Response API', function () {
     });
 
     it('prevents unauthorized access to other reviewers response', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForEvaluationResponse($tenant);
+        $tenant = $this->tenant;
 
-        $employee1 = Employee::factory()->create();
+        $user = User::factory()->create();
+        $employee1 = Employee::factory()->create(['user_id' => $user->id]);
         $employee2 = Employee::factory()->create();
 
-        $user = User::factory()->create(['employee_id' => $employee1->id]);
         $user->tenants()->attach($tenant->id, [
             'role' => TenantUserRole::Employee->value,
             'invited_at' => now(),
@@ -382,7 +357,7 @@ describe('Evaluation Response API', function () {
         ]);
 
         $response = $this->actingAs($user)
-            ->getJson("/api/evaluation-reviewers/{$reviewer->id}/response");
+            ->getJson("{$this->baseUrl}/api/evaluation-reviewers/{$reviewer->id}/response");
 
         $response->assertForbidden();
     });

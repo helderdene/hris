@@ -101,9 +101,16 @@ it('processes a specific date when --date is provided', function () {
     $schedule = WorkSchedule::factory()->create();
     $employee = Employee::factory()->active()->create();
 
-    createActiveAssignment($employee, $schedule);
+    // Use a date that falls within the schedule assignment range
+    // (createActiveAssignment sets effective_date to now()->subMonth())
+    $specificDate = now()->subDays(3)->toDateString();
 
-    $specificDate = '2025-01-15';
+    EmployeeScheduleAssignment::factory()->forDateRange(
+        now()->subMonths(2)->toDateString()
+    )->create([
+        'employee_id' => $employee->id,
+        'work_schedule_id' => $schedule->id,
+    ]);
 
     Artisan::call('dtr:calculate-daily', [
         '--tenant' => $tenant->id,

@@ -228,7 +228,7 @@ describe('Leave Type API', function () {
         ];
 
         $updateRequest = createUpdateLeaveTypeRequest($updateData, $hrManager);
-        $response = $controller->update($updateRequest, '', $leaveType);
+        $response = $controller->update($updateRequest, $leaveType);
 
         $data = $response->toArray(request());
         expect($data['name'])->toBe('Updated Leave Name');

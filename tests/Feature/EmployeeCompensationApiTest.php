@@ -175,7 +175,7 @@ describe('POST /api/employees/{employee}/compensation', function () {
         $request = createValidatedCompensationRequest($requestData);
 
         $controller = new EmployeeCompensationController;
-        $response = $controller->store($request, 'test-tenant', $employee);
+        $response = $controller->store($request, $employee);
 
         expect($response->getStatusCode())->toBe(201);
 
@@ -229,7 +229,7 @@ describe('POST /api/employees/{employee}/compensation', function () {
         $request = createValidatedCompensationRequest($requestData);
 
         $controller = new EmployeeCompensationController;
-        $response = $controller->store($request, 'test-tenant', $employee);
+        $response = $controller->store($request, $employee);
 
         expect($response->getStatusCode())->toBe(201);
 

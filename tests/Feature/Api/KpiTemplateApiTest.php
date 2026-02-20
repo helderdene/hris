@@ -268,7 +268,7 @@ describe('KpiTemplate API', function () {
         ]);
 
         $controller = new KpiTemplateController;
-        $response = $controller->show($tenant->slug, $template);
+        $response = $controller->show($template);
         $data = $response->toArray(request());
 
         expect($data['name'])->toBe('Sales Target');
@@ -303,7 +303,7 @@ describe('KpiTemplate API', function () {
         ];
 
         $updateRequest = createUpdateKpiTemplateRequest($updateData, $admin, $template->id);
-        $response = $controller->update($updateRequest, $tenant->slug, $template);
+        $response = $controller->update($updateRequest, $template);
 
         $data = $response->toArray(request());
         expect($data['name'])->toBe('Updated Name');
@@ -331,7 +331,7 @@ describe('KpiTemplate API', function () {
             'code' => 'DEL-001',
         ]);
 
-        $response = $controller->destroy($tenant->slug, $template);
+        $response = $controller->destroy($template);
 
         expect($response->getStatusCode())->toBe(200);
 

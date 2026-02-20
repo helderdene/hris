@@ -6,6 +6,7 @@ use App\Enums\PayrollEntryStatus;
 use App\Enums\TenantUserRole;
 use App\Http\Controllers\Api\BirReportController;
 use App\Http\Controllers\Api\EmployeeBir2316Controller;
+use App\Http\Requests\Api\PreviewBirReportRequest;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\PayrollEntry;
@@ -615,10 +616,12 @@ describe('BIR Report API - Annual Reports', function () {
             'status' => PayrollEntryStatus::Approved,
         ]);
 
-        $request = Request::create('/api/reports/bir/preview', 'POST', [
+        $request = PreviewBirReportRequest::create('/api/reports/bir/preview', 'POST', [
             'report_type' => '1604cf',
             'year' => 2025,
         ]);
+        $request->setContainer(app());
+        $request->validateResolved();
 
         $controller = new BirReportController(app(BirReportService::class));
         $response = $controller->preview($request);
@@ -657,11 +660,13 @@ describe('BIR Report API - Annual Reports', function () {
             'status' => PayrollEntryStatus::Approved,
         ]);
 
-        $request = Request::create('/api/reports/bir/preview', 'POST', [
+        $request = PreviewBirReportRequest::create('/api/reports/bir/preview', 'POST', [
             'report_type' => 'alphalist',
             'year' => 2025,
             'schedule' => '7.1',
         ]);
+        $request->setContainer(app());
+        $request->validateResolved();
 
         $controller = new BirReportController(app(BirReportService::class));
         $response = $controller->preview($request);

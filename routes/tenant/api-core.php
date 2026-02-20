@@ -116,6 +116,27 @@ Route::prefix('tenant')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Self-Service Clock API
+|--------------------------------------------------------------------------
+|
+| These endpoints allow authenticated employees to clock in/out from their
+| own devices when self-service clock-in is enabled for their work location.
+|
+*/
+
+Route::prefix('clock')->group(function () {
+    Route::post('/', [\App\Http\Controllers\Api\SelfServiceClockController::class, 'clock'])
+        ->name('api.clock.store');
+    Route::get('/status', [\App\Http\Controllers\Api\SelfServiceClockController::class, 'status'])
+        ->name('api.clock.status');
+});
+
+// Self-service PIN reset
+Route::post('/my/pin/reset', [\App\Http\Controllers\Api\EmployeePinController::class, 'resetOwn'])
+    ->name('api.my.pin.reset');
+
+/*
+|--------------------------------------------------------------------------
 | Audit Logs API
 |--------------------------------------------------------------------------
 |

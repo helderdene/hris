@@ -112,7 +112,7 @@ describe('PerformanceCycleParticipant API', function () {
         $controller = new PerformanceCycleParticipantController(new PerformanceCycleInstanceService);
 
         $request = Request::create("/api/organization/performance-cycle-instances/{$instance->id}/participants", 'GET');
-        $response = $controller->index($request, $tenant->slug, $instance);
+        $response = $controller->index($request, $instance);
 
         expect($response->count())->toBe(2);
     });
@@ -152,13 +152,13 @@ describe('PerformanceCycleParticipant API', function () {
 
         // Filter by pending status
         $request = Request::create("/api/organization/performance-cycle-instances/{$instance->id}/participants", 'GET', ['status' => 'pending']);
-        $response = $controller->index($request, $tenant->slug, $instance);
+        $response = $controller->index($request, $instance);
 
         expect($response->count())->toBe(1);
 
         // Filter by excluded
         $excludedRequest = Request::create("/api/organization/performance-cycle-instances/{$instance->id}/participants", 'GET', ['excluded' => 'true']);
-        $excludedResponse = $controller->index($excludedRequest, $tenant->slug, $instance);
+        $excludedResponse = $controller->index($excludedRequest, $instance);
 
         expect($excludedResponse->count())->toBe(0);
     });
@@ -192,7 +192,7 @@ describe('PerformanceCycleParticipant API', function () {
         $controller = new PerformanceCycleParticipantController(new PerformanceCycleInstanceService);
 
         $assignRequest = createAssignPerformanceCycleParticipantsRequest(['excluded_employee_ids' => []], $admin);
-        $response = $controller->assign($assignRequest, $tenant->slug, $instance);
+        $response = $controller->assign($assignRequest, $instance);
 
         expect($response->getStatusCode())->toBe(200);
 
@@ -232,7 +232,7 @@ describe('PerformanceCycleParticipant API', function () {
         $assignRequest = createAssignPerformanceCycleParticipantsRequest([
             'excluded_employee_ids' => [$excludedEmployee->id],
         ], $admin);
-        $response = $controller->assign($assignRequest, $tenant->slug, $instance);
+        $response = $controller->assign($assignRequest, $instance);
 
         expect($response->getStatusCode())->toBe(200);
 
@@ -266,7 +266,7 @@ describe('PerformanceCycleParticipant API', function () {
         $controller = new PerformanceCycleParticipantController(new PerformanceCycleInstanceService);
 
         $assignRequest = createAssignPerformanceCycleParticipantsRequest(['excluded_employee_ids' => []], $admin);
-        $controller->assign($assignRequest, $tenant->slug, $instance);
+        $controller->assign($assignRequest, $instance);
 
         $instance->refresh();
         expect($instance->employee_count)->toBe(5);
@@ -306,7 +306,7 @@ describe('PerformanceCycleParticipant API', function () {
         );
         $request->setUserResolver(fn () => $admin);
 
-        $response = $controller->update($request, $tenant->slug, $instance, $participant);
+        $response = $controller->update($request, $instance, $participant);
 
         // Resource was returned successfully
         expect($response)->toBeInstanceOf(\App\Http\Resources\PerformanceCycleParticipantResource::class);
@@ -348,7 +348,7 @@ describe('PerformanceCycleParticipant API', function () {
 
         $controller = new PerformanceCycleParticipantController(new PerformanceCycleInstanceService);
 
-        $response = $controller->destroy($tenant->slug, $instance, $participantToDelete);
+        $response = $controller->destroy($instance, $participantToDelete);
 
         expect($response->getStatusCode())->toBe(204);
 
@@ -401,7 +401,7 @@ describe('PerformanceCycleParticipant API', function () {
         );
         $request->setUserResolver(fn () => $admin);
 
-        $response = $controller->update($request, $tenant->slug, $instance, $participantToExclude);
+        $response = $controller->update($request, $instance, $participantToExclude);
 
         // Resource was returned successfully
         expect($response)->toBeInstanceOf(\App\Http\Resources\PerformanceCycleParticipantResource::class);
@@ -445,7 +445,7 @@ describe('PerformanceCycleParticipant API', function () {
         );
         $request->setUserResolver(fn () => $admin);
 
-        $response = $controller->update($request, $tenant->slug, $instance, $participant);
+        $response = $controller->update($request, $instance, $participant);
 
         // Resource was returned successfully
         expect($response)->toBeInstanceOf(\App\Http\Resources\PerformanceCycleParticipantResource::class);

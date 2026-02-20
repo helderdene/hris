@@ -101,7 +101,7 @@ describe('Unsync Employee from Device', function () {
         $controller = new BiometricSyncController($syncService);
         $request = createUnsyncRequest(['device_id' => $device->id], $admin);
 
-        $response = $controller->unsyncEmployeeFromDevice($request, 'test-tenant', $employee);
+        $response = $controller->unsyncEmployeeFromDevice($request, $employee);
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(200);
@@ -152,7 +152,7 @@ describe('Unsync Employee from Device', function () {
         $controller = new BiometricSyncController($syncService);
         $request = createUnsyncRequest(['device_id' => $device->id], $admin);
 
-        $response = $controller->unsyncEmployeeFromDevice($request, 'test-tenant', $employee);
+        $response = $controller->unsyncEmployeeFromDevice($request, $employee);
 
         expect($response->getStatusCode())->toBe(200);
 
@@ -200,7 +200,7 @@ describe('Unsync Employee from Device', function () {
         $controller = new BiometricSyncController($syncService);
         $request = createUnsyncRequest(['device_id' => $device->id], $admin);
 
-        $response = $controller->unsyncEmployeeFromDevice($request, 'test-tenant', $employee);
+        $response = $controller->unsyncEmployeeFromDevice($request, $employee);
 
         expect($response->getStatusCode())->toBe(200);
 
@@ -289,6 +289,6 @@ describe('Unsync Employee from Device', function () {
         $controller = new BiometricSyncController($syncService);
         $request = createUnsyncRequest(['device_id' => $device->id], $admin);
 
-        $controller->unsyncEmployeeFromDevice($request, 'test-tenant', $employee);
+        $controller->unsyncEmployeeFromDevice($request, $employee);
     })->throws(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
 });

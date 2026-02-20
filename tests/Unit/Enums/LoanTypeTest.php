@@ -3,10 +3,13 @@
 use App\Enums\LoanType;
 
 it('has all expected loan types', function () {
-    expect(LoanType::cases())->toHaveCount(8);
+    expect(LoanType::cases())->toHaveCount(11);
 
     expect(LoanType::SssSalary->value)->toBe('sss_salary');
     expect(LoanType::SssCalamity->value)->toBe('sss_calamity');
+    expect(LoanType::SssEducational->value)->toBe('sss_educational');
+    expect(LoanType::SssEmergency->value)->toBe('sss_emergency');
+    expect(LoanType::SssStockInvestment->value)->toBe('sss_stock_investment');
     expect(LoanType::PagibigMpl->value)->toBe('pagibig_mpl');
     expect(LoanType::PagibigCalamity->value)->toBe('pagibig_calamity');
     expect(LoanType::PagibigHousing->value)->toBe('pagibig_housing');
@@ -59,7 +62,7 @@ it('returns grouped options', function () {
     $grouped = LoanType::groupedOptions();
 
     expect($grouped)->toHaveKeys(['SSS', 'Pag-IBIG', 'Company']);
-    expect($grouped['SSS'])->toHaveCount(2);
+    expect($grouped['SSS'])->toHaveCount(5);
     expect($grouped['Pag-IBIG'])->toHaveCount(3);
     expect($grouped['Company'])->toHaveCount(3);
 
@@ -72,7 +75,7 @@ it('returns grouped options', function () {
 it('returns government loan types', function () {
     $governmentLoans = LoanType::governmentLoans();
 
-    expect($governmentLoans)->toHaveCount(5);
+    expect($governmentLoans)->toHaveCount(8);
     expect($governmentLoans)->toContain(LoanType::SssSalary);
     expect($governmentLoans)->toContain(LoanType::PagibigMpl);
 });

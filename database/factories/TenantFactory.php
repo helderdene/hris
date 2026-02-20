@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Plan;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -31,6 +32,7 @@ class TenantFactory extends Factory
             'logo_path' => null,
             'primary_color' => fake()->hexColor(),
             'timezone' => 'Asia/Manila',
+            'trial_ends_at' => now()->addDays(14),
             'business_info' => [
                 'company_name' => $companyName,
                 'address' => fake()->address(),
@@ -70,6 +72,36 @@ class TenantFactory extends Factory
             'business_info' => null,
             'payroll_settings' => null,
             'leave_defaults' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the tenant is on a trial.
+     */
+    public function withTrial(int $days = 14): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'trial_ends_at' => now()->addDays($days),
+        ]);
+    }
+
+    /**
+     * Indicate that the tenant's trial has expired.
+     */
+    public function withExpiredTrial(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'trial_ends_at' => now()->subDay(),
+        ]);
+    }
+
+    /**
+     * Assign a specific plan to the tenant.
+     */
+    public function withPlan(Plan $plan): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'plan_id' => $plan->id,
         ]);
     }
 }

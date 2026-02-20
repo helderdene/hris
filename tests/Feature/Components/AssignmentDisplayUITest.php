@@ -74,7 +74,7 @@ describe('Assignment Display UI - Current Assignments Display', function () {
         ]);
 
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         $reflection = new ReflectionClass($inertiaResponse);
         $propsProperty = $reflection->getProperty('props');
@@ -102,7 +102,7 @@ describe('Assignment Display UI - Authorization', function () {
         $employee = Employee::factory()->create();
 
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         $reflection = new ReflectionClass($inertiaResponse);
         $propsProperty = $reflection->getProperty('props');
@@ -235,7 +235,7 @@ describe('Assignment Display UI - Controller Integration', function () {
         ]);
 
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         $reflection = new ReflectionClass($inertiaResponse);
         $propsProperty = $reflection->getProperty('props');

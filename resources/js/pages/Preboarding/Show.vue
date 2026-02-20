@@ -64,12 +64,9 @@ function badgeClasses(color: string): string {
 function approveItem(itemId: number) {
     processing.value = true;
     router.post(`/api/preboarding-items/${itemId}/approve`, {}, {
-        preserveState: true,
+        preserveScroll: true,
         onFinish: () => {
             processing.value = false;
-        },
-        onSuccess: () => {
-            router.reload({ only: ['checklist'] });
         },
     });
 }
@@ -87,13 +84,10 @@ function confirmReject() {
     router.post(`/api/preboarding-items/${rejectingItemId.value}/reject`, {
         rejection_reason: rejectionReason.value,
     }, {
-        preserveState: true,
+        preserveScroll: true,
         onFinish: () => {
             processing.value = false;
             rejectDialogOpen.value = false;
-        },
-        onSuccess: () => {
-            router.reload({ only: ['checklist'] });
         },
     });
 }

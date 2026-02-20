@@ -73,6 +73,9 @@ function createDocMgmtIntegrationDocumentRequest(array $data): DocumentUploadReq
     $request->setRedirector(app('redirect'));
 
     $rules = (new DocumentUploadRequest)->rules();
+    if (config('database.default') === 'sqlite') {
+        $rules['document_category_id'] = ['required', 'integer', \Illuminate\Validation\Rule::exists('document_categories', 'id')];
+    }
     $validator = Validator::make($data, $rules);
 
     $reflection = new ReflectionClass($request);
@@ -151,7 +154,7 @@ describe('End-to-End: HR uploads employee document, employee views it', function
         $request->files->set('file', $file);
 
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $uploadResponse = $controller->store($request, 'test-tenant', $employee);
+        $uploadResponse = $controller->store($request, $employee);
 
         expect($uploadResponse->getStatusCode())->toBe(201);
 
@@ -238,7 +241,7 @@ describe('End-to-End: Document version upload and history retrieval', function (
         $request->files->set('file', $file1);
 
         $documentController = new EmployeeDocumentController(new DocumentStorageService);
-        $createResponse = $documentController->store($request, 'test-tenant', $employee);
+        $createResponse = $documentController->store($request, $employee);
 
         expect($createResponse->getStatusCode())->toBe(201);
         $documentId = $createResponse->getData(true)['data']['id'];
@@ -255,7 +258,7 @@ describe('End-to-End: Document version upload and history retrieval', function (
         $version2Request->files->set('file', $file2);
 
         $versionController = new DocumentVersionController(new DocumentStorageService);
-        $version2Response = $versionController->store($version2Request, 'test-tenant', $document);
+        $version2Response = $versionController->store($version2Request, $document);
 
         expect($version2Response->getStatusCode())->toBe(201);
         expect($version2Response->getData(true)['data']['version_number'])->toBe(2);
@@ -270,13 +273,13 @@ describe('End-to-End: Document version upload and history retrieval', function (
         $version3Request = createDocMgmtIntegrationVersionRequest($version3Data);
         $version3Request->files->set('file', $file3);
 
-        $version3Response = $versionController->store($version3Request, 'test-tenant', $document);
+        $version3Response = $versionController->store($version3Request, $document);
 
         expect($version3Response->getStatusCode())->toBe(201);
         expect($version3Response->getData(true)['data']['version_number'])->toBe(3);
 
         // Retrieve document with full version history
-        $showResponse = $documentController->show('test-tenant', $employee, $document);
+        $showResponse = $documentController->show($employee, $document);
         $data = $showResponse->getData(true);
 
         expect($data['data']['versions'])->toHaveCount(3);
@@ -312,7 +315,7 @@ describe('End-to-End: Company document lifecycle', function () {
         $request->files->set('file', $file);
 
         $controller = new CompanyDocumentController(new DocumentStorageService);
-        $createResponse = $controller->store($request, 'test-tenant');
+        $createResponse = $controller->store($request);
 
         expect($createResponse->getStatusCode())->toBe(201);
         $documentId = $createResponse->getData(true)['data']['id'];
@@ -562,7 +565,7 @@ describe('Edge case: Upload at max file size (10MB)', function () {
         $request->files->set('file', $maxSizeFile);
 
         $controller = new EmployeeDocumentController(new DocumentStorageService);
-        $response = $controller->store($request, 'test-tenant', $employee);
+        $response = $controller->store($request, $employee);
 
         expect($response->getStatusCode())->toBe(201);
 

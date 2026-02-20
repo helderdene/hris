@@ -12,6 +12,7 @@ use App\Models\Employee;
 use App\Models\TenantUser;
 use App\Models\User;
 use App\Notifications\NewHireAccountSetup;
+use App\Services\FeatureGateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
@@ -66,6 +67,13 @@ class TenantUserController extends Controller
     public function invite(InviteUserRequest $request): JsonResponse
     {
         Gate::authorize('can-manage-users');
+
+        $gate = app(FeatureGateService::class);
+        if (! $gate->isWithinUserLimit()) {
+            return response()->json([
+                'message' => "You've reached your plan's admin/HR user limit. Please upgrade your plan.",
+            ], 422);
+        }
 
         $tenant = tenant();
         $inviter = $request->user();

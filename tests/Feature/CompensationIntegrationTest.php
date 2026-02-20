@@ -111,7 +111,7 @@ describe('End-to-End Workflows', function () {
 
         $request = createIntegrationValidatedRequest($requestData);
         $controller = new EmployeeCompensationController;
-        $response = $controller->store($request, 'test-tenant', $employee);
+        $response = $controller->store($request, $employee);
 
         expect($response->getStatusCode())->toBe(201);
 
@@ -147,7 +147,7 @@ describe('End-to-End Workflows', function () {
             'effective_date' => now()->subMonths(6)->format('Y-m-d'),
             'remarks' => 'Initial hire',
         ]);
-        $controller->store($request1, 'test-tenant', $employee);
+        $controller->store($request1, $employee);
 
         // Refresh the employee to pick up the newly created compensation relationship
         $employee = Employee::find($employee->id);
@@ -159,7 +159,7 @@ describe('End-to-End Workflows', function () {
             'effective_date' => now()->subMonths(3)->format('Y-m-d'),
             'remarks' => 'Performance raise',
         ]);
-        $controller->store($request2, 'test-tenant', $employee);
+        $controller->store($request2, $employee);
 
         // Refresh again to pick up the updated compensation
         $employee = Employee::find($employee->id);
@@ -171,7 +171,7 @@ describe('End-to-End Workflows', function () {
             'effective_date' => now()->format('Y-m-d'),
             'remarks' => 'Promotion and pay type adjustment',
         ]);
-        $controller->store($request3, 'test-tenant', $employee);
+        $controller->store($request3, $employee);
 
         // Verify current compensation reflects latest update
         $employee->refresh();
@@ -229,7 +229,7 @@ describe('Bank Account Edge Cases', function () {
 
         $request = createIntegrationValidatedRequest($requestData);
         $controller = new EmployeeCompensationController;
-        $response = $controller->store($request, 'test-tenant', $employee);
+        $response = $controller->store($request, $employee);
 
         expect($response->getStatusCode())->toBe(201);
 
@@ -282,7 +282,7 @@ describe('Bank Account Edge Cases', function () {
 
         $request = createIntegrationValidatedRequest($requestData);
         $controller = new EmployeeCompensationController;
-        $response = $controller->store($request, 'test-tenant', $employee);
+        $response = $controller->store($request, $employee);
 
         expect($response->getStatusCode())->toBe(201);
 
@@ -383,7 +383,7 @@ describe('Currency Default', function () {
 
         $request = createIntegrationValidatedRequest($requestData);
         $controller = new EmployeeCompensationController;
-        $controller->store($request, 'test-tenant', $employee);
+        $controller->store($request, $employee);
 
         $employee->refresh();
         expect($employee->compensation->currency)->toBe('PHP');

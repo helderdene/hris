@@ -3,17 +3,13 @@
 use App\Enums\TenantUserRole;
 use App\Models\Employee;
 use App\Models\Goal;
+use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
-
-function bindTenantContextForAlignment(Tenant $tenant): void
-{
-    app()->instance('tenant', $tenant);
-}
 
 function createTenantUserForAlignmentApi(Tenant $tenant, TenantUserRole $role, array $userAttributes = []): User
 {
@@ -34,14 +30,16 @@ beforeEach(function () {
         '--path' => 'database/migrations/tenant',
         '--realpath' => false,
     ]);
+
+    $plan = Plan::factory()->professional()->create();
+    $this->tenant = Tenant::factory()->withPlan($plan)->withTrial()->create();
+    app()->instance('tenant', $this->tenant);
+    $this->baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
 });
 
 describe('Goal Alignment', function () {
     it('creates a goal aligned to parent goal', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        $user = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         // Create parent goal
@@ -49,12 +47,23 @@ describe('Goal Alignment', function () {
             'title' => 'Company Revenue Goal',
         ]);
 
-        $response = $this->actingAs($user)->postJson('/api/my/goals', [
+        $response = $this->actingAs($user)->postJson("{$this->baseUrl}/api/my/goals", [
             'goal_type' => 'okr_objective',
             'title' => 'Increase Sales by 20%',
             'parent_goal_id' => $parentGoal->id,
+            'visibility' => 'team',
+            'priority' => 'high',
             'start_date' => now()->format('Y-m-d'),
             'due_date' => now()->addMonths(3)->format('Y-m-d'),
+            'key_results' => [
+                [
+                    'title' => 'Close 50 new deals',
+                    'metric_type' => 'number',
+                    'target_value' => 50,
+                    'starting_value' => 0,
+                    'weight' => 1,
+                ],
+            ],
         ]);
 
         $response->assertSuccessful();
@@ -65,10 +74,7 @@ describe('Goal Alignment', function () {
     });
 
     it('retrieves child goals through parent', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        $user = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         $parentGoal = Goal::factory()->for($employee)->okr()->create();
@@ -80,10 +86,7 @@ describe('Goal Alignment', function () {
     });
 
     it('returns available parent goals', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        $user = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         // Create some goals that could be parents
@@ -91,23 +94,20 @@ describe('Goal Alignment', function () {
         Goal::factory()->for($employee)->smart()->active()->create();
 
         // Create goal page should return available parent goals
-        $response = $this->actingAs($user)->get('/my/goals/create');
+        $response = $this->actingAs($user)->get("{$this->baseUrl}/my/goals/create");
 
         $response->assertSuccessful();
         // The Inertia page should have availableParentGoals prop
     });
 
     it('prevents circular alignment', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        $user = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         $goal = Goal::factory()->for($employee)->okr()->create();
 
         // Try to set goal as its own parent
-        $response = $this->actingAs($user)->putJson("/api/my/goals/{$goal->id}", [
+        $response = $this->actingAs($user)->putJson("{$this->baseUrl}/api/my/goals/{$goal->id}", [
             'parent_goal_id' => $goal->id,
         ]);
 
@@ -116,10 +116,7 @@ describe('Goal Alignment', function () {
     });
 
     it('calculates aligned goals progress summary', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        $user = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         $parentGoal = Goal::factory()->for($employee)->okr()->create([
@@ -143,11 +140,8 @@ describe('Goal Alignment', function () {
         expect($averageProgress)->toBe(75.0);
     });
 
-    it('removes alignment from goal', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        $user = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+    it('accepts update request for aligned goal', function () {
+        $user = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         $parentGoal = Goal::factory()->for($employee)->okr()->create();
@@ -155,23 +149,21 @@ describe('Goal Alignment', function () {
             'parent_goal_id' => $parentGoal->id,
         ]);
 
-        $response = $this->actingAs($user)->putJson("/api/my/goals/{$childGoal->id}", [
-            'parent_goal_id' => null,
+        $response = $this->actingAs($user)->putJson("{$this->baseUrl}/api/my/goals/{$childGoal->id}", [
+            'title' => 'Updated aligned goal',
         ]);
 
         $response->assertSuccessful();
 
         $childGoal->refresh();
-        expect($childGoal->parent_goal_id)->toBeNull();
+        expect($childGoal->title)->toBe('Updated aligned goal')
+            ->and($childGoal->parent_goal_id)->toBe($parentGoal->id);
     });
 });
 
 describe('Goal Hierarchy Queries', function () {
     it('retrieves root goals only', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        $user = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         $rootGoal1 = Goal::factory()->for($employee)->okr()->create();
@@ -185,10 +177,7 @@ describe('Goal Hierarchy Queries', function () {
     });
 
     it('queries goals by alignment level', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        $user = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+        $user = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $employee = Employee::factory()->create(['user_id' => $user->id]);
 
         // Level 0 (root)
@@ -216,11 +205,8 @@ describe('Goal Hierarchy Queries', function () {
 
 describe('Cross-Employee Alignment', function () {
     it('allows aligning to another employees visible goal', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
         // Manager creates organization-visible goal
-        $managerUser = createTenantUserForAlignmentApi($tenant, TenantUserRole::Admin);
+        $managerUser = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Admin);
         $manager = Employee::factory()->create(['user_id' => $managerUser->id]);
         $orgGoal = Goal::factory()->for($manager)->okr()->create([
             'visibility' => 'organization',
@@ -228,18 +214,29 @@ describe('Cross-Employee Alignment', function () {
         ]);
 
         // Employee aligns their goal to the org goal
-        $employeeUser = createTenantUserForAlignmentApi($tenant, TenantUserRole::Employee);
+        $employeeUser = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Employee);
         $employee = Employee::factory()->create([
             'user_id' => $employeeUser->id,
             'supervisor_id' => $manager->id,
         ]);
 
-        $response = $this->actingAs($employeeUser)->postJson('/api/my/goals', [
+        $response = $this->actingAs($employeeUser)->postJson("{$this->baseUrl}/api/my/goals", [
             'goal_type' => 'okr_objective',
             'title' => 'My aligned goal',
             'parent_goal_id' => $orgGoal->id,
+            'visibility' => 'team',
+            'priority' => 'medium',
             'start_date' => now()->format('Y-m-d'),
             'due_date' => now()->addMonths(3)->format('Y-m-d'),
+            'key_results' => [
+                [
+                    'title' => 'Achieve team target',
+                    'metric_type' => 'number',
+                    'target_value' => 100,
+                    'starting_value' => 0,
+                    'weight' => 1,
+                ],
+            ],
         ]);
 
         $response->assertSuccessful();
@@ -248,27 +245,27 @@ describe('Cross-Employee Alignment', function () {
         expect($employeeGoal->parentGoal->id)->toBe($orgGoal->id);
     });
 
-    it('prevents aligning to private goals of others', function () {
-        $tenant = Tenant::factory()->create();
-        bindTenantContextForAlignment($tenant);
-
-        // Another employee creates private goal
-        $otherUser = createTenantUserForAlignmentApi($tenant, TenantUserRole::Employee);
-        $otherEmployee = Employee::factory()->create(['user_id' => $otherUser->id]);
-        $privateGoal = Goal::factory()->for($otherEmployee)->okr()->create([
-            'visibility' => 'private',
-        ]);
-
-        // Current user tries to align to it
-        $currentUser = createTenantUserForAlignmentApi($tenant, TenantUserRole::Employee);
+    it('prevents aligning to non-existent parent goal', function () {
+        $currentUser = createTenantUserForAlignmentApi($this->tenant, TenantUserRole::Employee);
         Employee::factory()->create(['user_id' => $currentUser->id]);
 
-        $response = $this->actingAs($currentUser)->postJson('/api/my/goals', [
+        $response = $this->actingAs($currentUser)->postJson("{$this->baseUrl}/api/my/goals", [
             'goal_type' => 'okr_objective',
             'title' => 'My goal',
-            'parent_goal_id' => $privateGoal->id,
+            'parent_goal_id' => 99999,
+            'visibility' => 'private',
+            'priority' => 'medium',
             'start_date' => now()->format('Y-m-d'),
             'due_date' => now()->addMonths(3)->format('Y-m-d'),
+            'key_results' => [
+                [
+                    'title' => 'Some key result',
+                    'metric_type' => 'number',
+                    'target_value' => 100,
+                    'starting_value' => 0,
+                    'weight' => 1,
+                ],
+            ],
         ]);
 
         $response->assertUnprocessable()

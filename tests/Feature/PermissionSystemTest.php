@@ -13,8 +13,8 @@ describe('Permission Enum', function () {
     it('has all module permissions', function () {
         $permissions = Permission::cases();
 
-        // Should have all 12 permissions defined in spec
-        expect($permissions)->toHaveCount(12);
+        // Should have all 22 permissions defined
+        expect($permissions)->toHaveCount(22);
 
         // Employees module
         expect(Permission::EmployeesView->value())->toBe('employees.view');
@@ -41,6 +41,26 @@ describe('Permission Enum', function () {
 
         // Users module
         expect(Permission::UsersManage->value())->toBe('users.manage');
+
+        // Organization module
+        expect(Permission::OrganizationManage->value())->toBe('organization.manage');
+
+        // Holidays module
+        expect(Permission::HolidaysManage->value())->toBe('holidays.manage');
+
+        // Recruitment module
+        expect(Permission::RecruitmentView->value())->toBe('recruitment.view');
+        expect(Permission::RecruitmentManage->value())->toBe('recruitment.manage');
+        expect(Permission::OffersCreate->value())->toBe('offers.create');
+        expect(Permission::OffersApprove->value())->toBe('offers.approve');
+        expect(Permission::OfferTemplatesManage->value())->toBe('offer_templates.manage');
+
+        // Training module
+        expect(Permission::TrainingView->value())->toBe('training.view');
+        expect(Permission::TrainingManage->value())->toBe('training.manage');
+
+        // Audit Logs module
+        expect(Permission::AuditLogsView->value())->toBe('audit_logs.view');
     });
 });
 
@@ -49,7 +69,7 @@ describe('Role Permissions Mapping', function () {
         $permissions = RolePermissions::getPermissionsForRole(TenantUserRole::Admin);
 
         // Admin should have all permissions
-        expect($permissions)->toHaveCount(12);
+        expect($permissions)->toHaveCount(22);
         expect($permissions)->toContain(Permission::EmployeesView);
         expect($permissions)->toContain(Permission::SettingsManage);
         expect($permissions)->toContain(Permission::UsersManage);
@@ -58,8 +78,8 @@ describe('Role Permissions Mapping', function () {
     it('returns correct permissions for HR Manager role', function () {
         $permissions = RolePermissions::getPermissionsForRole(TenantUserRole::HrManager);
 
-        // HR Manager should have all except SettingsManage and UsersManage
-        expect($permissions)->toHaveCount(10);
+        // HR Manager should have all except SettingsManage, UsersManage, and AuditLogsView
+        expect($permissions)->toHaveCount(19);
         expect($permissions)->toContain(Permission::EmployeesView);
         expect($permissions)->toContain(Permission::ReportsView);
         expect($permissions)->not->toContain(Permission::SettingsManage);
@@ -98,11 +118,12 @@ describe('Role Permissions Mapping', function () {
         expect($permissions)->not->toContain(Permission::ReportsView);
     });
 
-    it('returns empty permissions for Employee role', function () {
+    it('returns limited permissions for Employee role', function () {
         $permissions = RolePermissions::getPermissionsForRole(TenantUserRole::Employee);
 
-        // Employee: Self-service only (no module permissions)
-        expect($permissions)->toBeEmpty();
+        // Employee: Self-service only, with TrainingView for accessing training modules
+        expect($permissions)->toHaveCount(1);
+        expect($permissions)->toContain(Permission::TrainingView);
     });
 
     it('correctly checks if role has permission', function () {

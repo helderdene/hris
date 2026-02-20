@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AttendanceSource;
 use App\Http\Resources\AttendanceLogResource;
 use App\Models\AttendanceLog;
 use App\Models\BiometricDevice;
@@ -21,7 +22,7 @@ class AttendanceLogController extends Controller
         Gate::authorize('can-manage-employees');
 
         $query = AttendanceLog::query()
-            ->with(['employee', 'biometricDevice']);
+            ->with(['employee', 'biometricDevice', 'kiosk']);
 
         // Apply date filters (default to today)
         $dateFrom = $request->input('date_from', now()->toDateString());
@@ -43,6 +44,11 @@ class AttendanceLogController extends Controller
         // Apply device filter
         if ($deviceId = $request->input('device_id')) {
             $query->where('biometric_device_id', $deviceId);
+        }
+
+        // Apply source filter
+        if ($source = $request->input('source')) {
+            $query->where('source', $source);
         }
 
         $logs = $query->orderBy('logged_at', 'desc')
@@ -67,15 +73,22 @@ class AttendanceLogController extends Controller
             ->orderBy('name')
             ->get();
 
+        $sourceOptions = array_map(
+            fn (AttendanceSource $s) => ['value' => $s->value, 'label' => $s->label()],
+            AttendanceSource::cases()
+        );
+
         return Inertia::render('Attendance/Index', [
             'logs' => AttendanceLogResource::collection($logs),
             'employees' => $employees,
             'devices' => $devices,
+            'sourceOptions' => $sourceOptions,
             'filters' => [
                 'date_from' => $dateFrom,
                 'date_to' => $dateTo,
                 'employee_id' => $request->input('employee_id'),
                 'device_id' => $request->input('device_id'),
+                'source' => $request->input('source'),
             ],
         ]);
     }

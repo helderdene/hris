@@ -30,8 +30,9 @@ return new class extends Migration
             $table->index('is_featured');
         });
 
-        // Add full-text index for MySQL search
-        if (config('database.default') !== 'sqlite') {
+        // Add full-text index for MySQL search (skip for SQLite which does not support it)
+        $driver = Schema::getConnection()->getDriverName();
+        if ($driver !== 'sqlite') {
             Schema::table('help_articles', function (Blueprint $table) {
                 $table->fullText(['title', 'excerpt', 'content']);
             });

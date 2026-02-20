@@ -29,6 +29,12 @@ interface WorkLocation {
     timezone: string | null;
     metadata: Record<string, unknown> | null;
     status: string;
+    self_service_clockin_enabled: boolean;
+    location_check: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    geofence_radius: number | null;
+    ip_whitelist: string[] | null;
     created_at: string;
     updated_at: string;
 }

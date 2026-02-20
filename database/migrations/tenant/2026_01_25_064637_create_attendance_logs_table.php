@@ -20,14 +20,14 @@ return new class extends Migration
             // Employee reference (nullable for unmatched logs)
             $table->foreignId('employee_id')->nullable()->constrained()->nullOnDelete();
 
-            // Device-provided identifiers
-            $table->string('device_person_id');
-            $table->string('device_record_id');
-            $table->string('employee_code');
+            // Device-provided identifiers (nullable for kiosk/self-service logs)
+            $table->string('device_person_id')->nullable();
+            $table->string('device_record_id')->nullable();
+            $table->string('employee_code')->nullable();
 
-            // Verification data
-            $table->decimal('confidence', 5, 2);
-            $table->string('verify_status');
+            // Verification data (nullable for kiosk/self-service logs)
+            $table->decimal('confidence', 5, 2)->nullable();
+            $table->string('verify_status')->nullable();
 
             // Timestamp from device
             $table->timestamp('logged_at');

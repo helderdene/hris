@@ -159,7 +159,9 @@ describe('API Show Endpoint', function () {
         ]);
 
         $controller = new BiometricDeviceController;
-        $response = $controller->show($device);
+        $request = Request::create("/api/biometric-devices/{$device->id}", 'GET');
+        $request->setRouteResolver(fn () => (new \Illuminate\Routing\Route('GET', '/api/biometric-devices/{deviceId}', []))->bind($request)->setParameter('deviceId', $device->id));
+        $response = $controller->show($request);
 
         $data = $response->toArray(request());
 

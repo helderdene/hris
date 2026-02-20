@@ -95,7 +95,7 @@ describe('Create Category Modal', function () {
 
         $request = createCategoryManagementRequest($requestData);
         $controller = new DocumentCategoryController;
-        $response = $controller->store($request, 'test-tenant');
+        $response = $controller->store($request);
 
         expect($response->getStatusCode())->toBe(201);
 
@@ -158,7 +158,7 @@ describe('Category Appears in List After Creation', function () {
         ];
 
         $request = createCategoryManagementRequest($requestData);
-        $createResponse = $controller->store($request, 'test-tenant');
+        $createResponse = $controller->store($request);
 
         expect($createResponse->getStatusCode())->toBe(201);
 

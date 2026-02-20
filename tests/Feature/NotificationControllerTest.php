@@ -118,7 +118,7 @@ describe('Notification API', function () {
         $request = Request::create("/api/notifications/{$notification->id}/read", 'POST');
         $request->setUserResolver(fn () => $user);
 
-        $response = $controller->markAsRead($request, $tenant->slug, $notification);
+        $response = $controller->markAsRead($request, $notification);
         $data = json_decode($response->getContent(), true);
 
         expect($data['message'])->toBe('Notification marked as read.');
@@ -143,7 +143,7 @@ describe('Notification API', function () {
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
-        $controller->markAsRead($request, $tenant->slug, $notification);
+        $controller->markAsRead($request, $notification);
     });
 
     it('marks all notifications as read', function () {
@@ -198,7 +198,7 @@ describe('Notification API', function () {
         $request = Request::create("/api/notifications/{$notification->id}/download", 'GET');
         $request->setUserResolver(fn () => $user);
 
-        $response = $controller->download($request, $tenant->slug, $notification);
+        $response = $controller->download($request, $notification);
 
         expect($response)->toBeInstanceOf(\Symfony\Component\HttpFoundation\StreamedResponse::class);
 
@@ -222,7 +222,7 @@ describe('Notification API', function () {
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
-        $controller->download($request, $tenant->slug, $notification);
+        $controller->download($request, $notification);
     });
 
     it('prevents downloading from another user notification', function () {
@@ -250,7 +250,7 @@ describe('Notification API', function () {
 
         $this->expectException(\Symfony\Component\HttpKernel\Exception\HttpException::class);
 
-        $controller->download($request, $tenant->slug, $notification);
+        $controller->download($request, $notification);
     });
 
     it('notification resource transforms data correctly', function () {

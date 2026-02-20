@@ -191,7 +191,7 @@ describe('Sync All to Device Endpoint', function () {
             'immediate' => false,
         ], $admin);
 
-        $response = $controller->syncAllToDevice($request, 'test-tenant', $device);
+        $response = $controller->syncAllToDevice($request, $device);
 
         $data = json_decode($response->getContent(), true);
 
@@ -499,7 +499,7 @@ describe('Sync Employee to Devices Endpoint', function () {
             'immediate' => true,
         ], $admin);
 
-        $response = $controller->syncEmployeeToDevices($request, 'test-tenant', $employee);
+        $response = $controller->syncEmployeeToDevices($request, $employee);
 
         $data = json_decode($response->getContent(), true);
 
@@ -555,7 +555,7 @@ describe('Sync Employee to Devices Endpoint', function () {
             'immediate' => false,
         ], $admin);
 
-        $response = $controller->syncEmployeeToDevices($request, 'test-tenant', $employee);
+        $response = $controller->syncEmployeeToDevices($request, $employee);
 
         expect($response->getStatusCode())->toBe(202);
     });

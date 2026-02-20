@@ -18,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 | These routes render the performance management pages including KPIs.
 |
 */
-Route::prefix('performance')->group(function () {
+Route::prefix('performance')->middleware(['module:performance_management'])->group(function () {
     Route::get('/kpis', [\App\Http\Controllers\Performance\KpiPageController::class, 'index'])
         ->name('performance.kpis.index');
 
@@ -55,7 +55,7 @@ Route::prefix('performance')->group(function () {
 | These routes render the training management pages for course catalog.
 |
 */
-Route::prefix('training')->group(function () {
+Route::prefix('training')->middleware(['module:training_development'])->group(function () {
     Route::get('/courses', [TrainingController::class, 'coursesIndex'])
         ->name('training.courses.index');
     Route::get('/courses/{course}', [TrainingController::class, 'coursesShow'])
@@ -91,7 +91,7 @@ Route::prefix('training')->group(function () {
 | Compliance Training Web Routes
 |--------------------------------------------------------------------------
 */
-Route::prefix('compliance')->group(function () {
+Route::prefix('compliance')->middleware(['module:compliance_training'])->group(function () {
     Route::get('/', [\App\Http\Controllers\ComplianceController::class, 'dashboard'])
         ->name('compliance.dashboard');
     Route::get('/courses', [\App\Http\Controllers\ComplianceController::class, 'coursesIndex'])

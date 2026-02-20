@@ -212,7 +212,7 @@ describe('PayrollCycle API', function () {
         ];
 
         $updateRequest = createUpdatePayrollCycleRequest($updateData, $hrManager);
-        $response = $controller->update($updateRequest, $tenant->slug, $cycle);
+        $response = $controller->update($updateRequest, $cycle);
 
         $data = $response->toArray(request());
         expect($data['name'])->toBe('Updated Name');
@@ -270,7 +270,7 @@ describe('PayrollCycle API', function () {
             'name' => 'Cycle to Delete',
         ]);
 
-        $response = $controller->destroy($tenant->slug, $cycle);
+        $response = $controller->destroy($cycle);
 
         expect($response->getStatusCode())->toBe(200);
 
@@ -371,7 +371,7 @@ describe('PayrollCycle API', function () {
         ]);
 
         $controller = new PayrollCycleController;
-        $response = $controller->show($tenant->slug, $cycle);
+        $response = $controller->show($cycle);
 
         $data = $response->toArray(request());
         expect($data['id'])->toBe($cycle->id);

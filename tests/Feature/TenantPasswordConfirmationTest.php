@@ -12,6 +12,7 @@ use App\Enums\TenantUserRole;
 use App\Models\Tenant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Artisan;
 
 uses(RefreshDatabase::class);
 
@@ -37,6 +38,11 @@ function createUserForPwConfirm(Tenant $tenant, TenantUserRole $role): User
 beforeEach(function () {
     $this->withoutVite();
     config(['app.main_domain' => 'kasamahr.test']);
+
+    Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
 
     $this->tenant = Tenant::factory()->create();
     bindTenantForPwConfirm($this->tenant);

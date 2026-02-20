@@ -110,6 +110,29 @@ Route::prefix('organization')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
+    | Kiosk Management API
+    |--------------------------------------------------------------------------
+    |
+    | These endpoints allow authorized users to manage web kiosk terminals
+    | for PIN-based attendance recording at work locations.
+    |
+    */
+
+    Route::get('/kiosks', [\App\Http\Controllers\Api\KioskController::class, 'index'])
+        ->name('api.organization.kiosks.index');
+    Route::post('/kiosks', [\App\Http\Controllers\Api\KioskController::class, 'store'])
+        ->name('api.organization.kiosks.store');
+    Route::get('/kiosks/{kiosk}', [\App\Http\Controllers\Api\KioskController::class, 'show'])
+        ->name('api.organization.kiosks.show');
+    Route::put('/kiosks/{kiosk}', [\App\Http\Controllers\Api\KioskController::class, 'update'])
+        ->name('api.organization.kiosks.update');
+    Route::delete('/kiosks/{kiosk}', [\App\Http\Controllers\Api\KioskController::class, 'destroy'])
+        ->name('api.organization.kiosks.destroy');
+    Route::post('/kiosks/{kiosk}/regenerate-token', [\App\Http\Controllers\Api\KioskController::class, 'regenerateToken'])
+        ->name('api.organization.kiosks.regenerate-token');
+
+    /*
+    |--------------------------------------------------------------------------
     | Biometric Device Sync API
     |--------------------------------------------------------------------------
     |

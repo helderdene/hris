@@ -72,7 +72,7 @@ describe('Employee Show Page with Documents Tab', function () {
         ]);
 
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         $reflection = new ReflectionClass($inertiaResponse);
 
@@ -99,7 +99,7 @@ describe('Employee Show Page with Documents Tab', function () {
         $employee = Employee::factory()->create();
 
         $controller = new EmployeeController;
-        $inertiaResponse = $controller->show($tenant->slug, $employee);
+        $inertiaResponse = $controller->show($employee);
 
         $reflection = new ReflectionClass($inertiaResponse);
         $propsProperty = $reflection->getProperty('props');

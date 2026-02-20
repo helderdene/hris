@@ -1,6 +1,7 @@
 <?php
 
 use App\Jobs\CheckOverduePreboardingJob;
+use App\Jobs\CleanupVisitorDeviceSyncsJob;
 use App\Jobs\ExpireCarryOverBalancesJob;
 use App\Jobs\MarkOfflineDevicesJob;
 use App\Jobs\MonthlyLeaveAccrualJob;
@@ -104,3 +105,33 @@ Schedule::command('compliance:expire-training')
     ->dailyAt('00:30')
     ->withoutOverlapping()
     ->name('compliance-expire-training');
+
+/*
+|--------------------------------------------------------------------------
+| Billing Scheduled Commands
+|--------------------------------------------------------------------------
+*/
+
+// Billing quantity sync - nightly at 03:00
+Schedule::command('billing:sync-quantities')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->name('billing-sync-quantities');
+
+// Check expired trials - daily at 08:00
+Schedule::command('billing:check-expired-trials')
+    ->dailyAt('08:00')
+    ->withoutOverlapping()
+    ->name('billing-check-expired-trials');
+
+/*
+|--------------------------------------------------------------------------
+| Visitor Management Scheduled Jobs
+|--------------------------------------------------------------------------
+*/
+
+// Cleanup visitor device syncs - daily at 03:30 (remove visitors from FR devices 24h after checkout)
+Schedule::job(new CleanupVisitorDeviceSyncsJob)
+    ->dailyAt('03:30')
+    ->withoutOverlapping()
+    ->name('cleanup-visitor-device-syncs');

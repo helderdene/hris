@@ -6,6 +6,7 @@ use App\Models\BiometricDevice;
 use App\Models\DeviceSyncLog;
 use App\Models\Document;
 use App\Models\Employee;
+use App\Models\Visitor;
 use App\Services\DocumentStorageService;
 use App\Services\Mqtt\MqttPublisher;
 use Illuminate\Support\Facades\Log;
@@ -154,6 +155,86 @@ class DeviceCommandService
         return [
             'exists' => $exists,
             'data' => $exists ? $result['ack']['info'] : null,
+        ];
+    }
+
+    /**
+     * Send an EditPerson command for a visitor (uses "visitor-{id}" prefix).
+     */
+    public function editVisitorPerson(Visitor $visitor, BiometricDevice $device): void
+    {
+        $payload = $this->buildVisitorEditPersonPayload($visitor);
+
+        $this->mqttPublisher->publishToDevice($device, $payload);
+    }
+
+    /**
+     * Send a DelPerson command for a visitor.
+     */
+    public function deleteVisitorPerson(Visitor $visitor, BiometricDevice $device): void
+    {
+        $payload = [
+            'operator' => 'DelPerson',
+            'info' => [
+                'customId' => "visitor-{$visitor->id}",
+            ],
+        ];
+
+        $this->mqttPublisher->publishToDevice($device, $payload);
+    }
+
+    /**
+     * Build the EditPerson payload for a visitor.
+     *
+     * @return array<string, mixed>
+     */
+    protected function buildVisitorEditPersonPayload(Visitor $visitor): array
+    {
+        $info = [
+            'customId' => "visitor-{$visitor->id}",
+            'name' => $visitor->full_name,
+            'nation' => 1,
+            'gender' => 0,
+            'birthday' => '',
+            'address' => '',
+            'idCard' => '',
+            'tempCardType' => 0,
+            'EffectNumber' => 3,
+            'cardValidBegin' => now()->format('Y-m-d'),
+            'cardValidEnd' => now()->addMonth()->format('Y-m-d'),
+            'telnum1' => $visitor->phone ?? '',
+            'native' => '',
+            'cardType2' => 0,
+            'cardNum2' => '',
+            'notes' => 'Visitor',
+            'personType' => 0,
+            'cardType' => 0,
+            'strategyInfo' => [
+                'strategyNum' => 1,
+                'strategyData' => [
+                    [
+                        'strategyType' => 6,
+                        'startTime' => '00:00',
+                        'endTime' => '23:59',
+                    ],
+                ],
+            ],
+        ];
+
+        if ($visitor->photo_path) {
+            $disk = Storage::disk('local');
+            if ($disk->exists($visitor->photo_path)) {
+                $contents = $disk->get($visitor->photo_path);
+                $jpegContents = $this->optimizePhotoForDevice($contents);
+                if ($jpegContents !== null) {
+                    $info['pic'] = 'data:image/jpeg;base64,'.base64_encode($jpegContents);
+                }
+            }
+        }
+
+        return [
+            'operator' => 'EditPerson',
+            'info' => $info,
         ];
     }
 

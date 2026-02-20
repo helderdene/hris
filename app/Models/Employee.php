@@ -82,6 +82,21 @@ class Employee extends TenantModel
         'emergency_contact',
         'education',
         'work_history',
+
+        // Kiosk PIN
+        'kiosk_pin',
+        'kiosk_pin_hash',
+        'kiosk_pin_changed_at',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'kiosk_pin',
+        'kiosk_pin_hash',
     ];
 
     /**
@@ -103,6 +118,7 @@ class Employee extends TenantModel
             'emergency_contact' => 'array',
             'education' => 'array',
             'work_history' => 'array',
+            'kiosk_pin_changed_at' => 'datetime',
         ];
     }
 

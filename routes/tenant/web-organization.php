@@ -30,6 +30,8 @@ Route::prefix('organization')->group(function () {
         ->name('organization.locations.index');
     Route::get('/devices', [OrganizationController::class, 'devicesIndex'])
         ->name('organization.devices.index');
+    Route::get('/kiosks', [OrganizationController::class, 'kiosksIndex'])
+        ->name('organization.kiosks.index');
     Route::get('/work-schedules', [WorkSchedulePageController::class, 'index'])
         ->name('organization.work-schedules.index');
     Route::get('/holidays', [OrganizationController::class, 'holidaysIndex'])

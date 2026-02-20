@@ -197,7 +197,7 @@ describe('Course Category CRUD', function () {
         $category = CourseCategory::factory()->create();
 
         $controller = new CourseCategoryController;
-        $response = $controller->destroy($this->tenant->slug, $category);
+        $response = $controller->destroy($category);
 
         expect($response->getStatusCode())->toBe(200);
         $this->assertSoftDeleted('course_categories', ['id' => $category->id]);
@@ -214,7 +214,7 @@ describe('Course Category CRUD', function () {
         $course->categories()->attach($category->id);
 
         $controller = new CourseCategoryController;
-        $response = $controller->destroy($this->tenant->slug, $category);
+        $response = $controller->destroy($category);
 
         expect($response->getStatusCode())->toBe(422);
         $this->assertDatabaseHas('course_categories', ['id' => $category->id]);
@@ -230,7 +230,7 @@ describe('Course Category CRUD', function () {
         CourseCategory::factory()->withParent($parent)->create();
 
         $controller = new CourseCategoryController;
-        $response = $controller->destroy($this->tenant->slug, $parent);
+        $response = $controller->destroy($parent);
 
         expect($response->getStatusCode())->toBe(422);
         $this->assertDatabaseHas('course_categories', ['id' => $parent->id]);

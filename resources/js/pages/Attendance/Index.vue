@@ -23,6 +23,11 @@ interface Employee {
     employee_number: string;
 }
 
+interface Kiosk {
+    id: number;
+    name: string;
+}
+
 interface AttendanceLog {
     id: number;
     employee_id: number | null;
@@ -36,7 +41,10 @@ interface AttendanceLog {
     confidence: string | null;
     confidence_percent: number | null;
     verification_method: 'face' | 'fingerprint' | 'unknown';
+    source: string;
+    source_label: string;
     device: Device | null;
+    kiosk: Kiosk | null;
 }
 
 interface PaginationLink {
@@ -66,12 +74,14 @@ interface Filters {
     date_to: string | null;
     employee_id: string | null;
     device_id: string | null;
+    source: string | null;
 }
 
 const props = defineProps<{
     logs: PaginatedLogs;
     employees: Employee[];
     devices: Device[];
+    sourceOptions: EnumOption[];
     filters: Filters;
 }>();
 
@@ -90,6 +100,7 @@ const dateFrom = ref(props.filters?.date_from || '');
 const dateTo = ref(props.filters?.date_to || '');
 const employeeFilter = ref(props.filters?.employee_id || '');
 const deviceFilter = ref(props.filters?.device_id || '');
+const sourceFilter = ref(props.filters?.source || '');
 const showFilters = ref(false);
 
 // Dropdown options
@@ -110,6 +121,13 @@ const deviceOptions = computed<EnumOption[]>(() => {
             value: device.id.toString(),
             label: device.name,
         })),
+    ];
+});
+
+const sourceFilterOptions = computed<EnumOption[]>(() => {
+    return [
+        { value: '', label: 'All Sources' },
+        ...(props.sourceOptions || []),
     ];
 });
 
@@ -146,6 +164,7 @@ function applyFilters() {
             date_to: dateTo.value || undefined,
             employee_id: employeeFilter.value || undefined,
             device_id: deviceFilter.value || undefined,
+            source: sourceFilter.value || undefined,
         },
         {
             preserveState: true,
@@ -159,6 +178,7 @@ function clearFilters() {
     dateTo.value = new Date().toISOString().split('T')[0];
     employeeFilter.value = '';
     deviceFilter.value = '';
+    sourceFilter.value = '';
     router.get(
         '/attendance',
         {},
@@ -170,7 +190,7 @@ function clearFilters() {
 }
 
 // Watch filter changes and apply
-watch([employeeFilter, deviceFilter], () => {
+watch([employeeFilter, deviceFilter, sourceFilter], () => {
     applyFilters();
 });
 
@@ -329,6 +349,17 @@ function formatVerificationMethod(log: AttendanceLog): string {
                         placeholder="All Devices"
                     />
                 </div>
+                <div class="w-full sm:w-44">
+                    <label
+                        class="mb-1.5 block text-xs font-medium text-slate-600 dark:text-slate-400"
+                        >Source</label
+                    >
+                    <EnumSelect
+                        v-model="sourceFilter"
+                        :options="sourceFilterOptions"
+                        placeholder="All Sources"
+                    />
+                </div>
                 <Button
                     variant="ghost"
                     size="sm"
@@ -425,6 +456,12 @@ function formatVerificationMethod(log: AttendanceLog): string {
                                     scope="col"
                                     class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400"
                                 >
+                                    Source
+                                </th>
+                                <th
+                                    scope="col"
+                                    class="px-6 py-3 text-left text-xs font-medium tracking-wider text-slate-500 uppercase dark:text-slate-400"
+                                >
                                     Device
                                 </th>
                                 <th
@@ -483,7 +520,22 @@ function formatVerificationMethod(log: AttendanceLog): string {
                                 <td
                                     class="px-6 py-4 text-sm whitespace-nowrap text-slate-600 dark:text-slate-300"
                                 >
-                                    {{ log.device?.name || '-' }}
+                                    <span
+                                        :class="[
+                                            'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+                                            log.source === 'biometric' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                            log.source === 'kiosk' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
+                                            log.source === 'self_service' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                            'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-400'
+                                        ]"
+                                    >
+                                        {{ log.source_label }}
+                                    </span>
+                                </td>
+                                <td
+                                    class="px-6 py-4 text-sm whitespace-nowrap text-slate-600 dark:text-slate-300"
+                                >
+                                    {{ log.device?.name || log.kiosk?.name || '-' }}
                                 </td>
                                 <td
                                     class="px-6 py-4 text-sm whitespace-nowrap text-slate-600 dark:text-slate-300"
@@ -532,7 +584,19 @@ function formatVerificationMethod(log: AttendanceLog): string {
                         <div
                             class="mt-2 flex items-center gap-4 text-sm text-slate-500 dark:text-slate-400"
                         >
+                            <span
+                                :class="[
+                                    'inline-flex rounded-full px-2 py-0.5 text-xs font-medium',
+                                    log.source === 'biometric' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' :
+                                    log.source === 'kiosk' ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' :
+                                    log.source === 'self_service' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
+                                    'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-400'
+                                ]"
+                            >
+                                {{ log.source_label }}
+                            </span>
                             <span v-if="log.device">{{ log.device.name }}</span>
+                            <span v-else-if="log.kiosk">{{ log.kiosk.name }}</span>
                             <span>{{ formatVerificationMethod(log) }}</span>
                         </div>
                     </div>
@@ -564,7 +628,7 @@ function formatVerificationMethod(log: AttendanceLog): string {
                     </h3>
                     <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         {{
-                            dateFrom || dateTo || employeeFilter || deviceFilter
+                            dateFrom || dateTo || employeeFilter || deviceFilter || sourceFilter
                                 ? 'Try adjusting your filters.'
                                 : 'Attendance logs will appear here when employees clock in.'
                         }}

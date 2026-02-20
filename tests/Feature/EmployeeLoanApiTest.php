@@ -234,7 +234,7 @@ describe('Loan API Show', function () {
         $loan = EmployeeLoan::factory()->sssSalary()->create();
 
         $controller = new EmployeeLoanController;
-        $response = $controller->show($tenant->slug, $loan);
+        $response = $controller->show($loan);
 
         $data = $response->resolve();
         expect($data['id'])->toBe($loan->id);
@@ -261,7 +261,7 @@ describe('Loan API Update', function () {
 
         $controller = new EmployeeLoanController;
         $request = createUpdateLoanRequest($data, $hrManager);
-        $response = $controller->update($request, $tenant->slug, $loan);
+        $response = $controller->update($request, $loan);
 
         $responseData = $response->resolve();
         expect($responseData['monthly_deduction'])->toBe(2500.0);
@@ -286,7 +286,7 @@ describe('Loan API Update', function () {
         $controller = new EmployeeLoanController;
         $request = createUpdateLoanRequest($data, $hrManager);
 
-        expect(fn () => $controller->update($request, $tenant->slug, $loan))
+        expect(fn () => $controller->update($request, $loan))
             ->toThrow(Symfony\Component\HttpKernel\Exception\HttpException::class);
     });
 });
@@ -308,7 +308,7 @@ describe('Loan API Status Update', function () {
 
         $controller = new EmployeeLoanController;
         $request = createUpdateStatusRequest($data, $hrManager);
-        $response = $controller->updateStatus($request, $tenant->slug, $loan);
+        $response = $controller->updateStatus($request, $loan);
 
         $responseData = $response->resolve();
         expect($responseData['status'])->toBe('on_hold');
@@ -354,7 +354,7 @@ describe('Loan API Record Payment', function () {
 
         $controller = new EmployeeLoanController;
         $request = createRecordPaymentRequest($data, $hrManager);
-        $response = $controller->recordPayment($request, $tenant->slug, $loan);
+        $response = $controller->recordPayment($request, $loan);
 
         $responseData = $response->getData(true);
         expect($responseData['message'])->toBe('Payment recorded successfully.');
@@ -405,7 +405,7 @@ describe('Loan API Record Payment', function () {
 
         $controller = new EmployeeLoanController;
         $request = createRecordPaymentRequest($data, $hrManager);
-        $response = $controller->recordPayment($request, $tenant->slug, $loan);
+        $response = $controller->recordPayment($request, $loan);
 
         expect($response->getStatusCode())->toBe(422);
         expect($response->getData(true)['message'])->toContain('completed');
@@ -423,7 +423,7 @@ describe('Loan API Delete', function () {
         $loan = EmployeeLoan::factory()->create();
 
         $controller = new EmployeeLoanController;
-        $controller->destroy($tenant->slug, $loan);
+        $controller->destroy($loan);
 
         $this->assertSoftDeleted('employee_loans', ['id' => $loan->id]);
     });
@@ -445,7 +445,7 @@ describe('Loan API Delete', function () {
         ]);
 
         $controller = new EmployeeLoanController;
-        $response = $controller->destroy($tenant->slug, $loan);
+        $response = $controller->destroy($loan);
 
         expect($response->getStatusCode())->toBe(422);
         expect($response->getData(true)['message'])->toContain('payments');
@@ -470,7 +470,7 @@ describe('Employee Loans Endpoint', function () {
 
         $controller = new EmployeeLoanController;
         $request = Request::create('/api/employees/1/loans', 'GET');
-        $response = $controller->employeeLoans($request, $tenant->slug, $employee1);
+        $response = $controller->employeeLoans($request, $employee1);
 
         expect($response->count())->toBe(2);
     });

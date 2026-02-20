@@ -262,7 +262,7 @@ describe('My Training Show Page', function () {
         $request = Request::create("/my/training/courses/{$course->id}", 'GET');
         app()->instance('request', $request);
 
-        $response = $controller->show($this->tenant->slug, $course);
+        $response = $controller->show($course);
 
         expect($response)->toBeInstanceOf(\Inertia\Response::class);
         expect(getMyTrainingComponent($response))->toBe('My/Training/Show');
@@ -286,7 +286,7 @@ describe('My Training Show Page', function () {
         $request = Request::create("/my/training/courses/{$course->id}", 'GET');
         app()->instance('request', $request);
 
-        $response = $controller->show($this->tenant->slug, $course);
+        $response = $controller->show($course);
         $data = getMyTrainingInertiaData($response);
 
         expect($data['course']['categories'])->toHaveCount(1);
@@ -310,7 +310,7 @@ describe('My Training Show Page', function () {
         $request = Request::create("/my/training/courses/{$course->id}", 'GET');
         app()->instance('request', $request);
 
-        $response = $controller->show($this->tenant->slug, $course);
+        $response = $controller->show($course);
         $data = getMyTrainingInertiaData($response);
 
         expect($data['course']['prerequisites'])->toHaveCount(1);
@@ -329,7 +329,7 @@ describe('My Training Show Page', function () {
         $request = Request::create("/my/training/courses/{$draftCourse->id}", 'GET');
         app()->instance('request', $request);
 
-        expect(fn () => $controller->show($this->tenant->slug, $draftCourse))
+        expect(fn () => $controller->show($draftCourse))
             ->toThrow(\Symfony\Component\HttpKernel\Exception\NotFoundHttpException::class);
     });
 });

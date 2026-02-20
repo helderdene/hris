@@ -85,7 +85,7 @@ describe('Certification Type CRUD Operations', function () {
         $type = CertificationType::factory()->create(['name' => 'PRC License']);
 
         $controller = new CertificationTypeController;
-        $response = $controller->show($this->tenant->slug, $type);
+        $response = $controller->show($type);
         $data = $response->toArray(request());
 
         expect($data['name'])->toBe('PRC License');
@@ -144,7 +144,7 @@ describe('Certification Type CRUD Operations', function () {
         $type = CertificationType::factory()->create();
 
         $controller = new CertificationTypeController;
-        $response = $controller->destroy($this->tenant->slug, $type);
+        $response = $controller->destroy($type);
 
         expect($response->getStatusCode())->toBe(200);
         expect(CertificationType::find($type->id))->toBeNull();

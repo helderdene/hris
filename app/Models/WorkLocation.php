@@ -34,6 +34,12 @@ class WorkLocation extends TenantModel
         'timezone',
         'metadata',
         'status',
+        'latitude',
+        'longitude',
+        'geofence_radius',
+        'ip_whitelist',
+        'location_check',
+        'self_service_clockin_enabled',
     ];
 
     /**
@@ -46,6 +52,10 @@ class WorkLocation extends TenantModel
         return [
             'location_type' => LocationType::class,
             'metadata' => 'array',
+            'ip_whitelist' => 'array',
+            'self_service_clockin_enabled' => 'boolean',
+            'latitude' => 'decimal:7',
+            'longitude' => 'decimal:7',
         ];
     }
 
@@ -63,5 +73,13 @@ class WorkLocation extends TenantModel
     public function biometricDevices(): HasMany
     {
         return $this->hasMany(BiometricDevice::class);
+    }
+
+    /**
+     * Get the kiosks at this work location.
+     */
+    public function kiosks(): HasMany
+    {
+        return $this->hasMany(Kiosk::class);
     }
 }

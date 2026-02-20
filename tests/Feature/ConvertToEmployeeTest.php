@@ -17,6 +17,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\URL;
 
 uses(RefreshDatabase::class);
 
@@ -30,6 +31,8 @@ beforeEach(function () {
 
     $this->tenant = Tenant::factory()->create();
     app()->instance('tenant', $this->tenant);
+
+    URL::defaults(['tenant' => $this->tenant->slug]);
 
     $this->user = User::factory()->create();
     $this->user->tenants()->attach($this->tenant->id, [
@@ -175,9 +178,9 @@ describe('Convert to Employee API', function () {
         $controller = new \App\Http\Controllers\Api\PreboardingReviewController(
             app(\App\Services\PreboardingService::class)
         );
-        $response = $controller->convertToEmployee($this->tenant->slug, $checklist);
+        $response = $controller->convertToEmployee($checklist);
 
-        expect($response->getStatusCode())->toBe(201);
+        expect($response->getStatusCode())->toBe(302);
         expect(Employee::where('email', $application->candidate->email)->exists())->toBeTrue();
     });
 
@@ -198,7 +201,7 @@ describe('Convert to Employee API', function () {
             app(\App\Services\PreboardingService::class)
         );
 
-        expect(fn () => $controller->convertToEmployee($this->tenant->slug, $checklist))
+        expect(fn () => $controller->convertToEmployee($checklist))
             ->toThrow(\Symfony\Component\HttpKernel\Exception\HttpException::class);
     });
 
@@ -215,7 +218,7 @@ describe('Convert to Employee API', function () {
             app(\App\Services\PreboardingService::class)
         );
 
-        expect(fn () => $controller->convertToEmployee($this->tenant->slug, $checklist))
+        expect(fn () => $controller->convertToEmployee($checklist))
             ->toThrow(\Illuminate\Auth\Access\AuthorizationException::class);
     });
 });

@@ -273,13 +273,13 @@ describe('Position Form with Salary Grade Dropdown', function () {
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
-        expect($data['data']['title'])->toBe('Software Engineer');
-        expect($data['data']['salary_grade']['id'])->toBe($salaryGrade->id);
-        expect($data['data']['salary_grade']['name'])->toBe('Grade A');
-        expect($data['data']['job_level'])->toBe('mid');
-        expect($data['data']['job_level_label'])->toBe('Mid');
-        expect($data['data']['employment_type'])->toBe('regular');
-        expect($data['data']['employment_type_label'])->toBe('Regular');
+        expect($data['title'])->toBe('Software Engineer');
+        expect($data['salary_grade']['id'])->toBe($salaryGrade->id);
+        expect($data['salary_grade']['name'])->toBe('Grade A');
+        expect($data['job_level'])->toBe('mid');
+        expect($data['job_level_label'])->toBe('Mid');
+        expect($data['employment_type'])->toBe('regular');
+        expect($data['employment_type_label'])->toBe('Regular');
 
         // Verify position was created in database
         $this->assertDatabaseHas('positions', [
@@ -319,19 +319,19 @@ describe('SalaryGrade Form with Inline Steps', function () {
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
-        expect($data['data']['name'])->toBe('Professional Grade');
-        expect($data['data']['minimum_salary'])->toBe('60000.00');
-        expect($data['data']['midpoint_salary'])->toBe('80000.00');
-        expect($data['data']['maximum_salary'])->toBe('100000.00');
-        expect(count($data['data']['steps']))->toBe(3);
+        expect($data['name'])->toBe('Professional Grade');
+        expect($data['minimum_salary'])->toBe('60000.00');
+        expect($data['midpoint_salary'])->toBe('80000.00');
+        expect($data['maximum_salary'])->toBe('100000.00');
+        expect(count($data['steps']))->toBe(3);
 
         // Verify steps are ordered correctly
-        expect($data['data']['steps'][0]['step_number'])->toBe(1);
-        expect($data['data']['steps'][1]['step_number'])->toBe(2);
-        expect($data['data']['steps'][2]['step_number'])->toBe(3);
+        expect($data['steps'][0]['step_number'])->toBe(1);
+        expect($data['steps'][1]['step_number'])->toBe(2);
+        expect($data['steps'][2]['step_number'])->toBe(3);
 
         // Update salary grade with different steps (replacing all)
-        $gradeId = $data['data']['id'];
+        $gradeId = $data['id'];
         $salaryGrade = SalaryGrade::find($gradeId);
 
         $updateRequest = createUpdateSalaryGradeRequest([
@@ -441,12 +441,12 @@ describe('WorkLocation Form with Metadata', function () {
         $data = json_decode($response->getContent(), true);
 
         expect($response->getStatusCode())->toBe(201);
-        expect($data['data']['name'])->toBe('Main Office');
-        expect($data['data']['code'])->toBe('MAIN-001');
-        expect($data['data']['location_type'])->toBe('headquarters');
-        expect($data['data']['location_type_label'])->toBe('Headquarters');
-        expect($data['data']['metadata']['phone'])->toBe('+63-2-8888-1234');
-        expect($data['data']['metadata']['capacity'])->toBe(200);
+        expect($data['name'])->toBe('Main Office');
+        expect($data['code'])->toBe('MAIN-001');
+        expect($data['location_type'])->toBe('headquarters');
+        expect($data['location_type_label'])->toBe('Headquarters');
+        expect($data['metadata']['phone'])->toBe('+63-2-8888-1234');
+        expect($data['metadata']['capacity'])->toBe(200);
 
         // Verify metadata is stored correctly in database
         $location = WorkLocation::where('code', 'MAIN-001')->first();
@@ -516,8 +516,8 @@ describe('LocationType Dropdown Selection', function () {
             $data = json_decode($response->getContent(), true);
 
             expect($response->getStatusCode())->toBe(201);
-            expect($data['data']['location_type'])->toBe($type['value']);
-            expect($data['data']['location_type_label'])->toBe($type['label']);
+            expect($data['location_type'])->toBe($type['value']);
+            expect($data['location_type_label'])->toBe($type['label']);
         }
 
         // Verify all locations were created

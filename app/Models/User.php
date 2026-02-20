@@ -8,6 +8,7 @@ use App\Enums\Permission;
 use App\Enums\TenantUserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
@@ -79,6 +80,14 @@ class User extends Authenticatable
     public function isSuperAdmin(): bool
     {
         return $this->is_super_admin === true;
+    }
+
+    /**
+     * Get the employee record associated with the user.
+     */
+    public function employee(): HasOne
+    {
+        return $this->hasOne(Employee::class);
     }
 
     /**
