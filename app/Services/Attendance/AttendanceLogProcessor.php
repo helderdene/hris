@@ -94,14 +94,22 @@ class AttendanceLogProcessor
         $tenants = Tenant::all();
 
         foreach ($tenants as $tenant) {
-            $this->tenantManager->switchConnection($tenant);
+            try {
+                $this->tenantManager->switchConnection($tenant);
 
-            $device = BiometricDevice::where('device_identifier', $deviceIdentifier)
-                ->where('is_active', true)
-                ->first();
+                $device = BiometricDevice::where('device_identifier', $deviceIdentifier)
+                    ->where('is_active', true)
+                    ->first();
 
-            if ($device !== null) {
-                return [$device, $tenant];
+                if ($device !== null) {
+                    return [$device, $tenant];
+                }
+            } catch (\Throwable $e) {
+                Log::debug("AttendanceLog: skipping tenant {$tenant->slug}", [
+                    'error' => $e->getMessage(),
+                ]);
+
+                continue;
             }
         }
 
