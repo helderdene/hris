@@ -221,15 +221,44 @@ class EmployeeController extends Controller
                         ];
                     });
             }),
-            // Sync statuses for biometric devices
+            // Sync statuses for biometric devices (initialize if needed)
             'syncStatuses' => EmployeeDeviceSyncResource::collection(
-                EmployeeDeviceSync::where('employee_id', $employeeId)
-                    ->with('biometricDevice')
-                    ->get()
+                $this->getOrInitializeSyncStatuses($employeeId)
             ),
         ];
 
         return Inertia::render('Employees/Show', $props);
+    }
+
+    /**
+     * Get sync statuses for an employee, initializing records for any active devices without one.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection<int, EmployeeDeviceSync>
+     */
+    private function getOrInitializeSyncStatuses(int $employeeId): \Illuminate\Database\Eloquent\Collection
+    {
+        $syncs = EmployeeDeviceSync::where('employee_id', $employeeId)
+            ->with('biometricDevice')
+            ->get();
+
+        if ($syncs->isEmpty()) {
+            $devices = \App\Models\BiometricDevice::where('is_active', true)->get();
+
+            foreach ($devices as $device) {
+                EmployeeDeviceSync::firstOrCreate([
+                    'employee_id' => $employeeId,
+                    'biometric_device_id' => $device->id,
+                ], [
+                    'status' => 'pending',
+                ]);
+            }
+
+            $syncs = EmployeeDeviceSync::where('employee_id', $employeeId)
+                ->with('biometricDevice')
+                ->get();
+        }
+
+        return $syncs;
     }
 
     /**
