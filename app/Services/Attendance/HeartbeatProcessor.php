@@ -43,9 +43,9 @@ class HeartbeatProcessor
             return false;
         }
 
-        $deviceWithTenant = $this->findDeviceWithTenant($deviceIdentifier);
+        $devicesWithTenants = $this->findAllDevicesWithTenant($deviceIdentifier);
 
-        if ($deviceWithTenant === null) {
+        if (empty($devicesWithTenants)) {
             Log::debug('Heartbeat: unknown device', [
                 'device_identifier' => $deviceIdentifier,
             ]);
@@ -53,21 +53,21 @@ class HeartbeatProcessor
             return false;
         }
 
-        [$device, $tenant] = $deviceWithTenant;
+        foreach ($devicesWithTenants as [$device, $tenant]) {
+            $this->tenantManager->switchConnection($tenant);
+            app()->instance('tenant', $tenant);
 
-        $this->tenantManager->switchConnection($tenant);
-        app()->instance('tenant', $tenant);
+            $updates = [
+                'last_seen_at' => now(),
+                'status' => 'online',
+            ];
 
-        $updates = [
-            'last_seen_at' => now(),
-            'status' => 'online',
-        ];
+            if ($device->connection_started_at === null) {
+                $updates['connection_started_at'] = now();
+            }
 
-        if ($device->connection_started_at === null) {
-            $updates['connection_started_at'] = now();
+            $device->update($updates);
         }
-
-        $device->update($updates);
 
         return true;
     }
@@ -105,12 +105,13 @@ class HeartbeatProcessor
     }
 
     /**
-     * Find a biometric device across all tenants.
+     * Find all biometric devices matching the identifier across all tenants.
      *
-     * @return array{0: BiometricDevice, 1: Tenant}|null
+     * @return array<array{0: BiometricDevice, 1: Tenant}>
      */
-    private function findDeviceWithTenant(string $deviceIdentifier): ?array
+    private function findAllDevicesWithTenant(string $deviceIdentifier): array
     {
+        $results = [];
         $tenants = Tenant::all();
 
         foreach ($tenants as $tenant) {
@@ -122,7 +123,7 @@ class HeartbeatProcessor
                     ->first();
 
                 if ($device !== null) {
-                    return [$device, $tenant];
+                    $results[] = [$device, $tenant];
                 }
             } catch (\Throwable $e) {
                 Log::debug("Heartbeat: skipping tenant {$tenant->slug}", [
@@ -133,6 +134,6 @@ class HeartbeatProcessor
             }
         }
 
-        return null;
+        return $results;
     }
 }
