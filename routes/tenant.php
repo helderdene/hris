@@ -63,6 +63,8 @@ Route::get('/card/{token}', [\App\Http\Controllers\BusinessCardController::class
     ->name('business-card.show');
 Route::get('/card/{token}/vcard', [\App\Http\Controllers\BusinessCardController::class, 'downloadVcard'])
     ->name('business-card.vcard');
+Route::get('/card/{token}/photo', [\App\Http\Controllers\BusinessCardController::class, 'photo'])
+    ->name('business-card.photo');
 
 /*
 |--------------------------------------------------------------------------

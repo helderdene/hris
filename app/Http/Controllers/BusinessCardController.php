@@ -4,9 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Enums\EmploymentStatus;
 use App\Models\Employee;
+use App\Services\DocumentStorageService;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class BusinessCardController extends Controller
 {
@@ -22,7 +25,12 @@ class BusinessCardController extends Controller
             'employee' => [
                 'full_name' => $employee->full_name,
                 'initials' => $employee->initials,
-                'profile_photo_url' => $employee->getProfilePhoto()?->getUrl(),
+                'profile_photo_url' => $employee->getProfilePhoto()
+                    ? route('business-card.photo', [
+                        'tenant' => tenant()->slug,
+                        'token' => $employee->business_card_token,
+                    ])
+                    : null,
                 'position' => $employee->position?->title,
                 'department' => $employee->department?->name,
                 'email' => $employee->email,
@@ -59,6 +67,29 @@ class BusinessCardController extends Controller
         return response($vcard, 200, [
             'Content-Type' => 'text/vcard',
             'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * Serve the employee's profile photo publicly for the business card.
+     */
+    public function photo(string $token): StreamedResponse
+    {
+        $employee = $this->findEmployee($token);
+
+        $document = $employee->getProfilePhoto();
+        abort_unless($document, 404);
+
+        $version = $document->versions()->orderByDesc('version_number')->first();
+        abort_unless($version, 404);
+
+        $disk = Storage::disk(DocumentStorageService::getDiskName());
+        abort_unless($disk->exists($version->file_path), 404);
+
+        return $disk->response($version->file_path, $document->original_filename, [
+            'Content-Type' => $version->mime_type,
+            'Content-Disposition' => 'inline; filename="'.addslashes($document->original_filename).'"',
+            'Cache-Control' => 'public, max-age=86400',
         ]);
     }
 

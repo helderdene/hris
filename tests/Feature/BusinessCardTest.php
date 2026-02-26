@@ -1,13 +1,18 @@
 <?php
 
 use App\Models\Department;
+use App\Models\Document;
+use App\Models\DocumentCategory;
+use App\Models\DocumentVersion;
 use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Tenant;
 use App\Models\User;
 use App\Models\WorkLocation;
+use App\Services\DocumentStorageService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -226,6 +231,58 @@ it('returns 403 for non-admin on toggle', function () {
     $response = $this->postJson("{$this->baseUrl}/api/employees/{$employee->id}/business-card/toggle");
 
     $response->assertForbidden();
+});
+
+it('serves profile photo publicly without authentication', function () {
+    Storage::fake(DocumentStorageService::getDiskName());
+
+    $employee = Employee::factory()->withBusinessCard()->create();
+
+    $category = DocumentCategory::factory()->create(['name' => 'Profile Photo']);
+    $document = Document::factory()->image()->create([
+        'employee_id' => $employee->id,
+        'document_category_id' => $category->id,
+    ]);
+
+    $version = DocumentVersion::factory()->create([
+        'document_id' => $document->id,
+        'mime_type' => 'image/jpeg',
+        'file_path' => 'test/photo.jpg',
+    ]);
+
+    Storage::disk(DocumentStorageService::getDiskName())
+        ->put($version->file_path, 'fake-image-content');
+
+    $response = $this->get("{$this->baseUrl}/card/{$employee->business_card_token}/photo");
+
+    $response->assertSuccessful();
+    $response->assertHeader('Content-Type', 'image/jpeg');
+});
+
+it('returns 404 for photo when employee has no profile photo', function () {
+    $employee = Employee::factory()->withBusinessCard()->create();
+
+    $response = $this->get("{$this->baseUrl}/card/{$employee->business_card_token}/photo");
+
+    $response->assertNotFound();
+});
+
+it('uses public photo url instead of authenticated document url', function () {
+    $employee = Employee::factory()->withBusinessCard()->create();
+
+    $category = DocumentCategory::factory()->create(['name' => 'Profile Photo']);
+    Document::factory()->image()->create([
+        'employee_id' => $employee->id,
+        'document_category_id' => $category->id,
+    ]);
+
+    $response = $this->get("{$this->baseUrl}/card/{$employee->business_card_token}");
+
+    $response->assertSuccessful();
+    $response->assertInertia(fn ($page) => $page
+        ->component('BusinessCard/Show')
+        ->where('employee.profile_photo_url', fn ($url) => str_contains($url, "/card/{$employee->business_card_token}/photo"))
+    );
 });
 
 it('generates UUID token on first enable', function () {
