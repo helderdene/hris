@@ -16,7 +16,9 @@ use App\Models\Employee;
 use App\Models\EmployeeDeviceSync;
 use App\Models\Position;
 use App\Models\WorkLocation;
+use App\Services\EmployeeSummaryService;
 use App\Services\FeatureGateService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -221,6 +223,25 @@ class EmployeeController extends Controller
                         ];
                     });
             }),
+            // Summary tab data - loaded eagerly as it's the default tab
+            'summaryData' => function () use ($employeeId) {
+                $employeeModel = Employee::find($employeeId);
+                if (! $employeeModel) {
+                    return null;
+                }
+
+                $period = request()->input('summary_period', 'this_month');
+                $service = new EmployeeSummaryService($employeeModel);
+
+                return [
+                    'period' => $period,
+                    'attendance' => $service->getAttendanceRecap($period),
+                    'overtime' => $service->getOvertimeSummary($period),
+                    'leave_balances' => $service->getLeaveBalances(),
+                    'performance' => $service->getPerformanceSummary(),
+                    'performance_growth' => $service->getPerformanceGrowth(),
+                ];
+            },
             // Sync statuses for biometric devices (initialize if needed)
             'syncStatuses' => EmployeeDeviceSyncResource::collection(
                 $this->getOrInitializeSyncStatuses($employeeId)
@@ -327,5 +348,27 @@ class EmployeeController extends Controller
         return redirect()
             ->route('employees.show', ['tenant' => tenant()->slug, 'employee' => $employee->id])
             ->with('success', 'Employee updated successfully.');
+    }
+
+    /**
+     * Toggle the business card for an employee.
+     */
+    public function toggleBusinessCard(Employee $employee): JsonResponse
+    {
+        Gate::authorize('can-manage-employees');
+
+        if (! $employee->business_card_enabled) {
+            $employee->ensureBusinessCardToken();
+            $employee->business_card_enabled = true;
+        } else {
+            $employee->business_card_enabled = false;
+        }
+
+        $employee->save();
+
+        return response()->json([
+            'business_card_enabled' => $employee->business_card_enabled,
+            'business_card_token' => $employee->business_card_token,
+        ]);
     }
 }

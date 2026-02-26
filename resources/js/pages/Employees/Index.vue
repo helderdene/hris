@@ -708,22 +708,20 @@ function goToPage(url: string | null) {
                 <!-- Pagination -->
                 <div
                     v-if="employees?.meta?.last_page > 1"
-                    class="flex items-center justify-between border-t border-slate-200 bg-white px-6 py-3 dark:border-slate-700 dark:bg-slate-900"
+                    class="flex flex-col items-center gap-3 border-t border-slate-200 bg-white px-6 py-3 sm:flex-row sm:justify-between dark:border-slate-700 dark:bg-slate-900"
                 >
-                    <div>
-                        <p
-                            class="text-sm text-slate-700 dark:text-slate-300"
-                        >
-                            Showing page
-                            <span class="font-medium">{{
-                                employees.meta.current_page
-                            }}</span>
-                            of
-                            <span class="font-medium">{{
-                                employees.meta.last_page
-                            }}</span>
-                        </p>
-                    </div>
+                    <p
+                        class="text-sm text-slate-700 dark:text-slate-300"
+                    >
+                        Showing page
+                        <span class="font-medium">{{
+                            employees.meta.current_page
+                        }}</span>
+                        of
+                        <span class="font-medium">{{
+                            employees.meta.last_page
+                        }}</span>
+                    </p>
                     <nav
                         class="isolate inline-flex -space-x-px rounded-md shadow-sm"
                         aria-label="Pagination"
@@ -733,7 +731,7 @@ function goToPage(url: string | null) {
                             :key="index"
                             :disabled="!link.url"
                             @click="goToPage(link.url)"
-                            class="relative inline-flex items-center px-4 py-2 text-sm font-medium"
+                            class="relative inline-flex items-center px-3 py-2 text-sm font-medium sm:px-4"
                             :class="[
                                 link.active
                                     ? 'z-10 bg-blue-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'

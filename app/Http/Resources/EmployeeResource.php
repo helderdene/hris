@@ -112,6 +112,10 @@ class EmployeeResource extends JsonResource
             'education' => $this->resource->education,
             'work_history' => $this->resource->work_history,
 
+            // Business Card
+            'business_card_token' => $this->resource->business_card_token,
+            'business_card_enabled' => $this->resource->business_card_enabled,
+
             // Timestamps
             'created_at' => $this->resource->created_at?->toISOString(),
             'updated_at' => $this->resource->updated_at?->toISOString(),

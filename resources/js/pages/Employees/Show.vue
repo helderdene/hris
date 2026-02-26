@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AssignmentChangeModal from '@/components/AssignmentChangeModal.vue';
 import AssignmentHistorySection from '@/components/AssignmentHistorySection.vue';
+import BusinessCardQrCode from '@/components/BusinessCardQrCode.vue';
 import EmployeeAvatar from '@/components/EmployeeAvatar.vue';
 import EmployeeStatusBadge from '@/components/EmployeeStatusBadge.vue';
 import EmployeeSyncButton from '@/components/EmployeeSyncButton.vue';
@@ -26,6 +27,7 @@ import EmploymentTab from './Tabs/EmploymentTab.vue';
 import GovernmentIdsTab from './Tabs/GovernmentIdsTab.vue';
 import PersonalInfoTab from './Tabs/PersonalInfoTab.vue';
 import ScheduleHistoryTab from './Tabs/ScheduleHistoryTab.vue';
+import SummaryTab from './Tabs/SummaryTab.vue';
 
 interface Position {
     id: number;
@@ -116,6 +118,8 @@ interface Employee {
     supervisor: Supervisor | null;
     address: Address | null;
     emergency_contact: EmergencyContact | null;
+    business_card_token: string | null;
+    business_card_enabled: boolean;
 }
 
 const props = defineProps<{
@@ -136,6 +140,42 @@ const props = defineProps<{
         is_upcoming: boolean;
     }[];
     syncStatuses?: EmployeeDeviceSync[];
+    summaryData?: {
+        period: string;
+        attendance: {
+            days_present: number;
+            days_absent: number;
+            days_on_leave: number;
+            total_late_minutes: number;
+            total_late_formatted: string;
+        };
+        overtime: {
+            approved_hours: number;
+            approved_hours_formatted: string;
+            request_count: number;
+            total_overtime_minutes: number;
+        };
+        leave_balances: {
+            leave_type: string;
+            total_credits: number;
+            used: number;
+            pending: number;
+            available: number;
+        }[];
+        performance: {
+            final_overall_score: number | null;
+            final_rating: string | null;
+            final_rating_label: string | null;
+            kpi_achievement: number | null;
+            goal_progress: number | null;
+            cycle_name: string | null;
+        } | null;
+        performance_growth: {
+            cycle_name: string;
+            overall_score: number | null;
+            kpi_achievement: number | null;
+        }[];
+    } | null;
 }>();
 
 const { primaryColor, tenantName } = useTenant();
@@ -150,6 +190,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 type TabId =
+    | 'summary'
     | 'personal'
     | 'employment'
     | 'compensation'
@@ -159,9 +200,10 @@ type TabId =
     | 'schedule-history'
     | 'assignment-history';
 
-const activeTab = ref<TabId>('personal');
+const activeTab = ref<TabId>('summary');
 
 const tabs = [
+    { id: 'summary' as TabId, label: 'Summary', icon: 'chart-bar' },
     { id: 'personal' as TabId, label: 'Personal Info', icon: 'user' },
     { id: 'employment' as TabId, label: 'Employment', icon: 'briefcase' },
     { id: 'compensation' as TabId, label: 'Compensation', icon: 'currency' },
@@ -179,6 +221,15 @@ const tabs = [
         icon: 'history',
     },
 ];
+
+// Business card state
+const businessCardEnabled = ref(props.employee.business_card_enabled);
+const businessCardToken = ref(props.employee.business_card_token);
+
+function handleBusinessCardToggled(enabled: boolean, token: string | null) {
+    businessCardEnabled.value = enabled;
+    businessCardToken.value = token;
+}
 
 // Modal state
 const isAssignmentModalOpen = ref(false);
@@ -208,6 +259,13 @@ function handleAssignmentSuccess() {
 function handleSyncComplete() {
     // Reload sync statuses after a sync operation
     router.reload({ only: ['syncStatuses'] });
+}
+
+function handlePeriodChange(period: string) {
+    router.reload({
+        only: ['summaryData'],
+        data: { summary_period: period },
+    });
 }
 </script>
 
@@ -405,10 +463,22 @@ function handleSyncComplete() {
                     </div>
                 </div>
 
+                <!-- Business Card QR Code -->
+                <div
+                    class="border-b border-slate-200 px-4 sm:px-6 py-4 dark:border-slate-700"
+                >
+                    <BusinessCardQrCode
+                        :employee-id="employee.id"
+                        :business-card-token="businessCardToken"
+                        :business-card-enabled="businessCardEnabled"
+                        @toggled="handleBusinessCardToggled"
+                    />
+                </div>
+
                 <!-- Tab Navigation -->
                 <div class="border-b border-slate-200 dark:border-slate-700">
                     <nav
-                        class="-mb-px flex overflow-x-auto px-4 sm:px-6"
+                        class="-mb-px flex flex-wrap gap-1 px-3 sm:px-6"
                         aria-label="Tabs"
                     >
                         <button
@@ -417,16 +487,32 @@ function handleSyncComplete() {
                             @click="activeTab = tab.id"
                             :title="tab.label"
                             :class="[
-                                'flex items-center gap-2 border-b-2 px-3 py-3 text-sm font-medium whitespace-nowrap transition-colors sm:px-4',
+                                'flex items-center gap-1.5 mb-px rounded-lg border-b-2 px-2.5 py-2 text-xs font-medium whitespace-nowrap transition-colors sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm',
                                 activeTab === tab.id
-                                    ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                                    : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300',
+                                    ? 'bg-blue-50 border-blue-500 text-blue-600 dark:bg-blue-900/30 dark:border-blue-400 dark:text-blue-400'
+                                    : 'border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-700 rounded-lg dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300',
                             ]"
                         >
+                            <!-- Chart Bar icon -->
+                            <svg
+                                v-if="tab.icon === 'chart-bar'"
+                                class="hidden h-4 w-4 sm:block"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"
+                                />
+                            </svg>
                             <!-- User icon -->
                             <svg
                                 v-if="tab.icon === 'user'"
-                                class="h-4 w-4"
+                                class="hidden h-4 w-4 sm:block"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -442,7 +528,7 @@ function handleSyncComplete() {
                             <!-- Briefcase icon -->
                             <svg
                                 v-if="tab.icon === 'briefcase'"
-                                class="h-4 w-4"
+                                class="hidden h-4 w-4 sm:block"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -458,7 +544,7 @@ function handleSyncComplete() {
                             <!-- Currency icon -->
                             <svg
                                 v-if="tab.icon === 'currency'"
-                                class="h-4 w-4"
+                                class="hidden h-4 w-4 sm:block"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -474,7 +560,7 @@ function handleSyncComplete() {
                             <!-- Card icon -->
                             <svg
                                 v-if="tab.icon === 'card'"
-                                class="h-4 w-4"
+                                class="hidden h-4 w-4 sm:block"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -490,7 +576,7 @@ function handleSyncComplete() {
                             <!-- Location icon -->
                             <svg
                                 v-if="tab.icon === 'location'"
-                                class="h-4 w-4"
+                                class="hidden h-4 w-4 sm:block"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -511,7 +597,7 @@ function handleSyncComplete() {
                             <!-- File icon -->
                             <svg
                                 v-if="tab.icon === 'file'"
-                                class="h-4 w-4"
+                                class="hidden h-4 w-4 sm:block"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -527,7 +613,7 @@ function handleSyncComplete() {
                             <!-- Clock icon -->
                             <svg
                                 v-if="tab.icon === 'clock'"
-                                class="h-4 w-4"
+                                class="hidden h-4 w-4 sm:block"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -543,7 +629,7 @@ function handleSyncComplete() {
                             <!-- History icon -->
                             <svg
                                 v-if="tab.icon === 'history'"
-                                class="h-4 w-4"
+                                class="hidden h-4 w-4 sm:block"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -556,13 +642,19 @@ function handleSyncComplete() {
                                     d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                                 />
                             </svg>
-                            <span class="hidden sm:inline">{{ tab.label }}</span>
+                            <span>{{ tab.label }}</span>
                         </button>
                     </nav>
                 </div>
 
                 <!-- Tab Content -->
                 <div class="p-4 sm:p-6">
+                    <SummaryTab
+                        v-if="activeTab === 'summary'"
+                        :data="summaryData"
+                        :loading="!summaryData"
+                        @period-change="handlePeriodChange"
+                    />
                     <PersonalInfoTab
                         v-if="activeTab === 'personal'"
                         :employee="employee"
