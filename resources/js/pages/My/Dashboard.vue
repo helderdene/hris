@@ -6,8 +6,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import UpcomingHolidayModal from '@/Components/UpcomingHolidayModal.vue';
-import type { UpcomingHoliday } from '@/Components/UpcomingHolidayModal.vue';
+import UpcomingHolidayModal from '@/components/UpcomingHolidayModal.vue';
+import type { UpcomingHoliday } from '@/components/UpcomingHolidayModal.vue';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
