@@ -19,10 +19,12 @@ import {
     MapPin,
     Pencil,
     Phone,
+    QrCode,
     Shield,
     X,
 } from 'lucide-vue-next';
-import { ref } from 'vue';
+import QrcodeVue from 'qrcode.vue';
+import { computed, ref } from 'vue';
 
 interface Address {
     street?: string | null;
@@ -72,6 +74,8 @@ interface EmployeeProfile {
     passport_number: string | null;
     drivers_license: string | null;
     profile_photo_url: string | null;
+    business_card_enabled: boolean;
+    business_card_token: string | null;
 }
 
 const props = defineProps<{
@@ -79,6 +83,11 @@ const props = defineProps<{
 }>();
 
 const { tenantName } = useTenant();
+
+const businessCardUrl = computed(() => {
+    if (!props.employee?.business_card_token) return '';
+    return `${window.location.origin}/card/${props.employee.business_card_token}`;
+});
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'My Dashboard', href: '/my/dashboard' },
@@ -233,6 +242,49 @@ function displayValue(value: string | number | null | undefined): string {
                     </p>
                 </div>
             </div>
+
+            <!-- Digital Business Card QR Code -->
+            <Card v-if="employee.business_card_enabled && employee.business_card_token">
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2 text-lg">
+                        <QrCode class="h-5 w-5 text-blue-500" />
+                        My Business Card
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
+                        <div class="rounded-lg border border-slate-200 bg-white p-3 dark:border-slate-700 dark:bg-white">
+                            <QrcodeVue :value="businessCardUrl" :size="140" level="M" />
+                        </div>
+                        <div class="flex flex-col gap-2 text-center sm:text-left">
+                            <p class="text-sm text-slate-600 dark:text-slate-400">
+                                Scan this QR code to view your digital business card, or share the link below.
+                            </p>
+                            <div class="flex items-center gap-2">
+                                <input
+                                    :value="businessCardUrl"
+                                    readonly
+                                    class="flex-1 rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-400"
+                                />
+                                <button
+                                    @click="navigator.clipboard?.writeText(businessCardUrl)"
+                                    class="rounded-md bg-slate-100 px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-200 dark:bg-slate-700 dark:text-slate-400 dark:hover:bg-slate-600"
+                                    title="Copy URL"
+                                >
+                                    Copy
+                                </button>
+                            </div>
+                            <a
+                                :href="businessCardUrl"
+                                target="_blank"
+                                class="text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+                            >
+                                Open business card &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
 
             <!-- Personal Information (Read-only) -->
             <Card>

@@ -62,6 +62,8 @@ class MyProfileController extends Controller
                 'profile_photo_url' => $profilePhoto?->file_path
                     ? asset('storage/'.$profilePhoto->file_path)
                     : null,
+                'business_card_enabled' => (bool) $employee->business_card_enabled,
+                'business_card_token' => $employee->business_card_token,
             ] : null,
         ]);
     }

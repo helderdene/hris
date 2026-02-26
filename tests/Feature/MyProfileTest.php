@@ -125,6 +125,25 @@ describe('My Profile Show', function () {
         expect($data['employee']['tin'])->toBe('123-456-789');
         expect($data['employee']['address']['street'])->toBe('123 Main St');
         expect($data['employee']['emergency_contact']['name'])->toBe('Maria Dela Cruz');
+        expect($data['employee'])->toHaveKeys(['business_card_enabled', 'business_card_token']);
+    });
+
+    it('includes business card data when enabled', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'testco']);
+        bindTenantContextForProfile($tenant);
+
+        [$user, $employee] = createEmployeeUserForProfile($tenant, [
+            'business_card_enabled' => true,
+            'business_card_token' => 'test-token-123',
+        ]);
+
+        $this->actingAs($user);
+
+        $response = callProfileShowController($user);
+        $data = getInertiaResponseDataForProfile($response);
+
+        expect($data['employee']['business_card_enabled'])->toBeTrue();
+        expect($data['employee']['business_card_token'])->toBe('test-token-123');
     });
 
     it('returns null employee when user has no linked employee', function () {
