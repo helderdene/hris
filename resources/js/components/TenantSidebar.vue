@@ -40,6 +40,7 @@ import {
     ClipboardCheck,
     Clock,
     ClipboardList,
+    CircleUserRound,
     Contact,
     CreditCard,
     HelpCircle,
@@ -323,6 +324,11 @@ const selfServiceItems = computed(() => {
             icon: LayoutGrid,
         },
         {
+            title: 'My Profile',
+            href: '/my/profile',
+            icon: CircleUserRound,
+        },
+        {
             title: 'My Goals',
             href: '/my/goals',
             icon: Flag,
@@ -563,6 +569,9 @@ function isActive(href: string): boolean {
     // Self-service routes - exact match
     if (href === '/my/dashboard') {
         return currentPath === '/my/dashboard';
+    }
+    if (href === '/my/profile') {
+        return currentPath.startsWith('/my/profile');
     }
     if (href === '/my/bir-2316') {
         return currentPath.startsWith('/my/bir-2316');

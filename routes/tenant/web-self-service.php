@@ -6,6 +6,7 @@ use App\Http\Controllers\My\MyCertificationPageController;
 use App\Http\Controllers\My\MyDtrController;
 use App\Http\Controllers\My\MyLoanApplicationController;
 use App\Http\Controllers\My\MyLoanController;
+use App\Http\Controllers\My\MyProfileController;
 use App\Http\Controllers\My\MyScheduleController;
 use App\Http\Controllers\My\PayslipPageController;
 use App\Http\Controllers\My\SelfServiceDashboardController;
@@ -25,6 +26,12 @@ Route::prefix('my')->group(function () {
     // Self-Service Dashboard
     Route::get('/dashboard', SelfServiceDashboardController::class)
         ->name('my.dashboard');
+
+    // Profile
+    Route::get('/profile', [MyProfileController::class, 'show'])
+        ->name('my.profile');
+    Route::put('/profile', [MyProfileController::class, 'update'])
+        ->name('my.profile.update');
 
     // DTR
     Route::get('/dtr', MyDtrController::class)
