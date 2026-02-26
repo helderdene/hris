@@ -5,6 +5,7 @@ use App\Models\Employee;
 use App\Models\Position;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WorkLocation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 
@@ -44,6 +45,73 @@ it('shows public card page for enabled employee', function () {
         ->where('employee.position', $position->title)
         ->where('employee.department', $department->name)
     );
+});
+
+it('passes company info and work location to business card page', function () {
+    $this->tenant->update([
+        'business_info' => [
+            'website' => 'https://example.com',
+            'linkedin' => 'https://linkedin.com/company/example',
+            'facebook' => 'https://facebook.com/example',
+            'instagram' => 'https://instagram.com/example',
+            'twitter' => 'https://x.com/example',
+        ],
+    ]);
+
+    $workLocation = WorkLocation::factory()->create([
+        'name' => 'Main Office',
+        'address' => '123 Main St',
+        'city' => 'Manila',
+        'region' => 'NCR',
+        'country' => 'PH',
+    ]);
+
+    $employee = Employee::factory()->withBusinessCard()->create([
+        'work_location_id' => $workLocation->id,
+    ]);
+
+    $response = $this->get("{$this->baseUrl}/card/{$employee->business_card_token}");
+
+    $response->assertSuccessful();
+    $response->assertInertia(fn ($page) => $page
+        ->component('BusinessCard/Show')
+        ->where('employee.work_location.name', 'Main Office')
+        ->where('employee.work_location.address', '123 Main St')
+        ->where('employee.work_location.city', 'Manila')
+        ->where('company.website', 'https://example.com')
+        ->where('company.linkedin', 'https://linkedin.com/company/example')
+        ->where('company.facebook', 'https://facebook.com/example')
+    );
+});
+
+it('includes address and url in vcard when available', function () {
+    $this->tenant->update([
+        'business_info' => [
+            'website' => 'https://example.com',
+        ],
+    ]);
+
+    $workLocation = WorkLocation::factory()->create([
+        'address' => '456 Office Blvd',
+        'city' => 'Cebu',
+        'region' => 'Cebu',
+        'country' => 'PH',
+    ]);
+
+    $employee = Employee::factory()->withBusinessCard()->create([
+        'first_name' => 'Maria',
+        'middle_name' => null,
+        'last_name' => 'Santos',
+        'suffix' => null,
+        'work_location_id' => $workLocation->id,
+    ]);
+
+    $response = $this->get("{$this->baseUrl}/card/{$employee->business_card_token}/vcard");
+
+    $response->assertSuccessful();
+    $content = $response->getContent();
+    expect($content)->toContain('ADR;TYPE=WORK:;;456 Office Blvd;Cebu;Cebu;;PH');
+    expect($content)->toContain('URL:https://example.com');
 });
 
 it('returns 404 for disabled card', function () {

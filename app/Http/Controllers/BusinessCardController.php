@@ -16,6 +16,7 @@ class BusinessCardController extends Controller
     public function show(string $token): InertiaResponse
     {
         $employee = $this->findEmployee($token);
+        $businessInfo = tenant()->business_info ?? [];
 
         return Inertia::render('BusinessCard/Show', [
             'employee' => [
@@ -27,6 +28,20 @@ class BusinessCardController extends Controller
                 'email' => $employee->email,
                 'phone' => $employee->phone,
                 'token' => $employee->business_card_token,
+                'work_location' => $employee->workLocation ? [
+                    'name' => $employee->workLocation->name,
+                    'address' => $employee->workLocation->address,
+                    'city' => $employee->workLocation->city,
+                    'region' => $employee->workLocation->region,
+                    'country' => $employee->workLocation->country,
+                ] : null,
+            ],
+            'company' => [
+                'website' => $businessInfo['website'] ?? null,
+                'linkedin' => $businessInfo['linkedin'] ?? null,
+                'facebook' => $businessInfo['facebook'] ?? null,
+                'instagram' => $businessInfo['instagram'] ?? null,
+                'twitter' => $businessInfo['twitter'] ?? null,
             ],
         ]);
     }
@@ -56,7 +71,7 @@ class BusinessCardController extends Controller
             ->where('business_card_token', $token)
             ->where('business_card_enabled', true)
             ->where('employment_status', EmploymentStatus::Active)
-            ->with(['department', 'position'])
+            ->with(['department', 'position', 'workLocation'])
             ->firstOrFail();
     }
 
@@ -79,6 +94,20 @@ class BusinessCardController extends Controller
 
         if ($employee->email) {
             $lines[] = 'EMAIL;TYPE=WORK:'.$this->escapeVcard($employee->email);
+        }
+
+        if ($employee->workLocation) {
+            $location = $employee->workLocation;
+            $lines[] = 'ADR;TYPE=WORK:;;'
+                .$this->escapeVcard($location->address ?? '')
+                .';'.$this->escapeVcard($location->city ?? '')
+                .';'.$this->escapeVcard($location->region ?? '')
+                .';;'.$this->escapeVcard($location->country ?? '');
+        }
+
+        $website = tenant()->business_info['website'] ?? null;
+        if ($website) {
+            $lines[] = 'URL:'.$this->escapeVcard($website);
         }
 
         $lines[] = 'END:VCARD';
