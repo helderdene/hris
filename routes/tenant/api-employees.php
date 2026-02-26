@@ -71,6 +71,18 @@ Route::post('/employees/{employee}/pin/reset', [\App\Http\Controllers\Api\Employ
 
 /*
 |--------------------------------------------------------------------------
+| Employee Business Card API
+|--------------------------------------------------------------------------
+|
+| Toggle employee digital business card visibility.
+|
+*/
+
+Route::post('/employees/{employee}/business-card/toggle', [\App\Http\Controllers\EmployeeController::class, 'toggleBusinessCard'])
+    ->name('api.employees.business-card.toggle');
+
+/*
+|--------------------------------------------------------------------------
 | Employee Assignment Management API
 |--------------------------------------------------------------------------
 |

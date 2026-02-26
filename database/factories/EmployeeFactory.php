@@ -204,6 +204,17 @@ class EmployeeFactory extends Factory
     }
 
     /**
+     * Indicate that the employee has a business card enabled.
+     */
+    public function withBusinessCard(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'business_card_token' => fake()->uuid(),
+            'business_card_enabled' => true,
+        ]);
+    }
+
+    /**
      * Indicate that the employee has an associated user account.
      */
     public function withUser(): static

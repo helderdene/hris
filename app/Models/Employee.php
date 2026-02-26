@@ -87,6 +87,10 @@ class Employee extends TenantModel
         'kiosk_pin',
         'kiosk_pin_hash',
         'kiosk_pin_changed_at',
+
+        // Business Card
+        'business_card_token',
+        'business_card_enabled',
     ];
 
     /**
@@ -119,6 +123,7 @@ class Employee extends TenantModel
             'education' => 'array',
             'work_history' => 'array',
             'kiosk_pin_changed_at' => 'datetime',
+            'business_card_enabled' => 'boolean',
         ];
     }
 
@@ -340,6 +345,14 @@ class Employee extends TenantModel
     }
 
     /**
+     * Get the employee's performance cycle participations.
+     */
+    public function performanceCycleParticipants(): HasMany
+    {
+        return $this->hasMany(PerformanceCycleParticipant::class);
+    }
+
+    /**
      * Get the employee's probationary evaluations.
      */
     public function probationaryEvaluations(): HasMany
@@ -513,6 +526,29 @@ class Employee extends TenantModel
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('employment_status', EmploymentStatus::Active);
+    }
+
+    /**
+     * Scope to get employees with an active business card.
+     */
+    public function scopeWithActiveBusinessCard(Builder $query): Builder
+    {
+        return $query->where('business_card_enabled', true)
+            ->whereNotNull('business_card_token')
+            ->where('employment_status', EmploymentStatus::Active);
+    }
+
+    /**
+     * Ensure the employee has a business card token, generating one if missing.
+     */
+    public function ensureBusinessCardToken(): string
+    {
+        if (! $this->business_card_token) {
+            $this->business_card_token = (string) \Illuminate\Support\Str::uuid();
+            $this->save();
+        }
+
+        return $this->business_card_token;
     }
 
     /**
