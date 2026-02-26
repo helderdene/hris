@@ -102,10 +102,10 @@ async function markAllAsRead() {
 <template>
     <Card>
         <CardHeader class="pb-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
+            <div class="flex items-start justify-between gap-2">
+                <div class="flex items-center gap-2 min-w-0">
                     <svg
-                        class="h-5 w-5 text-slate-600 dark:text-slate-400"
+                        class="h-5 w-5 shrink-0 text-slate-600 dark:text-slate-400"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 20 20"
                         fill="currentColor"
@@ -128,6 +128,7 @@ async function markAllAsRead() {
                     v-if="unreadCount && unreadCount > 0"
                     size="sm"
                     variant="ghost"
+                    class="shrink-0 text-xs sm:text-sm"
                     :disabled="isMarkingRead"
                     @click="markAllAsRead"
                 >
@@ -211,7 +212,7 @@ async function markAllAsRead() {
                     </div>
                     <div class="flex-1 min-w-0">
                         <p
-                            class="text-sm font-medium truncate"
+                            class="text-sm font-medium line-clamp-2 sm:truncate"
                             :class="
                                 notification.read_at
                                     ? 'text-slate-700 dark:text-slate-300'
@@ -222,7 +223,7 @@ async function markAllAsRead() {
                         </p>
                         <p
                             v-if="getNotificationDescription(notification)"
-                            class="text-xs text-slate-500 dark:text-slate-400 truncate"
+                            class="text-xs text-slate-500 dark:text-slate-400 line-clamp-1"
                         >
                             {{ getNotificationDescription(notification) }}
                         </p>

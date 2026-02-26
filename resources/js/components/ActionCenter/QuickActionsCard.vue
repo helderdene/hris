@@ -77,7 +77,7 @@ const actionGroups: ActionGroup[] = [
                 <h4 class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
                     {{ group.title }}
                 </h4>
-                <div class="flex flex-wrap gap-2">
+                <div class="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
                     <Button
                         v-for="action in group.actions"
                         :key="action.label"
@@ -85,6 +85,7 @@ const actionGroups: ActionGroup[] = [
                         :href="action.link"
                         :variant="action.primary ? 'default' : 'outline'"
                         size="sm"
+                        class="justify-start"
                         :style="action.primary ? { backgroundColor: primaryColor } : {}"
                     >
                         <!-- User plus icon -->

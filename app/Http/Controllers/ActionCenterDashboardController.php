@@ -14,6 +14,7 @@ use App\Models\OnboardingChecklistItem;
 use App\Models\OvertimeRequestApproval;
 use App\Models\ProbationaryEvaluationApproval;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,9 +30,20 @@ class ActionCenterDashboardController extends Controller
     /**
      * Display the Action Center Dashboard.
      */
-    public function __invoke(Request $request): Response
+    public function __invoke(Request $request): Response|RedirectResponse
     {
         $user = $request->user();
+
+        // Redirect employee-role users to self-service dashboard
+        if ($user) {
+            $tenant = tenant();
+            if ($tenant) {
+                $role = $user->getRoleInTenant($tenant);
+                if ($role === TenantUserRole::Employee) {
+                    return redirect('/my/dashboard');
+                }
+            }
+        }
         $employee = $this->getEmployeeForUser($user);
         $role = $this->getUserRole($user);
 
@@ -48,13 +60,12 @@ class ActionCenterDashboardController extends Controller
             'pendingActions' => $pendingActions,
             'priorityItems' => $priorityItems,
 
-            // Deferred props (heavier queries)
-            'notifications' => Inertia::defer(fn () => $this->getNotifications($user)),
-            'unreadNotificationCount' => Inertia::defer(fn () => $user->unreadNotifications()->count()),
-            'activityFeed' => Inertia::defer(fn () => $this->getActivityFeed()),
-            'pendingLeaveDetails' => Inertia::defer(fn () => $this->getPendingLeaveDetails($employee)),
-            'pendingOvertimeDetails' => Inertia::defer(fn () => $this->getPendingOvertimeDetails($employee)),
-            'pendingRequisitionDetails' => Inertia::defer(fn () => $this->getPendingRequisitionDetails($employee)),
+            'notifications' => $this->getNotifications($user),
+            'unreadNotificationCount' => $user ? $user->unreadNotifications()->count() : 0,
+            'activityFeed' => $this->getActivityFeed(),
+            'pendingLeaveDetails' => $this->getPendingLeaveDetails($employee),
+            'pendingOvertimeDetails' => $this->getPendingOvertimeDetails($employee),
+            'pendingRequisitionDetails' => $this->getPendingRequisitionDetails($employee),
         ]);
     }
 

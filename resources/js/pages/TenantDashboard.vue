@@ -13,13 +13,11 @@ import {
     type PendingCounts,
     type PriorityItem,
 } from '@/components/ActionCenter';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useActionCenterLive } from '@/composables/useActionCenterLive';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Deferred, Head, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { onMounted, ref, computed } from 'vue';
 import { toast } from 'vue-sonner';
 
@@ -288,15 +286,15 @@ const connectionStatusText = computed(() => {
 
             <!-- Welcome Banner with tenant branding and connection status -->
             <div
-                class="relative overflow-hidden rounded-xl p-6 text-white shadow-sm dark:shadow-lg dark:shadow-black/30 dark:ring-1 dark:ring-white/10"
+                class="relative overflow-hidden rounded-xl p-4 sm:p-6 text-white shadow-sm dark:shadow-lg dark:shadow-black/30 dark:ring-1 dark:ring-white/10"
                 :style="{ backgroundColor: primaryColor }"
             >
-                <div class="relative z-10 flex items-start justify-between">
-                    <div>
-                        <h1 class="text-2xl font-bold">
+                <div class="relative z-10 flex items-start justify-between gap-3">
+                    <div class="min-w-0">
+                        <h1 class="text-xl sm:text-2xl font-bold truncate">
                             Welcome to {{ tenantName }}
                         </h1>
-                        <p class="mt-1 text-white/80">
+                        <p class="mt-1 text-sm sm:text-base text-white/80">
                             You are logged in as
                             <span class="font-medium">{{
                                 userRole === 'admin' ? 'Administrator' : 'HR Staff'
@@ -334,39 +332,25 @@ const connectionStatusText = computed(() => {
 
             <!-- Main Dashboard Grid -->
             <div class="grid gap-6 lg:grid-cols-3">
-                <!-- Left Column: Notifications + Activity -->
-                <div class="space-y-6 lg:col-span-1">
-                    <!-- Notifications Hub -->
-                    <Deferred data="notifications,unreadNotificationCount">
-                        <template #fallback>
-                            <NotificationsHubCard
-                                :notifications="null"
-                                :unread-count="null"
-                                :loading="true"
-                            />
-                        </template>
-                        <NotificationsHubCard
-                            :notifications="notifications ?? []"
-                            :unread-count="unreadNotificationCount ?? 0"
-                        />
-                    </Deferred>
-
-                    <!-- Activity Feed -->
-                    <Deferred data="activityFeed">
-                        <template #fallback>
-                            <ActivityFeedCard :activities="null" :loading="true" />
-                        </template>
-                        <ActivityFeedCard :activities="activityFeed ?? []" />
-                    </Deferred>
-                </div>
-
-                <!-- Right Column: Pending Actions + Quick Actions -->
+                <!-- Left Column: Pending Actions + Quick Actions -->
                 <div class="space-y-6 lg:col-span-2">
                     <!-- Pending Actions -->
                     <PendingActionsCard :counts="pendingActions" />
 
                     <!-- Quick Actions -->
                     <QuickActionsCard />
+                </div>
+
+                <!-- Right Column: Notifications + Activity -->
+                <div class="space-y-6 lg:col-span-1">
+                    <!-- Notifications Hub -->
+                    <NotificationsHubCard
+                        :notifications="notifications ?? []"
+                        :unread-count="unreadNotificationCount ?? 0"
+                    />
+
+                    <!-- Activity Feed -->
+                    <ActivityFeedCard :activities="activityFeed ?? []" />
                 </div>
             </div>
         </div>

@@ -159,7 +159,16 @@ async function regenerateToken(kiosk: KioskData): Promise<void> {
 }
 
 function copyUrl(kiosk: KioskData): void {
-    navigator.clipboard.writeText(kiosk.kiosk_url);
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(kiosk.kiosk_url);
+    } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = kiosk.kiosk_url;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+    }
     copiedId.value = kiosk.id;
     setTimeout(() => { copiedId.value = null; }, 2000);
 }

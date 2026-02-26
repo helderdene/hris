@@ -108,38 +108,36 @@ function getTypeLabel(type: string): string {
                 v-for="item in safeItems"
                 :key="`${item.type}-${item.id}`"
                 :class="[
-                    'flex items-center justify-between gap-4 rounded-lg border p-3',
+                    'rounded-lg border p-3',
                     getPriorityClasses(item.priority),
                 ]"
             >
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                        <Badge :class="getPriorityBadgeClasses(item.priority)">
-                            {{ item.priority_label }}
-                        </Badge>
-                        <span class="text-xs text-slate-500 dark:text-slate-400">
-                            {{ getTypeLabel(item.type) }}
-                        </span>
-                        <span
-                            v-if="formatTimeLabel(item)"
-                            class="text-xs font-medium"
-                            :class="item.priority === 'critical' ? 'text-red-600 dark:text-red-400' : 'text-orange-600 dark:text-orange-400'"
-                        >
-                            {{ formatTimeLabel(item) }}
-                        </span>
-                    </div>
-                    <p class="font-medium text-slate-900 dark:text-slate-100 truncate">
-                        {{ item.employee_name }}
-                    </p>
-                    <p class="text-sm text-slate-600 dark:text-slate-400 truncate">
-                        {{ item.description }}
-                    </p>
+                <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                    <Badge :class="getPriorityBadgeClasses(item.priority)">
+                        {{ item.priority_label }}
+                    </Badge>
+                    <span class="text-xs text-slate-500 dark:text-slate-400">
+                        {{ getTypeLabel(item.type) }}
+                    </span>
+                    <span
+                        v-if="formatTimeLabel(item)"
+                        class="text-xs font-medium"
+                        :class="item.priority === 'critical' ? 'text-red-600 dark:text-red-400' : 'text-orange-600 dark:text-orange-400'"
+                    >
+                        {{ formatTimeLabel(item) }}
+                    </span>
                 </div>
-                <div class="flex items-center gap-2 shrink-0">
+                <p class="font-medium text-slate-900 dark:text-slate-100">
+                    {{ item.employee_name }}
+                </p>
+                <p class="text-sm text-slate-600 dark:text-slate-400">
+                    {{ item.description }}
+                </p>
+                <div class="flex items-center gap-2 mt-2.5">
                     <Button
                         size="sm"
                         variant="outline"
-                        class="border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
+                        class="flex-1 sm:flex-none border-green-300 text-green-700 hover:bg-green-50 dark:border-green-700 dark:text-green-400 dark:hover:bg-green-900/30"
                         @click="emit('approve', item)"
                     >
                         <svg
@@ -159,7 +157,7 @@ function getTypeLabel(type: string): string {
                     <Button
                         size="sm"
                         variant="outline"
-                        class="border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30"
+                        class="flex-1 sm:flex-none border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400 dark:hover:bg-red-900/30"
                         @click="emit('reject', item)"
                     >
                         <svg

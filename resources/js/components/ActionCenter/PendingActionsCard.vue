@@ -146,9 +146,9 @@ function getColorClasses(color: string): { bg: string; text: string; badge: stri
                     :href="item.link"
                     class="flex items-center justify-between p-3 rounded-lg transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
                 >
-                    <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-3 min-w-0">
                         <div
-                            class="h-9 w-9 rounded-lg flex items-center justify-center"
+                            class="h-9 w-9 shrink-0 rounded-lg flex items-center justify-center"
                             :class="getColorClasses(item.color).bg"
                         >
                             <!-- Calendar icon -->
@@ -228,7 +228,7 @@ function getColorClasses(color: string): { bg: string; text: string; badge: stri
                                 />
                             </svg>
                         </div>
-                        <span class="font-medium text-slate-900 dark:text-slate-100">
+                        <span class="font-medium text-sm sm:text-base text-slate-900 dark:text-slate-100 truncate">
                             {{ item.label }}
                         </span>
                     </div>

@@ -142,22 +142,22 @@ function formatModelName(name: string): string {
                         />
 
                         <div class="flex-1 min-w-0">
-                            <div class="flex items-center gap-2 flex-wrap">
-                                <Badge :class="getActionBadgeClasses(activity.action_color)">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <Badge class="text-[10px] sm:text-xs" :class="getActionBadgeClasses(activity.action_color)">
                                     {{ activity.action_label }}
                                 </Badge>
-                                <span class="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                <span class="text-sm font-medium text-slate-900 dark:text-slate-100 break-words">
                                     {{ formatModelName(activity.model_name) }}
                                 </span>
                             </div>
-                            <div class="flex items-center gap-2 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
-                                <span v-if="activity.user_name">
+                            <div class="flex items-center gap-1.5 mt-0.5 text-xs text-slate-500 dark:text-slate-400">
+                                <span v-if="activity.user_name" class="truncate">
                                     by {{ activity.user_name }}
                                 </span>
                                 <span v-else>
                                     System
                                 </span>
-                                <span>{{ formatTimeAgo(activity.created_at) }}</span>
+                                <span class="shrink-0">{{ formatTimeAgo(activity.created_at) }}</span>
                             </div>
                         </div>
                     </div>

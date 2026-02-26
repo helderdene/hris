@@ -54,6 +54,21 @@ Route::prefix('visit')->group(function () {
 | Public Careers Routes (No Authentication Required)
 |--------------------------------------------------------------------------
 */
+/*
+|--------------------------------------------------------------------------
+| Public Business Card Routes (No Authentication Required)
+|--------------------------------------------------------------------------
+*/
+Route::get('/card/{token}', [\App\Http\Controllers\BusinessCardController::class, 'show'])
+    ->name('business-card.show');
+Route::get('/card/{token}/vcard', [\App\Http\Controllers\BusinessCardController::class, 'downloadVcard'])
+    ->name('business-card.vcard');
+
+/*
+|--------------------------------------------------------------------------
+| Public Careers Routes (No Authentication Required)
+|--------------------------------------------------------------------------
+*/
 Route::get('/careers', [\App\Http\Controllers\CareersController::class, 'index'])
     ->name('careers.index');
 
@@ -66,38 +81,13 @@ Route::get('/careers/{slug}', [\App\Http\Controllers\CareersController::class, '
 Route::post('/careers/{slug}/apply', [\App\Http\Controllers\Api\PublicApplicationController::class, 'store'])
     ->name('careers.apply');
 
-Route::get('/', function (Request $request) {
-    $user = $request->user();
-    if ($user) {
-        $tenant = app('tenant');
-        if ($tenant) {
-            $role = $user->getRoleInTenant($tenant);
-            if ($role === \App\Enums\TenantUserRole::Employee) {
-                return redirect('/my/dashboard');
-            }
-        }
-    }
+Route::get('/', \App\Http\Controllers\ActionCenterDashboardController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('tenant.home');
 
-    return Inertia::render('TenantDashboard', [
-        'justCreated' => $request->boolean('created'),
-    ]);
-})->middleware(['auth', 'verified'])->name('tenant.home');
-
-Route::get('/dashboard', function (Request $request) {
-    $user = $request->user();
-    if ($user) {
-        $tenant = app('tenant');
-        if ($tenant) {
-            $role = $user->getRoleInTenant($tenant);
-            if ($role === \App\Enums\TenantUserRole::Employee) {
-                return redirect('/my/dashboard');
-            }
-        }
-    }
-
-    // Use the ActionCenterDashboardController for HR roles
-    return app(\App\Http\Controllers\ActionCenterDashboardController::class)($request);
-})->middleware(['auth', 'verified'])->name('tenant.dashboard');
+Route::get('/dashboard', \App\Http\Controllers\ActionCenterDashboardController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('tenant.dashboard');
 
 // Logout route for tenant subdomains
 Route::post('/logout', function (Request $request) {
