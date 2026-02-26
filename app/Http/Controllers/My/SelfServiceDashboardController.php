@@ -3,12 +3,14 @@
 namespace App\Http\Controllers\My;
 
 use App\Enums\DocumentRequestStatus;
+use App\Enums\HolidayType;
 use App\Http\Controllers\Controller;
 use App\Models\Announcement;
 use App\Models\DailyTimeRecord;
 use App\Models\DocumentRequest;
 use App\Models\Employee;
 use App\Models\EmployeeLoan;
+use App\Models\Holiday;
 use App\Models\LeaveApplication;
 use App\Models\LeaveBalance;
 use App\Models\PayrollEntry;
@@ -32,6 +34,7 @@ class SelfServiceDashboardController extends Controller
         $recentLeaveApplications = [];
         $documentRequestsSummary = ['pending_count' => 0];
         $loansSummary = ['active_count' => 0, 'total_remaining_balance' => 0];
+        $upcomingHolidays = [];
 
         if ($employee) {
             $leaveBalances = LeaveBalance::query()
@@ -112,6 +115,29 @@ class SelfServiceDashboardController extends Controller
                 'active_count' => $activeLoans->count(),
                 'total_remaining_balance' => (float) $activeLoans->sum('remaining_balance'),
             ];
+
+            $tomorrow = Carbon::tomorrow();
+            $threeDaysFromNow = Carbon::today()->addDays(3);
+
+            $upcomingHolidays = Holiday::query()
+                ->forDateRange($tomorrow->toDateString(), $threeDaysFromNow->toDateString())
+                ->where(function ($query) use ($employee) {
+                    $query->national();
+                    if ($employee->work_location_id) {
+                        $query->orWhere('work_location_id', $employee->work_location_id);
+                    }
+                })
+                ->orderBy('date')
+                ->get()
+                ->map(fn (Holiday $holiday) => [
+                    'id' => $holiday->id,
+                    'name' => $holiday->name,
+                    'date' => $holiday->date->format('M d, Y'),
+                    'holiday_type' => $holiday->holiday_type->value,
+                    'holiday_type_label' => $holiday->holiday_type->label(),
+                    'is_working' => $holiday->holiday_type === HolidayType::SpecialWorking,
+                ])
+                ->toArray();
         }
 
         if ($tenant) {
@@ -144,6 +170,7 @@ class SelfServiceDashboardController extends Controller
             'announcements' => $announcements,
             'documentRequestsSummary' => $documentRequestsSummary,
             'loansSummary' => $loansSummary,
+            'upcomingHolidays' => $upcomingHolidays,
         ]);
     }
 }

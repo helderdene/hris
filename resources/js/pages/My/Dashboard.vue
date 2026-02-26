@@ -6,6 +6,8 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
+import UpcomingHolidayModal from '@/Components/UpcomingHolidayModal.vue';
+import type { UpcomingHoliday } from '@/Components/UpcomingHolidayModal.vue';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -87,6 +89,7 @@ const props = defineProps<{
     announcements: Announcement[];
     documentRequestsSummary: DocumentRequestsSummary;
     loansSummary: LoansSummary;
+    upcomingHolidays: UpcomingHoliday[];
 }>();
 
 const { tenantName } = useTenant();
@@ -122,6 +125,11 @@ function badgeClasses(color: string): string {
 
 <template>
     <Head :title="`My Dashboard - ${tenantName}`" />
+
+    <UpcomingHolidayModal
+        v-if="upcomingHolidays.length > 0"
+        :holidays="upcomingHolidays"
+    />
 
     <TenantLayout :breadcrumbs="breadcrumbs">
         <div class="flex flex-col gap-6">
