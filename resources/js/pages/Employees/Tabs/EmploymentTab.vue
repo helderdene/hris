@@ -37,6 +37,7 @@ interface Employee {
     employment_status_label: string | null;
     hire_date: string | null;
     regularization_date: string | null;
+    termination_date: string | null;
     years_of_service: number;
     basic_salary: string | null;
     pay_frequency: string | null;
@@ -103,21 +104,40 @@ const assignmentItems = computed(() => [
 /**
  * Employment details section items.
  */
-const employmentItems = computed(() => [
-    { label: 'Employee Number', value: props.employee.employee_number },
-    { label: 'Employment Status', value: props.employee.employment_type_label },
-    { label: 'Date Hired', value: formatDate(props.employee.hire_date) },
-    {
-        label: 'Regularization Date',
-        value: formatDate(props.employee.regularization_date),
-    },
-    {
-        label: 'Years of Service',
-        value: formatYearsOfService(props.employee.years_of_service),
-    },
-    { label: 'Basic Salary', value: formatSalary(props.employee.basic_salary) },
-    { label: 'Pay Frequency', value: props.employee.pay_frequency },
-]);
+const isSeparated = computed(() => {
+    return props.employee.employment_status && props.employee.employment_status !== 'active';
+});
+
+const employmentItems = computed(() => {
+    const items = [
+        { label: 'Employee Number', value: props.employee.employee_number },
+        { label: 'Employment Type', value: props.employee.employment_type_label },
+        { label: 'Employment Status', value: props.employee.employment_status_label },
+        { label: 'Date Hired', value: formatDate(props.employee.hire_date) },
+        {
+            label: 'Regularization Date',
+            value: formatDate(props.employee.regularization_date),
+        },
+    ];
+
+    if (isSeparated.value) {
+        items.push({
+            label: 'Separation Date',
+            value: formatDate(props.employee.termination_date),
+        });
+    }
+
+    items.push(
+        {
+            label: 'Years of Service',
+            value: formatYearsOfService(props.employee.years_of_service),
+        },
+        { label: 'Basic Salary', value: formatSalary(props.employee.basic_salary) },
+        { label: 'Pay Frequency', value: props.employee.pay_frequency },
+    );
+
+    return items;
+});
 
 function handleEditAssignments() {
     emit('edit-assignments');

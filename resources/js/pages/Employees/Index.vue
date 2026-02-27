@@ -445,6 +445,12 @@ function goToPage(url: string | null) {
                                         :employment-type="
                                             employee.employment_type
                                         "
+                                        :employment-status="
+                                            employee.employment_status
+                                        "
+                                        :employment-status-label="
+                                            employee.employment_status_label
+                                        "
                                     />
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">

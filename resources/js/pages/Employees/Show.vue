@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import AssignmentChangeModal from '@/components/AssignmentChangeModal.vue';
 import AssignmentHistorySection from '@/components/AssignmentHistorySection.vue';
+import SeparateEmployeeModal from '@/components/SeparateEmployeeModal.vue';
 import BusinessCardQrCode from '@/components/BusinessCardQrCode.vue';
 import EmployeeAvatar from '@/components/EmployeeAvatar.vue';
 import EmployeeStatusBadge from '@/components/EmployeeStatusBadge.vue';
@@ -233,10 +234,14 @@ function handleBusinessCardToggled(enabled: boolean, token: string | null) {
 
 // Modal state
 const isAssignmentModalOpen = ref(false);
+const isSeparateModalOpen = ref(false);
+
+const isEmployeeActive = computed(() => {
+    return !props.employee.employment_status || props.employee.employment_status === 'active';
+});
 
 function handleSeparate() {
-    // Placeholder - Separate (offboarding) functionality out of scope
-    console.log('Separate functionality coming soon');
+    isSeparateModalOpen.value = true;
 }
 
 function goBack() {
@@ -304,6 +309,7 @@ function handlePeriodChange(period: string) {
                         @sync-complete="handleSyncComplete"
                     />
                     <Button
+                        v-if="isEmployeeActive"
                         variant="outline"
                         @click="handleSeparate"
                         class="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700 dark:border-red-800 dark:text-red-400 dark:hover:bg-red-900/20"
@@ -370,6 +376,8 @@ function handlePeriodChange(period: string) {
                                 </h1>
                                 <EmployeeStatusBadge
                                     :employment-type="employee.employment_type"
+                                    :employment-status="employee.employment_status"
+                                    :employment-status-label="employee.employment_status_label"
                                 />
                             </div>
                             <p
@@ -705,6 +713,13 @@ function handlePeriodChange(period: string) {
                 </div>
             </div>
         </div>
+
+        <!-- Separate Employee Modal -->
+        <SeparateEmployeeModal
+            v-model:open="isSeparateModalOpen"
+            :employee-id="employee.id"
+            :employee-name="employee.full_name"
+        />
 
         <!-- Assignment Change Modal -->
         <AssignmentChangeModal

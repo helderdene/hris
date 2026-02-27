@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentType;
 use App\Events\EmployeeCreated;
+use App\Http\Requests\SeparateEmployeeRequest;
 use App\Http\Requests\StoreEmployeeRequest;
 use App\Http\Requests\UpdateEmployeeRequest;
 use App\Http\Resources\EmployeeAssignmentHistoryResource;
@@ -348,6 +349,23 @@ class EmployeeController extends Controller
         return redirect()
             ->route('employees.show', ['tenant' => tenant()->slug, 'employee' => $employee->id])
             ->with('success', 'Employee updated successfully.');
+    }
+
+    /**
+     * Separate (offboard) an employee by updating their employment status.
+     */
+    public function separate(SeparateEmployeeRequest $request, Employee $employee): RedirectResponse
+    {
+        Gate::authorize('can-manage-employees');
+
+        $employee->update([
+            'employment_status' => $request->validated('employment_status'),
+            'termination_date' => $request->validated('termination_date'),
+        ]);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Employee has been separated successfully.');
     }
 
     /**

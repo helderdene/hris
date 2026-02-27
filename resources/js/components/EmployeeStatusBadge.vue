@@ -3,11 +3,25 @@ import { computed } from 'vue';
 
 interface Props {
     employmentType: string | null;
+    employmentStatus?: string | null;
+    employmentStatusLabel?: string | null;
 }
 
 const props = defineProps<Props>();
 
+const isSeparated = computed(() => {
+    return props.employmentStatus && props.employmentStatus !== 'active';
+});
+
 const badgeConfig = computed(() => {
+    if (isSeparated.value) {
+        return {
+            label: props.employmentStatusLabel || props.employmentStatus || 'Separated',
+            classes:
+                'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+        };
+    }
+
     switch (props.employmentType) {
         case 'regular':
             return {

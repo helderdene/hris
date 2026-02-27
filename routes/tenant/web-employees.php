@@ -56,6 +56,8 @@ Route::get('/employees/{employee}/edit', [EmployeeController::class, 'edit'])
     ->name('employees.edit');
 Route::put('/employees/{employee}', [EmployeeController::class, 'update'])
     ->name('employees.update');
+Route::post('/employees/{employee}/separate', [EmployeeController::class, 'separate'])
+    ->name('employees.separate');
 
 /*
 |--------------------------------------------------------------------------
