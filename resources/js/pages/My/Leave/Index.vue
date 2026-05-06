@@ -30,9 +30,17 @@ interface Balance {
     pending: number;
 }
 
+interface Attachment {
+    name: string;
+    mime: string;
+    size: number;
+    url: string;
+}
+
 interface LeaveApplication {
     id: number;
     reference_number: string;
+    leave_type_id: number;
     leave_type: {
         id: number;
         name: string;
@@ -43,6 +51,7 @@ interface LeaveApplication {
     date_range: string;
     total_days: number;
     reason: string;
+    attachment: Attachment | null;
     status: string;
     status_label: string;
     status_color: string;
@@ -61,7 +70,15 @@ interface StatusOption {
 }
 
 const props = defineProps<{
-    employee: { id: number; full_name: string; employee_number: string } | null;
+    employee: {
+        id: number;
+        full_name: string;
+        employee_number: string;
+        department: string | null;
+        position: string | null;
+        employment_type: string | null;
+        employment_type_label: string | null;
+    } | null;
     leaveTypes: LeaveType[];
     balances: Balance[];
     applications: LeaveApplication[];

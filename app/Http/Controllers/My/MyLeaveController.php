@@ -18,7 +18,9 @@ class MyLeaveController extends Controller
     public function index(Request $request): Response
     {
         $user = $request->user();
-        $employee = Employee::where('user_id', $user->id)->first();
+        $employee = Employee::with(['department', 'position'])
+            ->where('user_id', $user->id)
+            ->first();
 
         $year = (int) $request->input('year', now()->year);
         $status = $request->input('status');
@@ -63,6 +65,7 @@ class MyLeaveController extends Controller
             $applications = $query->get()->map(fn ($app) => [
                 'id' => $app->id,
                 'reference_number' => $app->reference_number,
+                'leave_type_id' => $app->leave_type_id,
                 'leave_type' => [
                     'id' => $app->leaveType->id,
                     'name' => $app->leaveType->name,
@@ -73,6 +76,12 @@ class MyLeaveController extends Controller
                 'date_range' => $app->date_range,
                 'total_days' => (float) $app->total_days,
                 'reason' => $app->reason,
+                'attachment' => $app->attachment_path ? [
+                    'name' => $app->attachment_name,
+                    'mime' => $app->attachment_mime,
+                    'size' => (int) $app->attachment_size,
+                    'url' => route('api.leave-applications.attachment', ['leave_application' => $app->id]),
+                ] : null,
                 'status' => $app->status->value,
                 'status_label' => $app->status->label(),
                 'status_color' => $app->status->color(),
@@ -90,6 +99,10 @@ class MyLeaveController extends Controller
                 'id' => $employee->id,
                 'full_name' => $employee->full_name,
                 'employee_number' => $employee->employee_number,
+                'department' => $employee->department?->name,
+                'position' => $employee->position?->name,
+                'employment_type' => $employee->employment_type?->value,
+                'employment_type_label' => $employee->employment_type?->label(),
             ] : null,
             'leaveTypes' => $leaveTypes,
             'balances' => $balances,

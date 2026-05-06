@@ -51,6 +51,14 @@ class LeaveApplicationResource extends JsonResource
             // Request details
             'reason' => $this->reason,
 
+            // Supporting document
+            'attachment' => $this->attachment_path ? [
+                'name' => $this->attachment_name,
+                'mime' => $this->attachment_mime,
+                'size' => $this->attachment_size,
+                'url' => route('api.leave-applications.attachment', ['leave_application' => $this->id]),
+            ] : null,
+
             // Status
             'status' => $this->status->value,
             'status_label' => $this->status->label(),

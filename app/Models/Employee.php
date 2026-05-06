@@ -71,6 +71,7 @@ class Employee extends TenantModel
         // Employment details
         'employment_type',
         'employment_status',
+        'is_leave_admin_manager',
         'hire_date',
         'regularization_date',
         'termination_date',
@@ -124,6 +125,7 @@ class Employee extends TenantModel
             'work_history' => 'array',
             'kiosk_pin_changed_at' => 'datetime',
             'business_card_enabled' => 'boolean',
+            'is_leave_admin_manager' => 'boolean',
         ];
     }
 

@@ -317,6 +317,10 @@ Route::prefix('leave-applications')->group(function () {
         ->name('api.leave-applications.submit');
     Route::post('/{leave_application}/cancel', [\App\Http\Controllers\Api\LeaveApplicationController::class, 'cancel'])
         ->name('api.leave-applications.cancel');
+
+    // Supporting document download
+    Route::get('/{leave_application}/attachment', [\App\Http\Controllers\Api\LeaveApplicationController::class, 'downloadAttachment'])
+        ->name('api.leave-applications.attachment');
 });
 
 // Employee-specific leave applications endpoint

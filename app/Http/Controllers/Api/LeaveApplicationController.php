@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 class LeaveApplicationController extends Controller
 {
@@ -92,7 +93,13 @@ class LeaveApplicationController extends Controller
      */
     public function store(StoreLeaveApplicationRequest $request): JsonResponse
     {
-        $application = LeaveApplication::create($request->validatedWithCalculations());
+        $data = $request->validatedWithCalculations();
+
+        if ($request->hasFile('attachment')) {
+            $data = array_merge($data, $this->storeAttachment($request, $data['employee_id']));
+        }
+
+        $application = LeaveApplication::create($data);
 
         $application->load(['employee.department', 'employee.position', 'leaveType']);
 
@@ -124,11 +131,72 @@ class LeaveApplicationController extends Controller
         UpdateLeaveApplicationRequest $request,
         LeaveApplication $leaveApplication
     ): LeaveApplicationResource {
-        $leaveApplication->update($request->validatedWithCalculations());
+        $data = $request->validatedWithCalculations();
+
+        if ($request->boolean('remove_attachment') || $request->hasFile('attachment')) {
+            $this->deleteAttachment($leaveApplication);
+            $data = array_merge($data, [
+                'attachment_path' => null,
+                'attachment_name' => null,
+                'attachment_mime' => null,
+                'attachment_size' => null,
+            ]);
+        }
+
+        if ($request->hasFile('attachment')) {
+            $data = array_merge($data, $this->storeAttachment($request, $leaveApplication->employee_id));
+        }
+
+        $leaveApplication->update($data);
 
         $leaveApplication->load(['employee.department', 'employee.position', 'leaveType']);
 
         return new LeaveApplicationResource($leaveApplication);
+    }
+
+    /**
+     * Persist an uploaded supporting document and return the column values.
+     *
+     * @return array<string, mixed>
+     */
+    protected function storeAttachment(Request $request, int $employeeId): array
+    {
+        $file = $request->file('attachment');
+
+        $path = $file->store("leave-applications/{$employeeId}", 'local');
+
+        return [
+            'attachment_path' => $path,
+            'attachment_name' => $file->getClientOriginalName(),
+            'attachment_mime' => $file->getClientMimeType(),
+            'attachment_size' => $file->getSize(),
+        ];
+    }
+
+    /**
+     * Delete an existing attachment from storage if present.
+     */
+    protected function deleteAttachment(LeaveApplication $leaveApplication): void
+    {
+        if ($leaveApplication->attachment_path) {
+            Storage::disk('local')->delete($leaveApplication->attachment_path);
+        }
+    }
+
+    /**
+     * Download the attached supporting document.
+     */
+    public function downloadAttachment(LeaveApplication $leaveApplication): mixed
+    {
+        if (! $leaveApplication->attachment_path
+            || ! Storage::disk('local')->exists($leaveApplication->attachment_path)) {
+            abort(404);
+        }
+
+        return Storage::disk('local')->download(
+            $leaveApplication->attachment_path,
+            $leaveApplication->attachment_name ?? 'attachment'
+        );
     }
 
     /**

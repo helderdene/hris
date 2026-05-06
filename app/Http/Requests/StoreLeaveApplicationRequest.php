@@ -34,6 +34,7 @@ class StoreLeaveApplicationRequest extends FormRequest
             'is_half_day_start' => ['boolean'],
             'is_half_day_end' => ['boolean'],
             'reason' => ['required', 'string', 'max:2000'],
+            'attachment' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,doc,docx'],
         ];
     }
 
@@ -55,6 +56,9 @@ class StoreLeaveApplicationRequest extends FormRequest
             'end_date.after_or_equal' => 'End date must be on or after the start date.',
             'reason.required' => 'Please provide a reason for your leave request.',
             'reason.max' => 'Reason cannot exceed 2000 characters.',
+            'attachment.file' => 'The supporting document must be a valid file.',
+            'attachment.max' => 'The supporting document may not be larger than 10MB.',
+            'attachment.mimes' => 'The supporting document must be a PDF, image, or Word document.',
         ];
     }
 
@@ -188,6 +192,8 @@ class StoreLeaveApplicationRequest extends FormRequest
         );
 
         $validated['created_by'] = auth()->id();
+
+        unset($validated['attachment']);
 
         return $validated;
     }

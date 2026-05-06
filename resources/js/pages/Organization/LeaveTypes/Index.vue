@@ -17,11 +17,19 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 
 interface LeaveType {
     id: number;
@@ -63,13 +71,84 @@ interface EnumOption {
     shortLabel?: string;
 }
 
+interface EmployeeSummary {
+    id: number;
+    employee_number: string;
+    full_name: string;
+    department: string | null;
+    position: string | null;
+}
+
 const props = defineProps<{
     leaveTypes: LeaveType[];
     leaveCategories: EnumOption[];
     accrualMethods: EnumOption[];
     genderRestrictions: EnumOption[];
     employmentTypes: EnumOption[];
+    adminManager: EmployeeSummary | null;
+    activeEmployees: EmployeeSummary[];
 }>();
+
+const currentAdminManagerId = ref<number | null>(props.adminManager?.id ?? null);
+const adminManagerSelection = ref<string>(
+    props.adminManager?.id ? String(props.adminManager.id) : '',
+);
+const isSavingAdminManager = ref(false);
+const adminManagerError = ref<string | null>(null);
+const adminManagerSuccess = ref<string | null>(null);
+
+const adminManagerDirty = computed(() => {
+    const selected = adminManagerSelection.value
+        ? Number(adminManagerSelection.value)
+        : null;
+    return selected !== currentAdminManagerId.value;
+});
+
+async function saveAdminManager(): Promise<void> {
+    isSavingAdminManager.value = true;
+    adminManagerError.value = null;
+    adminManagerSuccess.value = null;
+
+    try {
+        const response = await fetch(
+            '/api/organization/leave-settings/admin-manager',
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': getCsrfToken(),
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    employee_id: adminManagerSelection.value
+                        ? Number(adminManagerSelection.value)
+                        : null,
+                }),
+            },
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+            currentAdminManagerId.value = data.admin_manager?.id ?? null;
+            adminManagerSelection.value = data.admin_manager?.id
+                ? String(data.admin_manager.id)
+                : '';
+            adminManagerSuccess.value = data.message;
+            router.reload({ only: ['adminManager'] });
+        } else {
+            adminManagerError.value =
+                data.errors?.employee_id?.[0]
+                ?? data.message
+                ?? 'Failed to update Leave Admin Manager.';
+        }
+    } catch {
+        adminManagerError.value = 'An unexpected error occurred. Please try again.';
+    } finally {
+        isSavingAdminManager.value = false;
+    }
+}
 
 const { primaryColor, tenantName } = useTenant();
 
@@ -281,6 +360,117 @@ function getCsrfToken(): string {
                         Add Leave Type
                     </Button>
                 </div>
+            </div>
+
+            <!-- Leave Approval Settings -->
+            <div
+                class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900"
+                data-test="leave-approval-settings"
+            >
+                <div class="flex flex-col gap-1">
+                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        Leave Approval Flow
+                    </h2>
+                    <p class="text-sm text-slate-500 dark:text-slate-400">
+                        Level 1 is the applicant's <strong>Department Head</strong>
+                        (set per department on the Departments page). Level 2 is
+                        the tenant-wide <strong>Admin Manager</strong>, configured below.
+                    </p>
+                </div>
+
+                <div class="mt-6 grid gap-6 sm:grid-cols-2">
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                        <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            Level 1 — Department Head
+                        </p>
+                        <p class="mt-1 text-sm text-slate-700 dark:text-slate-200">
+                            Configure each department's head on the
+                            <a
+                                href="/organization/departments"
+                                class="underline underline-offset-2 hover:text-slate-900 dark:hover:text-slate-100"
+                            >
+                                Departments
+                            </a>
+                            page.
+                        </p>
+                    </div>
+
+                    <div class="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-700 dark:bg-slate-800/40">
+                        <p class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            Level 2 — Current Admin Manager
+                        </p>
+                        <p
+                            v-if="adminManager"
+                            class="mt-1 text-sm font-medium text-slate-900 dark:text-slate-100"
+                        >
+                            {{ adminManager.full_name }}
+                            <span class="text-slate-500 dark:text-slate-400">
+                                ({{ adminManager.employee_number }})
+                            </span>
+                        </p>
+                        <p
+                            v-else
+                            class="mt-1 text-sm text-amber-700 dark:text-amber-400"
+                        >
+                            Not configured — leaves will route only to the Department Head.
+                        </p>
+                        <p
+                            v-if="adminManager?.position"
+                            class="text-xs text-slate-500 dark:text-slate-400"
+                        >
+                            {{ adminManager.position }}{{ adminManager.department ? ` · ${adminManager.department}` : '' }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">
+                    <div class="flex-1 space-y-2">
+                        <Label for="admin_manager">Designate Admin Manager</Label>
+                        <Select v-model="adminManagerSelection">
+                            <SelectTrigger id="admin_manager">
+                                <SelectValue placeholder="Select an active employee" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="">
+                                    — None (clear) —
+                                </SelectItem>
+                                <SelectItem
+                                    v-for="employee in activeEmployees"
+                                    :key="employee.id"
+                                    :value="String(employee.id)"
+                                >
+                                    {{ employee.full_name }}
+                                    <span class="text-slate-500">
+                                        ({{ employee.employee_number }}{{ employee.department ? ` · ${employee.department}` : '' }})
+                                    </span>
+                                </SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <Button
+                        type="button"
+                        :disabled="!adminManagerDirty || isSavingAdminManager"
+                        @click="saveAdminManager"
+                        :style="{ backgroundColor: primaryColor }"
+                        data-test="save-admin-manager-button"
+                    >
+                        {{ isSavingAdminManager ? 'Saving...' : 'Save' }}
+                    </Button>
+                </div>
+
+                <p
+                    v-if="adminManagerError"
+                    class="mt-3 text-sm text-red-600 dark:text-red-400"
+                >
+                    {{ adminManagerError }}
+                </p>
+                <p
+                    v-if="adminManagerSuccess"
+                    class="mt-3 text-sm text-green-600 dark:text-green-400"
+                >
+                    {{ adminManagerSuccess }}
+                </p>
             </div>
 
             <!-- Leave Types Table -->

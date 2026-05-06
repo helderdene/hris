@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DepartmentController;
 use App\Http\Controllers\Api\EmployeeScheduleAssignmentController;
 use App\Http\Controllers\Api\HolidayController;
 use App\Http\Controllers\Api\LeaveBalanceController;
+use App\Http\Controllers\Api\LeaveSettingsController;
 use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\PagibigContributionController;
 use App\Http\Controllers\Api\PayrollComputationController;
@@ -241,6 +242,10 @@ Route::prefix('organization')->group(function () {
         ->name('api.organization.leave-types.update');
     Route::delete('/leave-types/{leave_type}', [LeaveTypeController::class, 'destroy'])
         ->name('api.organization.leave-types.destroy');
+
+    // Leave Approval Settings
+    Route::post('/leave-settings/admin-manager', [LeaveSettingsController::class, 'setAdminManager'])
+        ->name('api.organization.leave-settings.admin-manager');
 
     /*
     |--------------------------------------------------------------------------

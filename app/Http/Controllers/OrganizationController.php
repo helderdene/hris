@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\AccrualMethod;
 use App\Enums\DeviceStatus;
+use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentType;
 use App\Enums\GenderRestriction;
 use App\Enums\HolidayType;
@@ -262,12 +263,40 @@ class OrganizationController extends Controller
             ->orderBy('name')
             ->get();
 
+        $adminManager = Employee::query()
+            ->where('is_leave_admin_manager', true)
+            ->where('employment_status', EmploymentStatus::Active)
+            ->with(['department', 'position'])
+            ->first();
+
+        $activeEmployees = Employee::query()
+            ->where('employment_status', EmploymentStatus::Active)
+            ->with(['department', 'position'])
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get()
+            ->map(fn (Employee $employee) => [
+                'id' => $employee->id,
+                'employee_number' => $employee->employee_number,
+                'full_name' => $employee->full_name,
+                'department' => $employee->department?->name,
+                'position' => $employee->position?->name,
+            ]);
+
         return Inertia::render('Organization/LeaveTypes/Index', [
             'leaveTypes' => LeaveTypeResource::collection($leaveTypes),
             'leaveCategories' => $this->getLeaveCategoryOptions(),
             'accrualMethods' => $this->getAccrualMethodOptions(),
             'genderRestrictions' => $this->getGenderRestrictionOptions(),
             'employmentTypes' => $this->getEmploymentTypeOptions(),
+            'adminManager' => $adminManager ? [
+                'id' => $adminManager->id,
+                'employee_number' => $adminManager->employee_number,
+                'full_name' => $adminManager->full_name,
+                'department' => $adminManager->department?->name,
+                'position' => $adminManager->position?->name,
+            ] : null,
+            'activeEmployees' => $activeEmployees,
         ]);
     }
 

@@ -36,6 +36,8 @@ class UpdateLeaveApplicationRequest extends FormRequest
             'is_half_day_start' => ['boolean'],
             'is_half_day_end' => ['boolean'],
             'reason' => ['sometimes', 'required', 'string', 'max:2000'],
+            'attachment' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,doc,docx'],
+            'remove_attachment' => ['sometimes', 'boolean'],
         ];
     }
 
@@ -143,6 +145,8 @@ class UpdateLeaveApplicationRequest extends FormRequest
             $isHalfDayStart,
             $isHalfDayEnd
         );
+
+        unset($validated['attachment'], $validated['remove_attachment']);
 
         return $validated;
     }

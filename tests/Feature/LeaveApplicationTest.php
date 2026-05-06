@@ -13,8 +13,10 @@ use App\Models\User;
 use App\Services\ApprovalChainResolver;
 use App\Services\LeaveApplicationService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -146,17 +148,23 @@ describe('LeaveApplication Creation', function () {
 });
 
 describe('ApprovalChainResolver', function () {
-    it('resolves the approval chain from supervisor hierarchy', function () {
+    it('resolves a two-step chain: department head then admin manager', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForLeaveApp($tenant);
 
-        $supervisor2 = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
-        $supervisor1 = Employee::factory()->create([
-            'supervisor_id' => $supervisor2->id,
+        $departmentHead = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $adminManager = Employee::factory()->create([
             'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
         ]);
+
+        $department = \App\Models\Department::factory()->create([
+            'department_head_id' => $departmentHead->id,
+        ]);
+        $departmentHead->update(['department_id' => $department->id]);
+
         $employee = Employee::factory()->create([
-            'supervisor_id' => $supervisor1->id,
+            'department_id' => $department->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
 
@@ -164,21 +172,28 @@ describe('ApprovalChainResolver', function () {
         $chain = $resolver->resolveChain($employee, 2);
 
         expect($chain)->toHaveCount(2);
-        expect($chain->first()['employee']->id)->toBe($supervisor1->id);
-        expect($chain->last()['employee']->id)->toBe($supervisor2->id);
+        expect($chain->first()['employee']->id)->toBe($departmentHead->id);
+        expect($chain->first()['type'])->toBe('department_head');
+        expect($chain->last()['employee']->id)->toBe($adminManager->id);
+        expect($chain->last()['type'])->toBe('admin_manager');
     });
 
-    it('skips inactive supervisors', function () {
+    it('skips an inactive department head', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForLeaveApp($tenant);
 
-        $activeSupervisor = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
-        $inactiveSupervisor = Employee::factory()->create([
-            'supervisor_id' => $activeSupervisor->id,
-            'employment_status' => EmploymentStatus::Resigned,
+        $inactiveHead = Employee::factory()->create(['employment_status' => EmploymentStatus::Resigned]);
+        $adminManager = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
         ]);
+
+        $department = \App\Models\Department::factory()->create([
+            'department_head_id' => $inactiveHead->id,
+        ]);
+
         $employee = Employee::factory()->create([
-            'supervisor_id' => $inactiveSupervisor->id,
+            'department_id' => $department->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
 
@@ -186,7 +201,58 @@ describe('ApprovalChainResolver', function () {
         $chain = $resolver->resolveChain($employee, 2);
 
         expect($chain)->toHaveCount(1);
-        expect($chain->first()['employee']->id)->toBe($activeSupervisor->id);
+        expect($chain->first()['employee']->id)->toBe($adminManager->id);
+        expect($chain->first()['type'])->toBe('admin_manager');
+    });
+
+    it('collapses to a single step when department head is also the admin manager', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveApp($tenant);
+
+        $head = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
+
+        $department = \App\Models\Department::factory()->create([
+            'department_head_id' => $head->id,
+        ]);
+        $head->update(['department_id' => $department->id]);
+
+        $employee = Employee::factory()->create([
+            'department_id' => $department->id,
+            'employment_status' => EmploymentStatus::Active,
+        ]);
+
+        $resolver = new ApprovalChainResolver;
+        $chain = $resolver->resolveChain($employee, 2);
+
+        expect($chain)->toHaveCount(1);
+        expect($chain->first()['employee']->id)->toBe($head->id);
+    });
+
+    it('skips the department head when applicant is the head, and routes to admin manager', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveApp($tenant);
+
+        $adminManager = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
+
+        $applicant = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+
+        $department = \App\Models\Department::factory()->create([
+            'department_head_id' => $applicant->id,
+        ]);
+        $applicant->update(['department_id' => $department->id]);
+
+        $resolver = new ApprovalChainResolver;
+        $chain = $resolver->resolveChain($applicant, 2);
+
+        expect($chain)->toHaveCount(1);
+        expect($chain->first()['employee']->id)->toBe($adminManager->id);
+        expect($chain->first()['type'])->toBe('admin_manager');
     });
 
     it('prevents self-approval', function () {
@@ -208,12 +274,17 @@ describe('LeaveApplicationService', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForLeaveApp($tenant);
 
-        $supervisor = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
-        $supervisorUser = createTenantUserForLeaveApp($tenant, TenantUserRole::Admin);
-        $supervisor->update(['user_id' => $supervisorUser->id]);
+        $departmentHead = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $headUser = createTenantUserForLeaveApp($tenant, TenantUserRole::Admin);
+        $departmentHead->update(['user_id' => $headUser->id]);
+
+        $department = \App\Models\Department::factory()->create([
+            'department_head_id' => $departmentHead->id,
+        ]);
+        $departmentHead->update(['department_id' => $department->id]);
 
         $employee = Employee::factory()->create([
-            'supervisor_id' => $supervisor->id,
+            'department_id' => $department->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
 
@@ -252,9 +323,14 @@ describe('LeaveApplicationService', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForLeaveApp($tenant);
 
-        $supervisor = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $departmentHead = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $department = \App\Models\Department::factory()->create([
+            'department_head_id' => $departmentHead->id,
+        ]);
+        $departmentHead->update(['department_id' => $department->id]);
+
         $employee = Employee::factory()->create([
-            'supervisor_id' => $supervisor->id,
+            'department_id' => $department->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
 
@@ -398,16 +474,21 @@ describe('LeaveApplication Store Validation', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForLeaveApp($tenant);
 
-        $supervisorUser = createTenantUserForLeaveApp($tenant, TenantUserRole::Admin);
-        $supervisor = Employee::factory()->create([
-            'user_id' => $supervisorUser->id,
+        $headUser = createTenantUserForLeaveApp($tenant, TenantUserRole::Admin);
+        $departmentHead = Employee::factory()->create([
+            'user_id' => $headUser->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
+
+        $department = \App\Models\Department::factory()->create([
+            'department_head_id' => $departmentHead->id,
+        ]);
+        $departmentHead->update(['department_id' => $department->id]);
 
         $user = createTenantUserForLeaveApp($tenant, TenantUserRole::Employee);
         $employee = Employee::factory()->create([
             'user_id' => $user->id,
-            'supervisor_id' => $supervisor->id,
+            'department_id' => $department->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
 
@@ -472,5 +553,163 @@ describe('LeaveApplication Store Validation', function () {
         // Check balance was released
         $balance->refresh();
         expect((float) $balance->pending)->toBe(0.0);
+    });
+});
+
+describe('LeaveApplication Supporting Document', function () {
+    it('rejects attachments with disallowed mime types', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveApp($tenant);
+
+        $employee = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $leaveType = LeaveType::factory()->create();
+
+        $rules = (new \App\Http\Requests\StoreLeaveApplicationRequest)->rules();
+        $validator = \Illuminate\Support\Facades\Validator::make([
+            'employee_id' => $employee->id,
+            'leave_type_id' => $leaveType->id,
+            'start_date' => now()->addDays(3)->format('Y-m-d'),
+            'end_date' => now()->addDays(4)->format('Y-m-d'),
+            'reason' => 'Test',
+            'attachment' => UploadedFile::fake()->create('virus.exe', 100, 'application/octet-stream'),
+        ], $rules);
+
+        expect($validator->fails())->toBeTrue();
+        expect($validator->errors()->has('attachment'))->toBeTrue();
+    });
+
+    it('persists attachment metadata on the leave application model', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveApp($tenant);
+
+        $employee = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $leaveType = LeaveType::factory()->create();
+
+        $application = LeaveApplication::factory()->create([
+            'employee_id' => $employee->id,
+            'leave_type_id' => $leaveType->id,
+            'attachment_path' => "leave-applications/{$employee->id}/medical-cert.pdf",
+            'attachment_name' => 'medical-cert.pdf',
+            'attachment_mime' => 'application/pdf',
+            'attachment_size' => 12345,
+        ]);
+
+        $application->refresh();
+
+        expect($application->attachment_path)->toBe("leave-applications/{$employee->id}/medical-cert.pdf");
+        expect($application->attachment_name)->toBe('medical-cert.pdf');
+        expect($application->attachment_mime)->toBe('application/pdf');
+        expect((int) $application->attachment_size)->toBe(12345);
+    });
+
+    it('stores an uploaded attachment to disk via the controller', function () {
+        Storage::fake('local');
+
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveApp($tenant);
+
+        $employee = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+
+        $file = UploadedFile::fake()->create('medical-cert.pdf', 200, 'application/pdf');
+        $request = \Illuminate\Http\Request::create('/api/leave-applications', 'POST', [], [], ['attachment' => $file]);
+
+        $controller = new \App\Http\Controllers\Api\LeaveApplicationController(
+            new \App\Services\LeaveApplicationService(new \App\Services\ApprovalChainResolver)
+        );
+
+        $reflection = new ReflectionMethod($controller, 'storeAttachment');
+        $reflection->setAccessible(true);
+        $result = $reflection->invoke($controller, $request, $employee->id);
+
+        expect($result['attachment_name'])->toBe('medical-cert.pdf');
+        expect($result['attachment_mime'])->toBe('application/pdf');
+        expect($result['attachment_path'])->toStartWith("leave-applications/{$employee->id}/");
+        Storage::disk('local')->assertExists($result['attachment_path']);
+    });
+});
+
+describe('Leave Approval Settings', function () {
+    it('sets a single Admin Manager and clears any previous one', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveApp($tenant);
+
+        $adminUser = createTenantUserForLeaveApp($tenant, TenantUserRole::Admin);
+
+        $previous = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
+        $next = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+        ]);
+
+        \Illuminate\Support\Facades\Gate::define('can-manage-organization', fn () => true);
+        $this->actingAs($adminUser);
+
+        $controller = new \App\Http\Controllers\Api\LeaveSettingsController;
+
+        $request = \Illuminate\Http\Request::create('/api/organization/leave-settings/admin-manager', 'POST', [
+            'employee_id' => $next->id,
+        ]);
+        $request->setUserResolver(fn () => $adminUser);
+
+        $response = $controller->setAdminManager($request);
+        $payload = $response->getData(true);
+
+        expect($payload['admin_manager']['id'])->toBe($next->id);
+        expect($previous->fresh()->is_leave_admin_manager)->toBeFalse();
+        expect($next->fresh()->is_leave_admin_manager)->toBeTrue();
+    });
+
+    it('clears the Admin Manager when employee_id is null', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveApp($tenant);
+
+        $adminUser = createTenantUserForLeaveApp($tenant, TenantUserRole::Admin);
+
+        $existing = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
+
+        \Illuminate\Support\Facades\Gate::define('can-manage-organization', fn () => true);
+        $this->actingAs($adminUser);
+
+        $controller = new \App\Http\Controllers\Api\LeaveSettingsController;
+
+        $request = \Illuminate\Http\Request::create('/api/organization/leave-settings/admin-manager', 'POST', [
+            'employee_id' => null,
+        ]);
+        $request->setUserResolver(fn () => $adminUser);
+
+        $response = $controller->setAdminManager($request);
+        $payload = $response->getData(true);
+
+        expect($payload['admin_manager'])->toBeNull();
+        expect($existing->fresh()->is_leave_admin_manager)->toBeFalse();
+    });
+
+    it('rejects a designation for an inactive employee', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveApp($tenant);
+
+        $adminUser = createTenantUserForLeaveApp($tenant, TenantUserRole::Admin);
+
+        $resigned = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Resigned,
+        ]);
+
+        \Illuminate\Support\Facades\Gate::define('can-manage-organization', fn () => true);
+        $this->actingAs($adminUser);
+
+        $controller = new \App\Http\Controllers\Api\LeaveSettingsController;
+
+        $request = \Illuminate\Http\Request::create('/api/organization/leave-settings/admin-manager', 'POST', [
+            'employee_id' => $resigned->id,
+        ]);
+        $request->setUserResolver(fn () => $adminUser);
+
+        expect(fn () => $controller->setAdminManager($request))
+            ->toThrow(\Illuminate\Validation\ValidationException::class);
     });
 });

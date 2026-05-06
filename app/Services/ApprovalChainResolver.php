@@ -3,64 +3,107 @@
 namespace App\Services;
 
 use App\Enums\EmploymentStatus;
+use App\Models\Department;
 use App\Models\Employee;
 use Illuminate\Support\Collection;
 
 /**
  * Service for resolving the approval chain for leave applications.
  *
- * Builds an ordered list of approvers based on the employee's supervisor hierarchy.
+ * Implements a role-based two-step approval flow:
+ *   Level 1: Department Head (per-department, via departments.department_head_id)
+ *   Level 2: Admin Manager (tenant-wide, via employees.is_leave_admin_manager)
+ *
+ * Approvers that are inactive, the applicant themselves, or duplicate
+ * across levels are skipped, collapsing the chain as needed.
  */
 class ApprovalChainResolver
 {
     /**
      * Resolve the approval chain for an employee.
      *
-     * Returns an ordered collection of employees who should approve the leave request.
-     * Each element includes the employee and their approver type.
-     *
-     * @param  int  $maxLevels  Maximum levels of approval (default: 2)
+     * @param  int  $maxLevels  Hard cap on returned levels (default: 2).
      * @return Collection<int, array{employee: Employee, type: string, level: int}>
      */
     public function resolveChain(Employee $employee, int $maxLevels = 2): Collection
     {
-        $chain = collect();
-        $currentSupervisor = $employee->supervisor;
-        $level = 1;
-        $seenIds = [$employee->id]; // Prevent self-approval and circular references
+        $approvers = collect();
+        $seenIds = [$employee->id];
 
-        while ($currentSupervisor !== null && $level <= $maxLevels) {
-            // Skip if we've already seen this supervisor (circular reference)
-            if (in_array($currentSupervisor->id, $seenIds, true)) {
-                break;
-            }
-
-            // Skip inactive supervisors
-            if ($currentSupervisor->employment_status !== EmploymentStatus::Active) {
-                $seenIds[] = $currentSupervisor->id;
-                $currentSupervisor = $currentSupervisor->supervisor;
-
-                continue;
-            }
-
-            $chain->push([
-                'employee' => $currentSupervisor,
-                'type' => $this->determineApproverType($level, $currentSupervisor),
-                'level' => $level,
+        $departmentHead = $this->resolveDepartmentHead($employee);
+        if ($departmentHead && ! in_array($departmentHead->id, $seenIds, true)) {
+            $approvers->push([
+                'employee' => $departmentHead,
+                'type' => 'department_head',
             ]);
-
-            $seenIds[] = $currentSupervisor->id;
-            $currentSupervisor = $currentSupervisor->supervisor;
-            $level++;
+            $seenIds[] = $departmentHead->id;
         }
 
-        return $chain;
+        $adminManager = $this->resolveAdminManager($employee);
+        if ($adminManager && ! in_array($adminManager->id, $seenIds, true)) {
+            $approvers->push([
+                'employee' => $adminManager,
+                'type' => 'admin_manager',
+            ]);
+            $seenIds[] = $adminManager->id;
+        }
+
+        return $approvers
+            ->take($maxLevels)
+            ->values()
+            ->map(fn (array $entry, int $index) => [
+                'employee' => $entry['employee'],
+                'type' => $entry['type'],
+                'level' => $index + 1,
+            ]);
+    }
+
+    /**
+     * Resolve the Department Head for the applicant's department.
+     *
+     * Returns null if the department is missing, the head is unset, the head
+     * is inactive, or the head is the applicant themselves.
+     */
+    public function resolveDepartmentHead(Employee $employee): ?Employee
+    {
+        if (! $employee->department_id) {
+            return null;
+        }
+
+        $department = Department::query()
+            ->with(['departmentHead' => fn ($query) => $query->where('employment_status', EmploymentStatus::Active),
+            ])
+            ->find($employee->department_id);
+
+        $head = $department?->departmentHead;
+
+        if (! $head || $head->id === $employee->id) {
+            return null;
+        }
+
+        return $head;
+    }
+
+    /**
+     * Resolve the tenant-wide Admin Manager for leave approvals.
+     *
+     * Returns null if no employee is flagged, the flagged employee is
+     * inactive, or the flagged employee is the applicant.
+     */
+    public function resolveAdminManager(Employee $employee): ?Employee
+    {
+        $manager = Employee::query()
+            ->where('is_leave_admin_manager', true)
+            ->where('employment_status', EmploymentStatus::Active)
+            ->where('id', '!=', $employee->id)
+            ->orderBy('id')
+            ->first();
+
+        return $manager;
     }
 
     /**
      * Get the first available approver for an employee.
-     *
-     * Useful for simple single-level approval workflows.
      */
     public function getFirstApprover(Employee $employee): ?Employee
     {
@@ -78,61 +121,25 @@ class ApprovalChainResolver
      */
     public function canApprove(Employee $approver, Employee $applicant): bool
     {
-        // Self-approval is not allowed
         if ($approver->id === $applicant->id) {
             return false;
         }
 
-        // Check if approver is in the applicant's supervisor chain
-        $chain = $this->resolveChain($applicant, 5);
+        $chain = $this->resolveChain($applicant);
 
         return $chain->contains(fn ($item) => $item['employee']->id === $approver->id);
     }
 
     /**
-     * Determine the approver type based on level and position.
-     */
-    protected function determineApproverType(int $level, Employee $approver): string
-    {
-        // Level 1 is typically direct supervisor
-        if ($level === 1) {
-            return 'supervisor';
-        }
-
-        // Check if this is a department head
-        if (in_array($approver->position?->job_level?->value, ['manager', 'director', 'executive'], true)) {
-            return 'department_head';
-        }
-
-        // Level 2+ could be higher management
-        if ($level === 2) {
-            return 'manager';
-        }
-
-        return 'senior_manager';
-    }
-
-    /**
-     * Get a fallback approver when no supervisor is available.
+     * Get a fallback approver when neither role is configured.
      *
-     * Falls back to department head or HR if no direct supervisor exists.
+     * Used by LeaveApplicationService when resolveChain() returns empty —
+     * keeps submission unblocked until the tenant assigns a Department Head
+     * or Admin Manager.
      */
     public function getFallbackApprover(Employee $employee): ?Employee
     {
-        // Try to get the department head
-        if ($employee->department_id) {
-            $departmentHead = Employee::query()
-                ->where('department_id', $employee->department_id)
-                ->where('id', '!=', $employee->id)
-                ->where('employment_status', EmploymentStatus::Active)
-                ->whereHas('position', fn ($q) => $q->whereIn('job_level', ['manager', 'director', 'executive']))
-                ->first();
-
-            if ($departmentHead) {
-                return $departmentHead;
-            }
-        }
-
-        return null;
+        return $this->resolveDepartmentHead($employee)
+            ?? $this->resolveAdminManager($employee);
     }
 }
