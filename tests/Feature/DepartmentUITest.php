@@ -324,3 +324,152 @@ describe('Department Form UI', function () {
         expect($departments->where('id', $dept->id)->count())->toBe(0);
     });
 });
+
+describe('Department Head assignment via update', function () {
+    it('persists department_head_id when employee belongs to the same department', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantForUI($tenant);
+
+        $admin = createTenantUserForUI($tenant, TenantUserRole::Admin);
+        $this->actingAs($admin);
+
+        $department = Department::factory()->create([
+            'name' => 'Engineering',
+            'code' => 'ENG',
+        ]);
+
+        $employee = \App\Models\Employee::factory()->create([
+            'department_id' => $department->id,
+            'employment_status' => \App\Enums\EmploymentStatus::Active,
+        ]);
+
+        $rules = (new \App\Http\Requests\UpdateDepartmentRequest)->rules();
+        $request = \App\Http\Requests\UpdateDepartmentRequest::create(
+            "/api/organization/departments/{$department->id}",
+            'PUT',
+            [
+                'name' => 'Engineering',
+                'code' => 'ENG',
+                'parent_id' => null,
+                'description' => null,
+                'status' => 'active',
+                'department_head_id' => $employee->id,
+            ]
+        );
+        $request->setRouteResolver(fn () => new class($department)
+        {
+            public function __construct(private $department) {}
+
+            public function parameter($key)
+            {
+                return $key === 'department' ? $this->department : null;
+            }
+        });
+
+        // Re-fetch rules with the route resolver in place
+        $rules = (new \App\Http\Requests\UpdateDepartmentRequest)
+            ->setRouteResolver($request->getRouteResolver())
+            ->rules();
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules);
+
+        expect($validator->passes())->toBeTrue();
+
+        $department->update(['department_head_id' => $employee->id]);
+
+        expect($department->fresh()->department_head_id)->toBe($employee->id);
+    });
+
+    it('rejects department_head_id when the employee belongs to a different department', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantForUI($tenant);
+
+        $admin = createTenantUserForUI($tenant, TenantUserRole::Admin);
+        $this->actingAs($admin);
+
+        $departmentA = Department::factory()->create(['code' => 'A']);
+        $departmentB = Department::factory()->create(['code' => 'B']);
+
+        $employeeInB = \App\Models\Employee::factory()->create([
+            'department_id' => $departmentB->id,
+            'employment_status' => \App\Enums\EmploymentStatus::Active,
+        ]);
+
+        $request = \App\Http\Requests\UpdateDepartmentRequest::create(
+            "/api/organization/departments/{$departmentA->id}",
+            'PUT',
+            [
+                'name' => 'A',
+                'code' => 'A',
+                'parent_id' => null,
+                'description' => null,
+                'status' => 'active',
+                'department_head_id' => $employeeInB->id,
+            ]
+        );
+        $request->setRouteResolver(fn () => new class($departmentA)
+        {
+            public function __construct(private $department) {}
+
+            public function parameter($key)
+            {
+                return $key === 'department' ? $this->department : null;
+            }
+        });
+
+        $rules = (new \App\Http\Requests\UpdateDepartmentRequest)
+            ->setRouteResolver($request->getRouteResolver())
+            ->rules();
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules);
+
+        expect($validator->fails())->toBeTrue();
+        expect($validator->errors()->has('department_head_id'))->toBeTrue();
+    });
+
+    it('rejects an inactive employee as department head', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantForUI($tenant);
+
+        $admin = createTenantUserForUI($tenant, TenantUserRole::Admin);
+        $this->actingAs($admin);
+
+        $department = Department::factory()->create(['code' => 'ACTIVE']);
+
+        $resigned = \App\Models\Employee::factory()->create([
+            'department_id' => $department->id,
+            'employment_status' => \App\Enums\EmploymentStatus::Resigned,
+        ]);
+
+        $request = \App\Http\Requests\UpdateDepartmentRequest::create(
+            "/api/organization/departments/{$department->id}",
+            'PUT',
+            [
+                'name' => 'Active Dept',
+                'code' => 'ACTIVE',
+                'parent_id' => null,
+                'description' => null,
+                'status' => 'active',
+                'department_head_id' => $resigned->id,
+            ]
+        );
+        $request->setRouteResolver(fn () => new class($department)
+        {
+            public function __construct(private $department) {}
+
+            public function parameter($key)
+            {
+                return $key === 'department' ? $this->department : null;
+            }
+        });
+
+        $rules = (new \App\Http\Requests\UpdateDepartmentRequest)
+            ->setRouteResolver($request->getRouteResolver())
+            ->rules();
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), $rules);
+
+        expect($validator->fails())->toBeTrue();
+        expect($validator->errors()->has('department_head_id'))->toBeTrue();
+    });
+});

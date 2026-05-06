@@ -51,9 +51,24 @@ class OrganizationController extends Controller
         // Build hierarchical tree from the flat list (unlimited depth, no extra query)
         $departmentTree = $this->buildDepartmentTree($departments);
 
+        // Active employees grouped by department for the head picker
+        $activeEmployees = Employee::query()
+            ->where('employment_status', EmploymentStatus::Active)
+            ->whereNotNull('department_id')
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get()
+            ->map(fn (Employee $employee) => [
+                'id' => $employee->id,
+                'employee_number' => $employee->employee_number,
+                'full_name' => $employee->full_name,
+                'department_id' => $employee->department_id,
+            ]);
+
         return Inertia::render('Organization/Departments/Index', [
             'departments' => DepartmentResource::collection($departments),
             'departmentTree' => DepartmentTreeResource::collection($departmentTree),
+            'activeEmployees' => $activeEmployees,
         ]);
     }
 

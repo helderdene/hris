@@ -31,11 +31,19 @@ interface Department {
     updated_at: string | null;
 }
 
+interface ActiveEmployee {
+    id: number;
+    employee_number: string;
+    full_name: string;
+    department_id: number | null;
+}
+
 interface Props {
     open: boolean;
     department: Department | null;
     parentId: number | null;
     allDepartments: Department[];
+    activeEmployees?: ActiveEmployee[];
 }
 
 const props = defineProps<Props>();
@@ -51,6 +59,21 @@ const form = useForm({
     parent_id: null as number | null,
     description: '',
     status: 'active',
+    department_head_id: null as number | null,
+});
+
+/**
+ * Active employees who belong to the department being edited.
+ * Empty for create mode (no department exists yet) or when no employees
+ * have been assigned to this department yet.
+ */
+const eligibleHeads = computed(() => {
+    if (!props.department || !props.activeEmployees) {
+        return [];
+    }
+    return props.activeEmployees.filter(
+        (employee) => employee.department_id === props.department!.id,
+    );
 });
 
 /**
@@ -119,10 +142,17 @@ const handleSubmit = () => {
 
     const submitMethod = isEditing.value ? 'put' : 'post';
 
-    form.transform((data) => ({
-        ...data,
-        description: data.description || null,
-    }))[submitMethod](url, {
+    form.transform((data) => {
+        const payload: Record<string, unknown> = {
+            ...data,
+            description: data.description || null,
+        };
+        // Department head can only be set on update
+        if (!isEditing.value) {
+            delete payload.department_head_id;
+        }
+        return payload;
+    })[submitMethod](url, {
         onSuccess: () => {
             emit('success');
         },
@@ -147,6 +177,7 @@ const initializeForm = () => {
         form.parent_id = props.department.parent_id;
         form.description = props.department.description ?? '';
         form.status = props.department.status;
+        form.department_head_id = props.department.department_head_id;
     } else {
         resetForm();
         // Set parent_id if adding a child
@@ -294,6 +325,41 @@ watch(
                             <option value="inactive">Inactive</option>
                         </select>
                         <InputError :message="form.errors.status" />
+                    </div>
+
+                    <!-- Department Head Field (edit-only) -->
+                    <div v-if="isEditing" class="grid gap-2">
+                        <Label for="department-head">Department Head</Label>
+                        <select
+                            id="department-head"
+                            v-model="form.department_head_id"
+                            :disabled="eligibleHeads.length === 0"
+                            class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+                            data-test="department-head-select"
+                        >
+                            <option :value="null">— None —</option>
+                            <option
+                                v-for="employee in eligibleHeads"
+                                :key="employee.id"
+                                :value="employee.id"
+                            >
+                                {{ employee.full_name }} ({{ employee.employee_number }})
+                            </option>
+                        </select>
+                        <p
+                            v-if="eligibleHeads.length === 0"
+                            class="text-xs text-amber-600 dark:text-amber-400"
+                        >
+                            No active employees are assigned to this department yet.
+                            Assign employees to this department before designating a head.
+                        </p>
+                        <p
+                            v-else
+                            class="text-xs text-slate-500 dark:text-slate-400"
+                        >
+                            Approves Level 1 leave requests from this department.
+                        </p>
+                        <InputError :message="form.errors.department_head_id" />
                     </div>
                 </div>
 

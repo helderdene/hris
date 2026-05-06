@@ -33,9 +33,17 @@ interface Department {
     updated_at: string | null;
 }
 
+interface ActiveEmployee {
+    id: number;
+    employee_number: string;
+    full_name: string;
+    department_id: number | null;
+}
+
 const props = defineProps<{
     departments: Department[];
     departmentTree: DepartmentTreeItem[];
+    activeEmployees: ActiveEmployee[];
 }>();
 
 const { primaryColor, tenantName } = useTenant();
@@ -271,6 +279,7 @@ function getCsrfToken(): string {
             :department="editingDepartment"
             :parent-id="parentDepartmentId"
             :all-departments="allDepartments"
+            :active-employees="activeEmployees"
             @success="handleFormSuccess"
         />
 

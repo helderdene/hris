@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\EmploymentStatus;
 use App\Models\Department;
+use App\Models\Employee;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -59,6 +61,13 @@ class UpdateDepartmentRequest extends FormRequest
             ],
             'description' => ['nullable', 'string', 'max:1000'],
             'status' => ['required', 'string', Rule::in(['active', 'inactive'])],
+            'department_head_id' => [
+                'nullable',
+                'integer',
+                Rule::exists(Employee::class, 'id')
+                    ->where('employment_status', EmploymentStatus::Active->value)
+                    ->where('department_id', $departmentId),
+            ],
         ];
     }
 
@@ -76,6 +85,7 @@ class UpdateDepartmentRequest extends FormRequest
             'parent_id.exists' => 'The selected parent department does not exist.',
             'status.required' => 'The department status is required.',
             'status.in' => 'The status must be either active or inactive.',
+            'department_head_id.exists' => 'The selected department head must be an active employee assigned to this department.',
         ];
     }
 }
