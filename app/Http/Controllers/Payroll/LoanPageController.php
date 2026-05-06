@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Payroll;
 
+use App\Enums\EmploymentStatus;
 use App\Enums\LoanStatus;
 use App\Enums\LoanType;
 use App\Http\Controllers\Controller;
@@ -62,6 +63,26 @@ class LoanPageController extends Controller
             'total_monthly_deductions' => (float) EmployeeLoan::active()->sum('monthly_deduction'),
         ];
 
+        $loanRoleHolders = [
+            'cfo' => $this->formatLoanRoleHolder('is_loan_cfo'),
+            'admin_manager' => $this->formatLoanRoleHolder('is_loan_admin_manager'),
+            'releasing_officer' => $this->formatLoanRoleHolder('is_loan_releasing_officer'),
+        ];
+
+        $activeEmployees = Employee::query()
+            ->where('employment_status', EmploymentStatus::Active)
+            ->with(['department', 'position'])
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get()
+            ->map(fn (Employee $employee) => [
+                'id' => $employee->id,
+                'employee_number' => $employee->employee_number,
+                'full_name' => $employee->full_name,
+                'department' => $employee->department?->name,
+                'position' => $employee->position?->name,
+            ]);
+
         return Inertia::render('Payroll/Loans/Index', [
             'loans' => EmployeeLoanListResource::collection($loans),
             'employees' => $employees->map(fn ($emp) => [
@@ -78,6 +99,34 @@ class LoanPageController extends Controller
                 'category' => $request->input('category'),
             ],
             'summary' => $summary,
+            'loanRoleHolders' => $loanRoleHolders,
+            'activeEmployees' => $activeEmployees,
         ]);
+    }
+
+    /**
+     * Format the active employee carrying a loan-role flag, or null.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function formatLoanRoleHolder(string $flag): ?array
+    {
+        $employee = Employee::query()
+            ->where($flag, true)
+            ->where('employment_status', EmploymentStatus::Active)
+            ->with(['department', 'position'])
+            ->first();
+
+        if (! $employee) {
+            return null;
+        }
+
+        return [
+            'id' => $employee->id,
+            'employee_number' => $employee->employee_number,
+            'full_name' => $employee->full_name,
+            'department' => $employee->department?->name,
+            'position' => $employee->position?->name,
+        ];
     }
 }

@@ -79,12 +79,6 @@ interface EmployeeSummary {
     position: string | null;
 }
 
-interface LoanRoleHolders {
-    cfo: EmployeeSummary | null;
-    admin_manager: EmployeeSummary | null;
-    releasing_officer: EmployeeSummary | null;
-}
-
 const props = defineProps<{
     leaveTypes: LeaveType[];
     leaveCategories: EnumOption[];
@@ -92,7 +86,6 @@ const props = defineProps<{
     genderRestrictions: EnumOption[];
     employmentTypes: EnumOption[];
     adminManager: EmployeeSummary | null;
-    loanRoleHolders: LoanRoleHolders;
     activeEmployees: EmployeeSummary[];
 }>();
 
@@ -110,85 +103,6 @@ const adminManagerDirty = computed(() => {
         : null;
     return selected !== currentAdminManagerId.value;
 });
-
-// --- Loan Approval Flow ---
-const initialLoanIds = {
-    cfo: props.loanRoleHolders?.cfo?.id ?? null,
-    admin_manager: props.loanRoleHolders?.admin_manager?.id ?? null,
-    releasing_officer: props.loanRoleHolders?.releasing_officer?.id ?? null,
-};
-const currentLoanRoleIds = ref({ ...initialLoanIds });
-const loanSelection = ref({
-    cfo: initialLoanIds.cfo ? String(initialLoanIds.cfo) : '',
-    admin_manager: initialLoanIds.admin_manager ? String(initialLoanIds.admin_manager) : '',
-    releasing_officer: initialLoanIds.releasing_officer ? String(initialLoanIds.releasing_officer) : '',
-});
-const isSavingLoanRoles = ref(false);
-const loanRolesError = ref<string | null>(null);
-const loanRolesSuccess = ref<string | null>(null);
-
-const loanRolesDirty = computed(() => {
-    const sel = loanSelection.value;
-    const toNum = (v: string) => (v ? Number(v) : null);
-    return (
-        toNum(sel.cfo) !== currentLoanRoleIds.value.cfo
-        || toNum(sel.admin_manager) !== currentLoanRoleIds.value.admin_manager
-        || toNum(sel.releasing_officer) !== currentLoanRoleIds.value.releasing_officer
-    );
-});
-
-async function saveLoanRoles(): Promise<void> {
-    isSavingLoanRoles.value = true;
-    loanRolesError.value = null;
-    loanRolesSuccess.value = null;
-
-    try {
-        const response = await fetch(
-            '/api/organization/loan-settings/roles',
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-XSRF-TOKEN': getCsrfToken(),
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    cfo_employee_id: loanSelection.value.cfo
-                        ? Number(loanSelection.value.cfo)
-                        : null,
-                    admin_manager_employee_id: loanSelection.value.admin_manager
-                        ? Number(loanSelection.value.admin_manager)
-                        : null,
-                    releasing_officer_employee_id: loanSelection.value.releasing_officer
-                        ? Number(loanSelection.value.releasing_officer)
-                        : null,
-                }),
-            },
-        );
-
-        const data = await response.json();
-
-        if (response.ok) {
-            currentLoanRoleIds.value = {
-                cfo: data.roles?.cfo?.id ?? null,
-                admin_manager: data.roles?.admin_manager?.id ?? null,
-                releasing_officer: data.roles?.releasing_officer?.id ?? null,
-            };
-            loanRolesSuccess.value = data.message;
-            router.reload({ only: ['loanRoleHolders'] });
-        } else {
-            const firstError = Object.values(data.errors ?? {}).flat()[0] as
-                | string
-                | undefined;
-            loanRolesError.value = firstError ?? data.message ?? 'Failed to update loan roles.';
-        }
-    } catch {
-        loanRolesError.value = 'An unexpected error occurred. Please try again.';
-    } finally {
-        isSavingLoanRoles.value = false;
-    }
-}
 
 async function saveAdminManager(): Promise<void> {
     isSavingAdminManager.value = true;
@@ -558,153 +472,6 @@ function getCsrfToken(): string {
                     {{ adminManagerSuccess }}
                 </p>
             </div>
-
-            <!-- Loan Approval Flow Settings -->
-            <div
-                class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900"
-                data-test="loan-approval-settings"
-            >
-                <div class="flex flex-col gap-1">
-                    <h2 class="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                        Loan Approval Flow
-                    </h2>
-                    <p class="text-sm text-slate-500 dark:text-slate-400">
-                        Three-step chain. Standard SLA: <strong>5 / 3 / 2 calendar days</strong>.
-                        High urgency (level 5): <strong>1.5 / 1 / 0.5 days</strong> (3 days total).
-                        Each approver gets an email when it's their turn and a daily reminder if overdue.
-                    </p>
-                </div>
-
-                <div class="mt-6 grid gap-6 sm:grid-cols-3">
-                    <div class="space-y-2">
-                        <Label for="loan_cfo">Level 1 — CFO</Label>
-                        <Select v-model="loanSelection.cfo">
-                            <SelectTrigger id="loan_cfo">
-                                <SelectValue placeholder="Select an active employee" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="">— None —</SelectItem>
-                                <SelectItem
-                                    v-for="emp in activeEmployees"
-                                    :key="`cfo-${emp.id}`"
-                                    :value="String(emp.id)"
-                                >
-                                    {{ emp.full_name }}
-                                    <span class="text-slate-500">
-                                        ({{ emp.employee_number }})
-                                    </span>
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <p
-                            v-if="loanRoleHolders?.cfo"
-                            class="text-xs text-slate-500 dark:text-slate-400"
-                        >
-                            Current: {{ loanRoleHolders.cfo.full_name }}
-                        </p>
-                        <p
-                            v-else
-                            class="text-xs text-amber-600 dark:text-amber-400"
-                        >
-                            Not configured
-                        </p>
-                    </div>
-
-                    <div class="space-y-2">
-                        <Label for="loan_admin">Level 2 — Admin Manager</Label>
-                        <Select v-model="loanSelection.admin_manager">
-                            <SelectTrigger id="loan_admin">
-                                <SelectValue placeholder="Select an active employee" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="">— None —</SelectItem>
-                                <SelectItem
-                                    v-for="emp in activeEmployees"
-                                    :key="`admin-${emp.id}`"
-                                    :value="String(emp.id)"
-                                >
-                                    {{ emp.full_name }}
-                                    <span class="text-slate-500">
-                                        ({{ emp.employee_number }})
-                                    </span>
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <p
-                            v-if="loanRoleHolders?.admin_manager"
-                            class="text-xs text-slate-500 dark:text-slate-400"
-                        >
-                            Current: {{ loanRoleHolders.admin_manager.full_name }}
-                        </p>
-                        <p
-                            v-else
-                            class="text-xs text-amber-600 dark:text-amber-400"
-                        >
-                            Not configured
-                        </p>
-                    </div>
-
-                    <div class="space-y-2">
-                        <Label for="loan_releasing">Level 3 — Releasing Officer</Label>
-                        <Select v-model="loanSelection.releasing_officer">
-                            <SelectTrigger id="loan_releasing">
-                                <SelectValue placeholder="Select an active employee" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="">— None —</SelectItem>
-                                <SelectItem
-                                    v-for="emp in activeEmployees"
-                                    :key="`rel-${emp.id}`"
-                                    :value="String(emp.id)"
-                                >
-                                    {{ emp.full_name }}
-                                    <span class="text-slate-500">
-                                        ({{ emp.employee_number }})
-                                    </span>
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <p
-                            v-if="loanRoleHolders?.releasing_officer"
-                            class="text-xs text-slate-500 dark:text-slate-400"
-                        >
-                            Current: {{ loanRoleHolders.releasing_officer.full_name }}
-                        </p>
-                        <p
-                            v-else
-                            class="text-xs text-amber-600 dark:text-amber-400"
-                        >
-                            Not configured. Releasing officer creates the EmployeeLoan on final approval.
-                        </p>
-                    </div>
-                </div>
-
-                <div class="mt-6 flex justify-end">
-                    <Button
-                        type="button"
-                        :disabled="!loanRolesDirty || isSavingLoanRoles"
-                        @click="saveLoanRoles"
-                        :style="{ backgroundColor: primaryColor }"
-                        data-test="save-loan-roles-button"
-                    >
-                        {{ isSavingLoanRoles ? 'Saving...' : 'Save' }}
-                    </Button>
-                </div>
-
-                <p
-                    v-if="loanRolesError"
-                    class="mt-3 text-sm text-red-600 dark:text-red-400"
-                >
-                    {{ loanRolesError }}
-                </p>
-                <p
-                    v-if="loanRolesSuccess"
-                    class="mt-3 text-sm text-green-600 dark:text-green-400"
-                >
-                    {{ loanRolesSuccess }}
-                </p>
-            </div>
-
             <!-- Leave Types Table -->
             <div
                 class="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
