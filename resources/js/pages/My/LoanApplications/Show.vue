@@ -62,6 +62,25 @@ interface LoanApplication {
     status_color: string;
     reviewer: Reviewer | null;
     reviewer_remarks: string | null;
+    urgency_level: number | null;
+    current_approval_level: number;
+    total_approval_levels: number;
+    sla_deadline_at: string | null;
+    is_sla_overdue: boolean;
+    approvals: Array<{
+        id: number;
+        approval_level: number;
+        approver_type: string;
+        approver_name: string;
+        approver_position: string | null;
+        decision: string;
+        decision_label: string;
+        decision_color: string;
+        remarks: string | null;
+        decided_at: string | null;
+        deadline_at: string | null;
+        is_overdue: boolean;
+    }>;
     employee_loan: EmployeeLoan | null;
     documents: Document[];
     submitted_at: string | null;
@@ -302,6 +321,76 @@ async function executeCancelApplication() {
                                     {{ application.cancellation_reason }}
                                 </p>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Approval Chain Timeline -->
+                    <Card v-if="application.approvals && application.approvals.length > 0">
+                        <CardHeader>
+                            <CardTitle class="flex items-center justify-between">
+                                <span>Approval Status</span>
+                                <span
+                                    v-if="application.is_sla_overdue"
+                                    class="rounded bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/40 dark:text-red-300"
+                                >
+                                    Overall SLA overdue
+                                </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <ol class="space-y-3">
+                                <li
+                                    v-for="step in application.approvals"
+                                    :key="step.id"
+                                    class="flex gap-3 rounded-md border p-3"
+                                    :class="[
+                                        step.decision === 'approved'
+                                            ? 'border-green-200 bg-green-50 dark:border-green-900/40 dark:bg-green-900/10'
+                                            : step.decision === 'rejected'
+                                              ? 'border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/10'
+                                              : step.is_overdue
+                                                ? 'border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-900/10'
+                                                : application.current_approval_level === step.approval_level
+                                                  ? 'border-amber-200 bg-amber-50 dark:border-amber-900/40 dark:bg-amber-900/10'
+                                                  : 'border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-800/40',
+                                    ]"
+                                >
+                                    <div class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white dark:bg-slate-100 dark:text-slate-900">
+                                        {{ step.approval_level }}
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-sm font-medium text-slate-900 dark:text-slate-100">
+                                            {{
+                                                step.approver_type === 'cfo'
+                                                    ? 'CFO'
+                                                    : step.approver_type === 'admin_manager'
+                                                      ? 'Admin Manager'
+                                                      : step.approver_type === 'releasing_officer'
+                                                        ? 'Releasing'
+                                                        : step.approver_type
+                                            }}
+                                            — {{ step.approver_name }}
+                                        </p>
+                                        <p class="text-xs text-slate-500 dark:text-slate-400">
+                                            {{ step.decision_label }}
+                                            <span v-if="step.decided_at"> · {{ step.decided_at }}</span>
+                                            <span
+                                                v-else-if="step.deadline_at"
+                                                :class="step.is_overdue ? 'text-red-600 dark:text-red-400' : ''"
+                                            >
+                                                · Deadline {{ new Date(step.deadline_at).toLocaleString(undefined, { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' }) }}
+                                                <span v-if="step.is_overdue"> (overdue)</span>
+                                            </span>
+                                        </p>
+                                        <p
+                                            v-if="step.remarks"
+                                            class="mt-1 text-sm text-slate-700 dark:text-slate-300"
+                                        >
+                                            {{ step.remarks }}
+                                        </p>
+                                    </div>
+                                </li>
+                            </ol>
                         </CardContent>
                     </Card>
 

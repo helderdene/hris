@@ -473,6 +473,8 @@ Route::prefix('loan-applications')->group(function () {
 Route::prefix('loan-approvals')->group(function () {
     Route::get('/pending', [\App\Http\Controllers\Api\LoanApprovalController::class, 'pending'])
         ->name('api.loan-approvals.pending');
+    Route::get('/my-pending', [\App\Http\Controllers\Api\LoanApprovalController::class, 'myPending'])
+        ->name('api.loan-approvals.my-pending');
     Route::post('/{loan_application}/approve', [\App\Http\Controllers\Api\LoanApprovalController::class, 'approve'])
         ->name('api.loan-approvals.approve');
     Route::post('/{loan_application}/reject', [\App\Http\Controllers\Api\LoanApprovalController::class, 'reject'])

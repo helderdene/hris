@@ -82,6 +82,8 @@ Route::prefix('my')->group(function () {
         ->name('my.leave.calendar');
     Route::get('/leave-approvals', \App\Http\Controllers\My\MyLeaveApprovalController::class)
         ->name('my.leave-approvals.index');
+    Route::get('/loan-approvals', \App\Http\Controllers\My\MyLoanApprovalController::class)
+        ->name('my.loan-approvals.index');
 
     // Overtime Self-Service
     Route::get('/overtime-requests', [\App\Http\Controllers\My\MyOvertimeRequestController::class, 'index'])

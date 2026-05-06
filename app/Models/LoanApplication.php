@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Loan application model for employee loan requests.
@@ -36,6 +37,9 @@ class LoanApplication extends TenantModel
         'purpose',
         'documents',
         'status',
+        'current_approval_level',
+        'total_approval_levels',
+        'sla_deadline_at',
         'submitted_at',
         'reviewer_employee_id',
         'reviewer_remarks',
@@ -62,6 +66,9 @@ class LoanApplication extends TenantModel
             'term_months' => 'integer',
             'documents' => 'array',
             'metadata' => 'array',
+            'current_approval_level' => 'integer',
+            'total_approval_levels' => 'integer',
+            'sla_deadline_at' => 'datetime',
             'submitted_at' => 'datetime',
             'reviewed_at' => 'datetime',
         ];
@@ -107,6 +114,14 @@ class LoanApplication extends TenantModel
     public function employeeLoan(): BelongsTo
     {
         return $this->belongsTo(EmployeeLoan::class);
+    }
+
+    /**
+     * Get the per-level approval records (CFO → Admin Manager → Releasing).
+     */
+    public function approvals(): HasMany
+    {
+        return $this->hasMany(LoanApplicationApproval::class)->orderBy('approval_level');
     }
 
     /**

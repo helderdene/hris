@@ -106,6 +106,12 @@ Schedule::command('compliance:expire-training')
     ->withoutOverlapping()
     ->name('compliance-expire-training');
 
+// Loan approval overdue reminders - daily at 09:00
+Schedule::command('loan:send-overdue-reminders')
+    ->dailyAt('09:00')
+    ->withoutOverlapping()
+    ->name('loan-overdue-reminders');
+
 /*
 |--------------------------------------------------------------------------
 | Billing Scheduled Commands

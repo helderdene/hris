@@ -152,6 +152,12 @@ describe('LoanApplication Workflow', function () {
         $user = createTenantUserForLoanApp($tenant, TenantUserRole::Employee);
         $this->actingAs($user);
 
+        // Minimum chain so submit() can resolve approvers
+        \App\Models\Employee::factory()->create([
+            'employment_status' => \App\Enums\EmploymentStatus::Active,
+            'is_loan_cfo' => true,
+        ]);
+
         $application = LoanApplication::factory()->draft()->create();
 
         $service = app(LoanApplicationService::class);

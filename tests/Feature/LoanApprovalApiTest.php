@@ -37,6 +37,30 @@ function createHrUserForLoanApproval(Tenant $tenant): array
     return [$user, $employee];
 }
 
+/**
+ * Wire the given employee as the sole approver (level 1 of 1) for a pending
+ * loan application. The original LoanApprovalApiTest cases predate the
+ * 3-step chain — this shim keeps them green by giving the test a single-
+ * level chain whose approval the service can locate.
+ */
+function attachSingleLevelLoanApprover(LoanApplication $application, Employee $approver): void
+{
+    \App\Models\LoanApplicationApproval::create([
+        'loan_application_id' => $application->id,
+        'approval_level' => 1,
+        'approver_type' => 'releasing_officer',
+        'approver_employee_id' => $approver->id,
+        'approver_name' => $approver->full_name,
+        'approver_position' => $approver->position?->name,
+        'decision' => \App\Enums\LeaveApprovalDecision::Pending,
+    ]);
+
+    $application->update([
+        'current_approval_level' => 1,
+        'total_approval_levels' => 1,
+    ]);
+}
+
 beforeEach(function () {
     config(['app.main_domain' => 'kasamahr.test']);
 
@@ -59,6 +83,7 @@ describe('Loan Approval', function () {
             'amount_requested' => 50000,
             'term_months' => 24,
         ]);
+        attachSingleLevelLoanApprover($application, $hrEmployee);
 
         $service = app(LoanApplicationService::class);
         $result = $service->approve($application, $hrEmployee, [
@@ -97,6 +122,7 @@ describe('Loan Approval', function () {
         $this->actingAs($hrUser);
 
         $application = LoanApplication::factory()->pending()->create();
+        attachSingleLevelLoanApprover($application, $hrEmployee);
 
         $service = app(LoanApplicationService::class);
         $result = $service->reject($application, $hrEmployee, 'Insufficient documentation.');
@@ -152,6 +178,7 @@ describe('Loan Approval', function () {
             'amount_requested' => 10000,
             'term_months' => 5,
         ]);
+        attachSingleLevelLoanApprover($application, $hrEmployee);
 
         $service = app(LoanApplicationService::class);
         $result = $service->approve($application, $hrEmployee, [

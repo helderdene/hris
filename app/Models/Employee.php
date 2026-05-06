@@ -72,6 +72,9 @@ class Employee extends TenantModel
         'employment_type',
         'employment_status',
         'is_leave_admin_manager',
+        'is_loan_cfo',
+        'is_loan_admin_manager',
+        'is_loan_releasing_officer',
         'hire_date',
         'regularization_date',
         'termination_date',
@@ -126,6 +129,9 @@ class Employee extends TenantModel
             'kiosk_pin_changed_at' => 'datetime',
             'business_card_enabled' => 'boolean',
             'is_leave_admin_manager' => 'boolean',
+            'is_loan_cfo' => 'boolean',
+            'is_loan_admin_manager' => 'boolean',
+            'is_loan_releasing_officer' => 'boolean',
         ];
     }
 

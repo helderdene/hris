@@ -48,6 +48,29 @@ class LoanApplicationResource extends JsonResource
             'status_label' => $this->status->label(),
             'status_color' => $this->status->color(),
 
+            // Approval chain
+            'current_approval_level' => $this->current_approval_level,
+            'total_approval_levels' => $this->total_approval_levels,
+            'sla_deadline_at' => $this->sla_deadline_at?->toIso8601String(),
+            'is_sla_overdue' => $this->sla_deadline_at && $this->sla_deadline_at->isPast()
+                && $this->status->value === 'pending',
+            'approvals' => $this->whenLoaded('approvals', fn () => $this->approvals->map(fn ($approval) => [
+                'id' => $approval->id,
+                'approval_level' => $approval->approval_level,
+                'approver_type' => $approval->approver_type,
+                'approver_name' => $approval->approver_name,
+                'approver_position' => $approval->approver_position,
+                'decision' => $approval->decision->value,
+                'decision_label' => $approval->decision->label(),
+                'decision_color' => $approval->decision->color(),
+                'remarks' => $approval->remarks,
+                'decided_at' => $approval->decided_at?->toIso8601String(),
+                'deadline_at' => $approval->deadline_at?->toIso8601String(),
+                'is_overdue' => $approval->deadline_at
+                    && $approval->deadline_at->isPast()
+                    && $approval->decision->value === 'pending',
+            ])),
+
             // Reviewer info
             'reviewer_employee_id' => $this->reviewer_employee_id,
             'reviewer' => $this->whenLoaded('reviewer', fn () => [

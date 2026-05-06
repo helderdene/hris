@@ -104,7 +104,7 @@ class MyLoanApplicationController extends Controller
         // Ensure employee can only view their own applications
         abort_unless($employee && $loanApplication->employee_id === $employee->id, 403);
 
-        $loanApplication->load(['employee', 'reviewer', 'employeeLoan']);
+        $loanApplication->load(['employee', 'reviewer', 'employeeLoan', 'approvals.approverEmployee']);
 
         return Inertia::render('My/LoanApplications/Show', [
             'application' => [
@@ -137,6 +137,29 @@ class MyLoanApplicationController extends Controller
                 'created_at' => $loanApplication->created_at->format('Y-m-d H:i:s'),
                 'can_be_edited' => $loanApplication->can_be_edited,
                 'can_be_cancelled' => $loanApplication->can_be_cancelled,
+                'urgency_level' => $loanApplication->urgency_level,
+                'current_approval_level' => $loanApplication->current_approval_level,
+                'total_approval_levels' => $loanApplication->total_approval_levels,
+                'sla_deadline_at' => $loanApplication->sla_deadline_at?->toIso8601String(),
+                'is_sla_overdue' => $loanApplication->sla_deadline_at
+                    && $loanApplication->sla_deadline_at->isPast()
+                    && $loanApplication->status->value === 'pending',
+                'approvals' => $loanApplication->approvals->map(fn ($a) => [
+                    'id' => $a->id,
+                    'approval_level' => $a->approval_level,
+                    'approver_type' => $a->approver_type,
+                    'approver_name' => $a->approver_name,
+                    'approver_position' => $a->approver_position,
+                    'decision' => $a->decision->value,
+                    'decision_label' => $a->decision->label(),
+                    'decision_color' => $a->decision->color(),
+                    'remarks' => $a->remarks,
+                    'decided_at' => $a->decided_at?->format('Y-m-d H:i:s'),
+                    'deadline_at' => $a->deadline_at?->toIso8601String(),
+                    'is_overdue' => $a->deadline_at
+                        && $a->deadline_at->isPast()
+                        && $a->decision->value === 'pending',
+                ]),
             ],
         ]);
     }
