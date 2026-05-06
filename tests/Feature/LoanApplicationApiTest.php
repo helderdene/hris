@@ -244,7 +244,7 @@ describe('LoanApplication new submission fields', function () {
             'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
             'amount_requested' => 5000,
             'term_months' => 9,
-            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::TwiceMonthlyThirtieth->value,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::Monthly->value,
             'urgency_level' => 3,
             'purpose' => 'Family expense',
         ], $rules);
@@ -265,7 +265,7 @@ describe('LoanApplication new submission fields', function () {
             'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
             'amount_requested' => 10000,
             'term_months' => 6,
-            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::MonthlyFifteenthAndThirtieth->value,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::SemiMonthly->value,
             'urgency_level' => 4,
             'purpose' => 'Medical expenses',
         ], $rules);
@@ -277,14 +277,14 @@ describe('LoanApplication new submission fields', function () {
             'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
             'amount_requested' => 10000,
             'term_months' => 6,
-            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::MonthlyFifteenthAndThirtieth->value,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::SemiMonthly->value,
             'urgency_level' => 4,
             'purpose' => 'Medical expenses',
         ]);
 
         $application->refresh();
 
-        expect($application->deduction_schedule)->toBe(\App\Enums\LoanDeductionSchedule::MonthlyFifteenthAndThirtieth);
+        expect($application->deduction_schedule)->toBe(\App\Enums\LoanDeductionSchedule::SemiMonthly);
         expect($application->urgency_level)->toBe(4);
         expect($application->term_months)->toBe(6);
     });
@@ -301,7 +301,7 @@ describe('LoanApplication new submission fields', function () {
             'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
             'amount_requested' => 5000,
             'term_months' => 12,
-            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::TwiceMonthlyThirtieth->value,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::Monthly->value,
             'urgency_level' => 7,
             'purpose' => 'Test',
         ], $rules);
