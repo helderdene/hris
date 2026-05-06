@@ -101,7 +101,7 @@ function getCsrfToken(): string {
 
 async function loadEmployees() {
     try {
-        const response = await fetch('/api/employees', {
+        const response = await fetch('/api/employees?per_page=1000', {
             headers: {
                 Accept: 'application/json',
             },
