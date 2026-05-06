@@ -37,6 +37,9 @@ class LoanApplicationResource extends JsonResource
             'loan_type_category' => $this->loan_type->category(),
             'amount_requested' => (float) $this->amount_requested,
             'term_months' => $this->term_months,
+            'deduction_schedule' => $this->deduction_schedule?->value,
+            'deduction_schedule_label' => $this->deduction_schedule?->label(),
+            'urgency_level' => $this->urgency_level,
             'purpose' => $this->purpose,
             'documents' => $this->documents,
 

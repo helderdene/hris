@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\LoanDeductionSchedule;
 use App\Enums\LoanType;
 use App\Models\Employee;
 use Illuminate\Foundation\Http\FormRequest;
@@ -28,8 +29,10 @@ class StoreLoanApplicationRequest extends FormRequest
             'employee_id' => ['required', 'integer', Rule::exists(Employee::class, 'id')],
             'loan_type' => ['required', 'string', Rule::in(LoanType::values())],
             'amount_requested' => ['required', 'numeric', 'min:1'],
-            'term_months' => ['required', 'integer', 'min:1', 'max:360'],
-            'purpose' => ['nullable', 'string', 'max:2000'],
+            'term_months' => ['required', 'integer', Rule::in([3, 6, 12, 24, 36])],
+            'deduction_schedule' => ['required', 'string', Rule::in(LoanDeductionSchedule::values())],
+            'urgency_level' => ['required', 'integer', 'between:1,5'],
+            'purpose' => ['required', 'string', 'max:2000'],
             'documents' => ['nullable', 'array'],
             'documents.*' => ['file', 'max:10240'],
         ];
@@ -49,9 +52,13 @@ class StoreLoanApplicationRequest extends FormRequest
             'loan_type.in' => 'The selected loan type is invalid.',
             'amount_requested.required' => 'Please enter the loan amount.',
             'amount_requested.min' => 'Loan amount must be at least 1.',
-            'term_months.required' => 'Please enter the loan term.',
-            'term_months.min' => 'Loan term must be at least 1 month.',
-            'term_months.max' => 'Loan term cannot exceed 360 months.',
+            'term_months.required' => 'Please select a preferred repayment term.',
+            'term_months.in' => 'Preferred repayment must be 3, 6, 12, 24, or 36 months.',
+            'deduction_schedule.required' => 'Please select a preferred deduction schedule.',
+            'deduction_schedule.in' => 'The selected deduction schedule is invalid.',
+            'urgency_level.required' => 'Please indicate the level of urgency.',
+            'urgency_level.between' => 'Urgency level must be between 1 (low) and 5 (high).',
+            'purpose.required' => 'Please describe the purpose of this loan.',
             'documents.*.max' => 'Each document must not exceed 10MB.',
         ];
     }

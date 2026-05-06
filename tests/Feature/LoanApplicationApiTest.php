@@ -210,3 +210,103 @@ describe('LoanApplication Workflow', function () {
             ->toThrow(\Illuminate\Validation\ValidationException::class);
     });
 });
+
+describe('LoanApplication new submission fields', function () {
+    it('rejects missing deduction_schedule, urgency_level, and purpose', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantForLoanApp($tenant);
+
+        $employee = Employee::factory()->create();
+
+        $rules = (new \App\Http\Requests\StoreLoanApplicationRequest)->rules();
+        $validator = \Illuminate\Support\Facades\Validator::make([
+            'employee_id' => $employee->id,
+            'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
+            'amount_requested' => 5000,
+            'term_months' => 12,
+        ], $rules);
+
+        expect($validator->fails())->toBeTrue();
+        expect($validator->errors()->has('deduction_schedule'))->toBeTrue();
+        expect($validator->errors()->has('urgency_level'))->toBeTrue();
+        expect($validator->errors()->has('purpose'))->toBeTrue();
+    });
+
+    it('rejects term_months that is not in the allowed presets', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantForLoanApp($tenant);
+
+        $employee = Employee::factory()->create();
+
+        $rules = (new \App\Http\Requests\StoreLoanApplicationRequest)->rules();
+        $validator = \Illuminate\Support\Facades\Validator::make([
+            'employee_id' => $employee->id,
+            'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
+            'amount_requested' => 5000,
+            'term_months' => 9,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::TwiceMonthlyThirtieth->value,
+            'urgency_level' => 3,
+            'purpose' => 'Family expense',
+        ], $rules);
+
+        expect($validator->fails())->toBeTrue();
+        expect($validator->errors()->has('term_months'))->toBeTrue();
+    });
+
+    it('accepts a complete submission and persists the new fields', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantForLoanApp($tenant);
+
+        $employee = Employee::factory()->create();
+
+        $rules = (new \App\Http\Requests\StoreLoanApplicationRequest)->rules();
+        $validator = \Illuminate\Support\Facades\Validator::make([
+            'employee_id' => $employee->id,
+            'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
+            'amount_requested' => 10000,
+            'term_months' => 6,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::MonthlyFifteenthAndThirtieth->value,
+            'urgency_level' => 4,
+            'purpose' => 'Medical expenses',
+        ], $rules);
+
+        expect($validator->passes())->toBeTrue();
+
+        $application = LoanApplication::create([
+            'employee_id' => $employee->id,
+            'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
+            'amount_requested' => 10000,
+            'term_months' => 6,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::MonthlyFifteenthAndThirtieth->value,
+            'urgency_level' => 4,
+            'purpose' => 'Medical expenses',
+        ]);
+
+        $application->refresh();
+
+        expect($application->deduction_schedule)->toBe(\App\Enums\LoanDeductionSchedule::MonthlyFifteenthAndThirtieth);
+        expect($application->urgency_level)->toBe(4);
+        expect($application->term_months)->toBe(6);
+    });
+
+    it('rejects urgency_level outside 1-5', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantForLoanApp($tenant);
+
+        $employee = Employee::factory()->create();
+
+        $rules = (new \App\Http\Requests\StoreLoanApplicationRequest)->rules();
+        $validator = \Illuminate\Support\Facades\Validator::make([
+            'employee_id' => $employee->id,
+            'loan_type' => \App\Enums\LoanType::CompanyCashAdvance->value,
+            'amount_requested' => 5000,
+            'term_months' => 12,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::TwiceMonthlyThirtieth->value,
+            'urgency_level' => 7,
+            'purpose' => 'Test',
+        ], $rules);
+
+        expect($validator->fails())->toBeTrue();
+        expect($validator->errors()->has('urgency_level'))->toBeTrue();
+    });
+});

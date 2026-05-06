@@ -31,6 +31,8 @@ class LoanApplication extends TenantModel
         'loan_type',
         'amount_requested',
         'term_months',
+        'deduction_schedule',
+        'urgency_level',
         'purpose',
         'documents',
         'status',
@@ -53,6 +55,8 @@ class LoanApplication extends TenantModel
     {
         return [
             'loan_type' => LoanType::class,
+            'deduction_schedule' => \App\Enums\LoanDeductionSchedule::class,
+            'urgency_level' => 'integer',
             'status' => LoanApplicationStatus::class,
             'amount_requested' => 'decimal:2',
             'term_months' => 'integer',

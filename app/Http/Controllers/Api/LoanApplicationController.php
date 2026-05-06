@@ -99,6 +99,8 @@ class LoanApplicationController extends Controller
             'loan_type' => $validated['loan_type'],
             'amount_requested' => $validated['amount_requested'],
             'term_months' => $validated['term_months'],
+            'deduction_schedule' => $validated['deduction_schedule'] ?? null,
+            'urgency_level' => $validated['urgency_level'] ?? null,
             'purpose' => $validated['purpose'] ?? null,
             'documents' => ! empty($documents) ? $documents : null,
             'created_by' => auth()->id(),

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\My;
 
 use App\Enums\LoanApplicationStatus;
+use App\Enums\LoanDeductionSchedule;
 use App\Enums\LoanType;
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
@@ -72,14 +73,23 @@ class MyLoanApplicationController extends Controller
     public function create(Request $request): Response
     {
         $user = $request->user();
-        $employee = Employee::where('user_id', $user->id)->first();
+        $employee = Employee::with(['department', 'position'])
+            ->where('user_id', $user->id)
+            ->first();
 
         return Inertia::render('My/LoanApplications/Create', [
             'employee' => $employee ? [
                 'id' => $employee->id,
+                'employee_number' => $employee->employee_number,
                 'full_name' => $employee->full_name,
+                'department' => $employee->department?->name,
+                'position' => $employee->position?->name,
+                'employment_type' => $employee->employment_type?->value,
+                'employment_type_label' => $employee->employment_type?->label(),
             ] : null,
             'loanTypes' => LoanType::groupedOptions(),
+            'deductionSchedules' => LoanDeductionSchedule::options(),
+            'termOptions' => [3, 6, 12, 24, 36],
         ]);
     }
 
