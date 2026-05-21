@@ -7,6 +7,9 @@ use App\Enums\TenantUserRole;
 use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Requests\StoreLeaveTypeRequest;
 use App\Http\Requests\UpdateLeaveTypeRequest;
+use App\Models\Employee;
+use App\Models\LeaveApplication;
+use App\Models\LeaveBalance;
 use App\Models\LeaveType;
 use App\Models\Tenant;
 use App\Models\User;
@@ -269,6 +272,93 @@ describe('Leave Type API', function () {
         // Verify it's not returned in queries
         expect(LeaveType::find($leaveType->id))->toBeNull();
         expect(LeaveType::withTrashed()->find($leaveType->id))->not->toBeNull();
+    });
+
+    it('cleans up untouched zero-day balances when deleting', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveType($tenant);
+
+        $hrManager = createTenantUserForLeaveType($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        $controller = new LeaveTypeController;
+
+        $leaveType = LeaveType::factory()->create();
+        $employee = Employee::factory()->create();
+        LeaveBalance::factory()->create([
+            'employee_id' => $employee->id,
+            'leave_type_id' => $leaveType->id,
+            'used' => 0,
+            'pending' => 0,
+        ]);
+
+        $response = $controller->destroy($leaveType);
+
+        expect($response->getStatusCode())->toBe(200);
+        $this->assertSoftDeleted('leave_types', ['id' => $leaveType->id]);
+        $this->assertDatabaseMissing('leave_balances', ['leave_type_id' => $leaveType->id]);
+    });
+
+    it('blocks deletion when employees have consumed days', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveType($tenant);
+
+        $hrManager = createTenantUserForLeaveType($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        $controller = new LeaveTypeController;
+
+        $leaveType = LeaveType::factory()->create();
+        $employee = Employee::factory()->create();
+        LeaveBalance::factory()->create([
+            'employee_id' => $employee->id,
+            'leave_type_id' => $leaveType->id,
+            'used' => 3,
+            'pending' => 0,
+        ]);
+
+        $response = $controller->destroy($leaveType);
+
+        expect($response->getStatusCode())->toBe(422);
+        $data = json_decode($response->getContent(), true);
+        expect($data['message'])->toContain('Cannot delete')
+            ->and($data['errors']['leave_type'][0])->toContain('used or pending');
+
+        $this->assertDatabaseHas('leave_types', [
+            'id' => $leaveType->id,
+            'deleted_at' => null,
+        ]);
+        $this->assertDatabaseHas('leave_balances', [
+            'leave_type_id' => $leaveType->id,
+        ]);
+    });
+
+    it('blocks deletion when leave applications reference it', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForLeaveType($tenant);
+
+        $hrManager = createTenantUserForLeaveType($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        $controller = new LeaveTypeController;
+
+        $leaveType = LeaveType::factory()->create();
+        $employee = Employee::factory()->create();
+        LeaveApplication::factory()->create([
+            'employee_id' => $employee->id,
+            'leave_type_id' => $leaveType->id,
+        ]);
+
+        $response = $controller->destroy($leaveType);
+
+        expect($response->getStatusCode())->toBe(422);
+        $data = json_decode($response->getContent(), true);
+        expect($data['errors']['leave_type'][0])->toContain('leave application');
+
+        $this->assertDatabaseHas('leave_types', [
+            'id' => $leaveType->id,
+            'deleted_at' => null,
+        ]);
     });
 
     it('prevents unauthorized user from creating leave type', function () {

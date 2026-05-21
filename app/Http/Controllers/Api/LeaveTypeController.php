@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLeaveTypeRequest;
 use App\Http\Requests\UpdateLeaveTypeRequest;
 use App\Http\Resources\LeaveTypeResource;
+use App\Models\LeaveApplication;
+use App\Models\LeaveBalance;
 use App\Models\LeaveType;
 use Database\Seeders\PhilippineStatutoryLeaveSeeder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 
 class LeaveTypeController extends Controller
@@ -87,12 +90,45 @@ class LeaveTypeController extends Controller
      * Remove the specified leave type (soft delete).
      *
      * Only users with organization management access can delete leave types.
+     * Blocks deletion when any employee has consumed (used > 0) or pending
+     * days for this type, or when any leave application references it.
+     * Untouched zero-day balances are cleaned up in the same transaction so
+     * the deletion does not leave dangling rows.
      */
     public function destroy(LeaveType $leaveType): JsonResponse
     {
         Gate::authorize('can-manage-organization');
 
-        $leaveType->delete();
+        $activeBalances = LeaveBalance::query()
+            ->where('leave_type_id', $leaveType->id)
+            ->where(function ($q) {
+                $q->where('used', '>', 0)->orWhere('pending', '>', 0);
+            })
+            ->count();
+
+        $applicationCount = LeaveApplication::query()
+            ->where('leave_type_id', $leaveType->id)
+            ->count();
+
+        if ($activeBalances > 0 || $applicationCount > 0) {
+            return response()->json([
+                'message' => 'Cannot delete this leave type because it is in use.',
+                'errors' => [
+                    'leave_type' => array_values(array_filter([
+                        $activeBalances > 0 ? "{$activeBalances} employee balance(s) have used or pending days for this leave type." : null,
+                        $applicationCount > 0 ? "{$applicationCount} leave application(s) reference this leave type." : null,
+                    ])),
+                ],
+            ], 422);
+        }
+
+        DB::transaction(function () use ($leaveType): void {
+            LeaveBalance::query()
+                ->where('leave_type_id', $leaveType->id)
+                ->delete();
+
+            $leaveType->delete();
+        });
 
         return response()->json([
             'message' => 'Leave type deleted successfully.',
