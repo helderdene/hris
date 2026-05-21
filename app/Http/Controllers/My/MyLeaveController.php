@@ -43,11 +43,11 @@ class MyLeaveController extends Controller
         if ($employee) {
             $balances = $employee->leaveBalances()
                 ->where('year', now()->year)
-                ->with('leaveType')
+                ->with(['leaveType' => fn ($q) => $q->withTrashed()])
                 ->get()
                 ->map(fn ($balance) => [
                     'leave_type_id' => $balance->leave_type_id,
-                    'leave_type_name' => $balance->leaveType->name,
+                    'leave_type_name' => $balance->leaveType?->name ?? 'Unknown Leave Type',
                     'available' => $balance->available,
                     'used' => (float) $balance->used,
                     'pending' => (float) $balance->pending,
@@ -55,7 +55,7 @@ class MyLeaveController extends Controller
 
             $query = $employee->leaveApplications()
                 ->whereYear('start_date', $year)
-                ->with(['leaveType', 'approvals'])
+                ->with(['leaveType' => fn ($q) => $q->withTrashed(), 'approvals'])
                 ->orderBy('created_at', 'desc');
 
             if ($status) {
@@ -67,9 +67,9 @@ class MyLeaveController extends Controller
                 'reference_number' => $app->reference_number,
                 'leave_type_id' => $app->leave_type_id,
                 'leave_type' => [
-                    'id' => $app->leaveType->id,
-                    'name' => $app->leaveType->name,
-                    'code' => $app->leaveType->code,
+                    'id' => $app->leaveType?->id,
+                    'name' => $app->leaveType?->name ?? 'Unknown Leave Type',
+                    'code' => $app->leaveType?->code,
                 ],
                 'start_date' => $app->start_date->format('Y-m-d'),
                 'end_date' => $app->end_date->format('Y-m-d'),

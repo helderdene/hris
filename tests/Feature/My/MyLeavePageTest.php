@@ -123,6 +123,52 @@ it('returns empty data when no employee profile', function () {
         ->and($props['applications'])->toBeEmpty();
 });
 
+it('does not error when balance or application references a soft-deleted leave type', function () {
+    $tenant = Tenant::factory()->create(['slug' => 'acme']);
+    bindTenantForLeave($tenant);
+
+    $user = createUserWithRoleForLeave($tenant, TenantUserRole::Employee);
+    $employee = Employee::factory()->create(['user_id' => $user->id]);
+    $this->actingAs($user);
+
+    $activeType = LeaveType::factory()->create(['is_active' => true, 'name' => 'Vacation Leave']);
+    $deletedType = LeaveType::factory()->create(['is_active' => true, 'name' => 'Emergency Leave']);
+
+    LeaveBalance::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $activeType->id,
+        'year' => now()->year,
+    ]);
+    LeaveBalance::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $deletedType->id,
+        'year' => now()->year,
+    ]);
+    LeaveApplication::factory()->create([
+        'employee_id' => $employee->id,
+        'leave_type_id' => $deletedType->id,
+    ]);
+
+    $deletedType->delete();
+
+    $controller = new MyLeaveController;
+    $request = Request::create('/my/leave', 'GET');
+    $request->setUserResolver(fn () => $user);
+
+    $response = $controller->index($request);
+
+    $reflection = new ReflectionClass($response);
+    $propsProperty = $reflection->getProperty('props');
+    $propsProperty->setAccessible(true);
+    $props = $propsProperty->getValue($response);
+
+    expect($props['balances'])->toHaveCount(2)
+        ->and($props['applications'])->toHaveCount(1)
+        ->and(collect($props['balances'])->pluck('leave_type_name')->all())
+        ->toContain('Vacation Leave', 'Emergency Leave')
+        ->and($props['applications'][0]['leave_type']['name'])->toBe('Emergency Leave');
+});
+
 it('includes leave statuses in props', function () {
     $tenant = Tenant::factory()->create(['slug' => 'acme']);
     bindTenantForLeave($tenant);
