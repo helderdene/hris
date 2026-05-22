@@ -39,6 +39,7 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false });
 
 const isSubmitting = ref(false);
+const submitMode = ref<'draft' | 'submit'>('draft');
 const errors = ref<Record<string, string[]>>({});
 
 const attendanceDate = ref('');
@@ -97,7 +98,17 @@ function validateLocal(): string | null {
     return null;
 }
 
-async function handleSubmit() {
+function handleSaveDraft() {
+    submitMode.value = 'draft';
+    void persist(false);
+}
+
+function handleSaveAndSubmit() {
+    submitMode.value = 'submit';
+    void persist(true);
+}
+
+async function persist(andSubmit: boolean) {
     if (!props.employee) return;
 
     const localError = validateLocal();
@@ -141,15 +152,75 @@ async function handleSubmit() {
 
         const data = await response.json();
 
-        if (response.ok) {
-            emit('success');
-        } else if (response.status === 422) {
-            errors.value = data.errors || { general: [data.message || 'Validation failed.'] };
-        } else {
-            errors.value = { general: [data.message || 'An error occurred.'] };
+        if (!response.ok) {
+            if (response.status === 422) {
+                errors.value = data.errors || {
+                    general: [data.message || 'Validation failed.'],
+                };
+            } else {
+                errors.value = {
+                    general: [data.message || 'An error occurred.'],
+                };
+            }
+            return;
         }
+
+        if (!andSubmit) {
+            emit('success');
+            return;
+        }
+
+        const savedId: number | undefined =
+            data?.id ?? data?.data?.id ?? props.request?.id;
+        if (!savedId) {
+            errors.value = {
+                general: [
+                    'Saved as draft, but could not submit for approval. Please use the Submit button on the request row.',
+                ],
+            };
+            return;
+        }
+
+        const submitResponse = await fetch(
+            `/api/manual-attendance-requests/${savedId}/submit`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': getCsrfToken(),
+                },
+                credentials: 'same-origin',
+            },
+        );
+
+        if (submitResponse.ok) {
+            emit('success');
+            return;
+        }
+
+        let submitMessage =
+            'Saved as draft, but could not submit for approval.';
+        try {
+            const submitData = await submitResponse.json();
+            if (submitResponse.status === 422 && submitData.errors) {
+                const firstError = Object.values(
+                    submitData.errors as Record<string, string[]>,
+                )[0]?.[0];
+                if (firstError) {
+                    submitMessage = `Saved as draft, but submission failed: ${firstError}`;
+                }
+            } else if (submitData.message) {
+                submitMessage = `Saved as draft, but submission failed: ${submitData.message}`;
+            }
+        } catch {
+            // ignore JSON parse errors; use default message
+        }
+        errors.value = { general: [submitMessage] };
     } catch {
-        errors.value = { general: ['An unexpected error occurred. Please try again.'] };
+        errors.value = {
+            general: ['An unexpected error occurred. Please try again.'],
+        };
     } finally {
         isSubmitting.value = false;
     }
@@ -161,7 +232,11 @@ async function handleSubmit() {
         <DialogContent class="sm:max-w-lg">
             <DialogHeader>
                 <DialogTitle>
-                    {{ isEditing ? 'Edit Manual Attendance Request' : 'New Manual Attendance Request' }}
+                    {{
+                        isEditing
+                            ? 'Edit Manual Attendance Request'
+                            : 'New Manual Attendance Request'
+                    }}
                 </DialogTitle>
                 <DialogDescription>
                     {{
@@ -172,7 +247,7 @@ async function handleSubmit() {
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="handleSubmit" class="space-y-4">
+            <form @submit.prevent="handleSaveAndSubmit" class="space-y-4">
                 <div
                     v-if="errors.general"
                     class="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400"
@@ -189,7 +264,10 @@ async function handleSubmit() {
                         :max="today"
                         :min="sixtyDaysAgo"
                     />
-                    <p v-if="errors.attendance_date" class="text-sm text-red-500">
+                    <p
+                        v-if="errors.attendance_date"
+                        class="text-sm text-red-500"
+                    >
                         {{ errors.attendance_date[0] }}
                     </p>
                 </div>
@@ -228,7 +306,7 @@ async function handleSubmit() {
                     </p>
                 </div>
 
-                <DialogFooter>
+                <DialogFooter class="gap-2 sm:gap-2">
                     <Button
                         type="button"
                         variant="outline"
@@ -237,8 +315,24 @@ async function handleSubmit() {
                     >
                         Cancel
                     </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        :disabled="isSubmitting"
+                        @click="handleSaveDraft"
+                    >
+                        {{
+                            isSubmitting && submitMode === 'draft'
+                                ? 'Saving...'
+                                : 'Save as Draft'
+                        }}
+                    </Button>
                     <Button type="submit" :disabled="isSubmitting">
-                        {{ isSubmitting ? 'Saving...' : isEditing ? 'Update' : 'Create Draft' }}
+                        {{
+                            isSubmitting && submitMode === 'submit'
+                                ? 'Submitting...'
+                                : 'Save &amp; Submit'
+                        }}
                     </Button>
                 </DialogFooter>
             </form>

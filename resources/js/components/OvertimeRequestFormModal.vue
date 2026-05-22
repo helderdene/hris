@@ -55,6 +55,7 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false });
 
 const isSubmitting = ref(false);
+const submitMode = ref<'draft' | 'submit'>('draft');
 const errors = ref<Record<string, string[]>>({});
 
 // Form data
@@ -119,7 +120,17 @@ function getCsrfToken(): string {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
-async function handleSubmit() {
+function handleSaveDraft() {
+    submitMode.value = 'draft';
+    void persist(false);
+}
+
+function handleSaveAndSubmit() {
+    submitMode.value = 'submit';
+    void persist(true);
+}
+
+async function persist(andSubmit: boolean) {
     if (!props.employee) return;
 
     isSubmitting.value = true;
@@ -160,15 +171,73 @@ async function handleSubmit() {
 
         const data = await response.json();
 
-        if (response.ok) {
-            emit('success');
-        } else if (response.status === 422) {
-            errors.value = data.errors || {};
-        } else {
-            errors.value = { general: [data.message || 'An error occurred'] };
+        if (!response.ok) {
+            if (response.status === 422) {
+                errors.value = data.errors || {};
+            } else {
+                errors.value = {
+                    general: [data.message || 'An error occurred'],
+                };
+            }
+            return;
         }
+
+        if (!andSubmit) {
+            emit('success');
+            return;
+        }
+
+        const savedId: number | undefined =
+            data?.id ?? data?.data?.id ?? props.request?.id;
+        if (!savedId) {
+            errors.value = {
+                general: [
+                    'Saved as draft, but could not submit for approval. Please use the Submit button on the request row.',
+                ],
+            };
+            return;
+        }
+
+        const submitResponse = await fetch(
+            `/api/overtime-requests/${savedId}/submit`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': getCsrfToken(),
+                },
+                credentials: 'same-origin',
+            },
+        );
+
+        if (submitResponse.ok) {
+            emit('success');
+            return;
+        }
+
+        let submitMessage =
+            'Saved as draft, but could not submit for approval.';
+        try {
+            const submitData = await submitResponse.json();
+            if (submitResponse.status === 422 && submitData.errors) {
+                const firstError = Object.values(
+                    submitData.errors as Record<string, string[]>,
+                )[0]?.[0];
+                if (firstError) {
+                    submitMessage = `Saved as draft, but submission failed: ${firstError}`;
+                }
+            } else if (submitData.message) {
+                submitMessage = `Saved as draft, but submission failed: ${submitData.message}`;
+            }
+        } catch {
+            // ignore JSON parse errors; use default message
+        }
+        errors.value = { general: [submitMessage] };
     } catch {
-        errors.value = { general: ['An unexpected error occurred. Please try again.'] };
+        errors.value = {
+            general: ['An unexpected error occurred. Please try again.'],
+        };
     } finally {
         isSubmitting.value = false;
     }
@@ -183,13 +252,20 @@ async function handleSubmit() {
                     {{ isEditing ? 'Edit OT Request' : 'New OT Request' }}
                 </DialogTitle>
                 <DialogDescription>
-                    {{ isEditing ? 'Update your overtime request details.' : 'File a new overtime request for approval.' }}
+                    {{
+                        isEditing
+                            ? 'Update your overtime request details.'
+                            : 'File a new overtime request for approval.'
+                    }}
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="handleSubmit" class="space-y-4">
+            <form @submit.prevent="handleSaveAndSubmit" class="space-y-4">
                 <!-- General Error -->
-                <div v-if="errors.general" class="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                <div
+                    v-if="errors.general"
+                    class="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400"
+                >
                     {{ errors.general[0] }}
                 </div>
 
@@ -231,24 +307,34 @@ async function handleSubmit() {
                 <!-- Time Range -->
                 <div class="grid gap-4 sm:grid-cols-2">
                     <div class="space-y-2">
-                        <Label for="expected_start_time">Start Time (optional)</Label>
+                        <Label for="expected_start_time"
+                            >Start Time (optional)</Label
+                        >
                         <Input
                             id="expected_start_time"
                             type="time"
                             v-model="expectedStartTime"
                         />
-                        <p v-if="errors.expected_start_time" class="text-sm text-red-500">
+                        <p
+                            v-if="errors.expected_start_time"
+                            class="text-sm text-red-500"
+                        >
                             {{ errors.expected_start_time[0] }}
                         </p>
                     </div>
                     <div class="space-y-2">
-                        <Label for="expected_end_time">End Time (optional)</Label>
+                        <Label for="expected_end_time"
+                            >End Time (optional)</Label
+                        >
                         <Input
                             id="expected_end_time"
                             type="time"
                             v-model="expectedEndTime"
                         />
-                        <p v-if="errors.expected_end_time" class="text-sm text-red-500">
+                        <p
+                            v-if="errors.expected_end_time"
+                            class="text-sm text-red-500"
+                        >
                             {{ errors.expected_end_time[0] }}
                         </p>
                     </div>
@@ -256,7 +342,9 @@ async function handleSubmit() {
 
                 <!-- Expected Minutes -->
                 <div class="space-y-2">
-                    <Label for="expected_minutes">Expected Duration (minutes)</Label>
+                    <Label for="expected_minutes"
+                        >Expected Duration (minutes)</Label
+                    >
                     <Input
                         id="expected_minutes"
                         type="number"
@@ -265,10 +353,16 @@ async function handleSubmit() {
                         :max="720"
                         placeholder="e.g. 120"
                     />
-                    <p v-if="errors.expected_minutes" class="text-sm text-red-500">
+                    <p
+                        v-if="errors.expected_minutes"
+                        class="text-sm text-red-500"
+                    >
                         {{ errors.expected_minutes[0] }}
                     </p>
-                    <p v-if="calculatedHours" class="text-sm text-slate-500 dark:text-slate-400">
+                    <p
+                        v-if="calculatedHours"
+                        class="text-sm text-slate-500 dark:text-slate-400"
+                    >
                         Duration: {{ calculatedHours }}
                     </p>
                 </div>
@@ -287,12 +381,33 @@ async function handleSubmit() {
                     </p>
                 </div>
 
-                <DialogFooter>
-                    <Button type="button" variant="outline" @click="open = false" :disabled="isSubmitting">
+                <DialogFooter class="gap-2 sm:gap-2">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        @click="open = false"
+                        :disabled="isSubmitting"
+                    >
                         Cancel
                     </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        :disabled="isSubmitting"
+                        @click="handleSaveDraft"
+                    >
+                        {{
+                            isSubmitting && submitMode === 'draft'
+                                ? 'Saving...'
+                                : 'Save as Draft'
+                        }}
+                    </Button>
                     <Button type="submit" :disabled="isSubmitting">
-                        {{ isSubmitting ? 'Saving...' : (isEditing ? 'Update' : 'Create Draft') }}
+                        {{
+                            isSubmitting && submitMode === 'submit'
+                                ? 'Submitting...'
+                                : 'Save &amp; Submit'
+                        }}
                     </Button>
                 </DialogFooter>
             </form>
