@@ -226,6 +226,11 @@ Route::prefix('overtime')->group(function () {
         ->name('overtime.approvals.index');
 });
 
+Route::prefix('manual-attendance')->group(function () {
+    Route::get('/approvals', [\App\Http\Controllers\ManualAttendance\ManualAttendanceApprovalPageController::class, 'index'])
+        ->name('manual-attendance.approvals.index');
+});
+
 /*
 |--------------------------------------------------------------------------
 | Loan Approval Management Web Routes

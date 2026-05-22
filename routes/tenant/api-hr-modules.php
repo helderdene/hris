@@ -426,6 +426,44 @@ Route::prefix('overtime-approvals')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Manual Attendance Request API Routes
+|--------------------------------------------------------------------------
+|
+| Employees submit manual attendance requests to backfill missing punches.
+| Either the requester's Department Head or any HR Admin Manager can approve.
+| On approval, AttendanceLog rows are created (source=manual) and the DTR
+| is recalculated.
+|
+*/
+
+Route::prefix('manual-attendance-requests')->group(function () {
+    Route::get('/my', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'myRequests'])
+        ->name('api.manual-attendance-requests.my');
+
+    Route::get('/pending-approval', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'pendingApprovals'])
+        ->name('api.manual-attendance-requests.pending-approval');
+
+    Route::post('/', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'store'])
+        ->name('api.manual-attendance-requests.store');
+    Route::get('/{manual_attendance_request}', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'show'])
+        ->name('api.manual-attendance-requests.show');
+    Route::put('/{manual_attendance_request}', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'update'])
+        ->name('api.manual-attendance-requests.update');
+    Route::delete('/{manual_attendance_request}', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'destroy'])
+        ->name('api.manual-attendance-requests.destroy');
+
+    Route::post('/{manual_attendance_request}/submit', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'submit'])
+        ->name('api.manual-attendance-requests.submit');
+    Route::post('/{manual_attendance_request}/cancel', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'cancel'])
+        ->name('api.manual-attendance-requests.cancel');
+    Route::post('/{manual_attendance_request}/approve', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'approve'])
+        ->name('api.manual-attendance-requests.approve');
+    Route::post('/{manual_attendance_request}/reject', [\App\Http\Controllers\Api\ManualAttendanceRequestController::class, 'reject'])
+        ->name('api.manual-attendance-requests.reject');
+});
+
+/*
+|--------------------------------------------------------------------------
 | Leave Calendar API Route
 |--------------------------------------------------------------------------
 |

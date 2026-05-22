@@ -81,6 +81,7 @@ interface NavItem {
     href: string;
     icon: Component;
     disabled?: boolean;
+    group?: string;
 }
 
 const { tenantName } = useTenant();
@@ -164,6 +165,7 @@ const timeAttendanceItems = computed(() => {
     // Add OT Approvals for managers/admins
     if (canManageEmployees.value) {
         items.push({ title: 'OT Approvals', href: '/overtime/approvals', icon: ClipboardCheck });
+        items.push({ title: 'Manual Attendance Approvals', href: '/manual-attendance/approvals', icon: ClipboardCheck });
     }
 
     // Configuration items (Admin/HR Manager only)
@@ -329,103 +331,6 @@ const selfServiceItems = computed(() => {
             icon: CircleUserRound,
         },
         {
-            title: 'My Goals',
-            href: '/my/goals',
-            icon: Flag,
-        },
-        {
-            title: 'My Evaluations',
-            href: '/my/evaluations',
-            icon: Star,
-        },
-        {
-            title: 'Development Plans',
-            href: '/my/development-plans',
-            icon: BookOpen,
-        },
-        {
-            title: 'Training Sessions',
-            href: '/my/training/sessions',
-            icon: GraduationCap,
-        },
-        {
-            title: 'My Enrollments',
-            href: '/my/training/enrollments',
-            icon: CalendarCheck,
-        },
-        {
-            title: 'My Certifications',
-            href: '/my/certifications',
-            icon: Award,
-        },
-        {
-            title: 'My Compliance',
-            href: '/my/compliance',
-            icon: ShieldCheck,
-        },
-        {
-            title: 'Compliance Certificates',
-            href: '/my/compliance/certificates',
-            icon: Award,
-        },
-        {
-            title: 'My DTR',
-            href: '/my/dtr',
-            icon: Clock,
-        },
-        {
-            title: 'My Schedule',
-            href: '/my/schedule',
-            icon: CalendarClock,
-        },
-        {
-            title: 'My Leave',
-            href: '/my/leave',
-            icon: Calendar,
-        },
-        {
-            title: 'My Overtime',
-            href: '/my/overtime-requests',
-            icon: CalendarClock,
-        },
-        {
-            title: 'My Visitors',
-            href: '/my/visitors',
-            icon: UserRoundCheck,
-        },
-    ];
-
-    if (canApproveLeaves.value) {
-        items.push({
-            title: 'Leave Approvals',
-            href: '/my/leave-approvals',
-            icon: ClipboardCheck,
-        });
-    }
-
-    // Team Goals for managers
-    if (canManageEmployees.value) {
-        items.push(
-            {
-                title: 'Team Goals',
-                href: '/manager/team-goals',
-                icon: Target,
-            },
-            {
-                title: 'Team Compliance',
-                href: '/team/compliance',
-                icon: ShieldCheck,
-            },
-            {
-                title: 'Probationary Evaluations',
-                href: '/manager/probationary-evaluations',
-                icon: UserCheck,
-            },
-        );
-    }
-
-    items.push(
-        {
             title: 'Announcements',
             href: '/my/announcements',
             icon: Megaphone,
@@ -436,38 +341,186 @@ const selfServiceItems = computed(() => {
             icon: ScrollText,
         },
         {
+            title: 'My Goals',
+            href: '/my/goals',
+            icon: Flag,
+            group: 'Performance',
+        },
+        {
+            title: 'My Evaluations',
+            href: '/my/evaluations',
+            icon: Star,
+            group: 'Performance',
+        },
+        {
+            title: 'Development Plans',
+            href: '/my/development-plans',
+            icon: BookOpen,
+            group: 'Performance',
+        },
+        {
+            title: 'Training Sessions',
+            href: '/my/training/sessions',
+            icon: GraduationCap,
+            group: 'Learning',
+        },
+        {
+            title: 'My Enrollments',
+            href: '/my/training/enrollments',
+            icon: CalendarCheck,
+            group: 'Learning',
+        },
+        {
+            title: 'My Certifications',
+            href: '/my/certifications',
+            icon: Award,
+            group: 'Learning',
+        },
+        {
+            title: 'My Compliance',
+            href: '/my/compliance',
+            icon: ShieldCheck,
+            group: 'Learning',
+        },
+        {
+            title: 'Compliance Certificates',
+            href: '/my/compliance/certificates',
+            icon: Award,
+            group: 'Learning',
+        },
+        {
+            title: 'My DTR',
+            href: '/my/dtr',
+            icon: Clock,
+            group: 'Time & Attendance',
+        },
+        {
+            title: 'My Schedule',
+            href: '/my/schedule',
+            icon: CalendarClock,
+            group: 'Time & Attendance',
+        },
+        {
+            title: 'My Leave',
+            href: '/my/leave',
+            icon: Calendar,
+            group: 'Time & Attendance',
+        },
+        {
+            title: 'My Overtime',
+            href: '/my/overtime-requests',
+            icon: CalendarClock,
+            group: 'Time & Attendance',
+        },
+        {
+            title: 'Manual Attendance',
+            href: '/my/manual-attendance-requests',
+            icon: Clock,
+            group: 'Time & Attendance',
+        },
+        {
+            title: 'My Visitors',
+            href: '/my/visitors',
+            icon: UserRoundCheck,
+            group: 'Time & Attendance',
+        },
+    ];
+
+    // Manager items
+    const managerItems: NavItem[] = [];
+
+    if (canApproveLeaves.value) {
+        managerItems.push({
+            title: 'Leave Approvals',
+            href: '/my/leave-approvals',
+            icon: ClipboardCheck,
+            group: 'Manager',
+        });
+    }
+
+    if (canManageEmployees.value) {
+        managerItems.push(
+            {
+                title: 'Team Goals',
+                href: '/manager/team-goals',
+                icon: Target,
+                group: 'Manager',
+            },
+            {
+                title: 'Team Compliance',
+                href: '/team/compliance',
+                icon: ShieldCheck,
+                group: 'Manager',
+            },
+            {
+                title: 'Probationary Evaluations',
+                href: '/manager/probationary-evaluations',
+                icon: UserCheck,
+                group: 'Manager',
+            },
+        );
+    }
+
+    items.push(...managerItems);
+
+    items.push(
+        {
             title: 'My Loans',
             href: '/my/loans',
             icon: CreditCard,
+            group: 'Finance',
         },
         {
             title: 'Loan Applications',
             href: '/my/loan-applications',
             icon: FileText,
+            group: 'Finance',
         },
         {
             title: 'BIR 2316',
             href: '/my/bir-2316',
             icon: FileText,
+            group: 'Finance',
         },
         {
             title: 'My Pre-boarding',
             href: '/my/preboarding',
             icon: ClipboardList,
+            group: 'Onboarding',
         },
         {
             title: 'My Onboarding',
             href: '/my/onboarding',
             icon: ClipboardCheck,
+            group: 'Onboarding',
         },
         {
             title: 'Probationary Status',
             href: '/my/probationary-status',
             icon: UserCheck,
+            group: 'Onboarding',
         },
     );
 
     return items;
+});
+
+// Group self-service items by their group property
+const groupedSelfServiceItems = computed(() => {
+    const groups: { label: string; items: NavItem[] }[] = [];
+    let currentGroup: string | null = null;
+
+    for (const item of selfServiceItems.value) {
+        const groupLabel = item.group ?? '';
+
+        if (groups.length === 0 || groupLabel !== currentGroup) {
+            groups.push({ label: groupLabel, items: [] });
+            currentGroup = groupLabel;
+        }
+        groups[groups.length - 1].items.push(item);
+    }
+
+    return groups;
 });
 
 // Check if user can view audit logs (Admin only)
@@ -553,6 +606,14 @@ function isActive(href: string): boolean {
     // My Overtime
     if (href === '/my/overtime-requests') {
         return currentPath.startsWith('/my/overtime-requests');
+    }
+    // Manual Attendance Approvals
+    if (href === '/manual-attendance/approvals') {
+        return currentPath.startsWith('/manual-attendance/approvals');
+    }
+    // My Manual Attendance
+    if (href === '/my/manual-attendance-requests') {
+        return currentPath.startsWith('/my/manual-attendance-requests');
     }
     // Leave Applications
     if (href === '/leave/applications') {
@@ -1742,45 +1803,60 @@ watch([hrManagementOpen, timeAttendanceOpen, visitorManagementOpen, leaveManagem
                                 <span>Upgrade your plan to unlock</span>
                             </Link>
                             <SidebarMenu>
-                                <SidebarMenuItem
-                                    v-for="item in selfServiceItems"
-                                    :key="item.href"
+                                <template
+                                    v-for="group in groupedSelfServiceItems"
+                                    :key="group.label"
                                 >
-                                    <SidebarMenuButton
-                                        :as-child="hasModule('employee_self_service')"
-                                        :class="[
-                                            'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                                            !hasModule('employee_self_service')
-                                                ? 'pointer-events-none opacity-40'
-                                                : isActive(item.href)
-                                                    ? 'bg-blue-500 text-white hover:bg-blue-600'
-                                                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
-                                        ]"
+                                    <div
+                                        v-if="group.label && !isCollapsed"
+                                        class="px-3 pt-4 pb-1"
                                     >
-                                        <Link
-                                            v-if="hasModule('employee_self_service')"
-                                            :href="item.href"
-                                            class="flex items-center gap-3"
+                                        <span
+                                            class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500"
                                         >
-                                            <component
-                                                :is="item.icon"
-                                                class="h-5 w-5 shrink-0"
-                                            />
-                                            <span v-if="!isCollapsed">{{
-                                                item.title
-                                            }}</span>
-                                        </Link>
-                                        <span v-else class="flex items-center gap-3">
-                                            <component
-                                                :is="item.icon"
-                                                class="h-5 w-5 shrink-0"
-                                            />
-                                            <span v-if="!isCollapsed">{{
-                                                item.title
-                                            }}</span>
+                                            {{ group.label }}
                                         </span>
-                                    </SidebarMenuButton>
-                                </SidebarMenuItem>
+                                    </div>
+                                    <SidebarMenuItem
+                                        v-for="item in group.items"
+                                        :key="item.href"
+                                    >
+                                        <SidebarMenuButton
+                                            :as-child="hasModule('employee_self_service')"
+                                            :class="[
+                                                'w-full justify-start rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
+                                                !hasModule('employee_self_service')
+                                                    ? 'pointer-events-none opacity-40'
+                                                    : isActive(item.href)
+                                                        ? 'bg-blue-500 text-white hover:bg-blue-600'
+                                                        : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100',
+                                            ]"
+                                        >
+                                            <Link
+                                                v-if="hasModule('employee_self_service')"
+                                                :href="item.href"
+                                                class="flex items-center gap-3"
+                                            >
+                                                <component
+                                                    :is="item.icon"
+                                                    class="h-5 w-5 shrink-0"
+                                                />
+                                                <span v-if="!isCollapsed">{{
+                                                    item.title
+                                                }}</span>
+                                            </Link>
+                                            <span v-else class="flex items-center gap-3">
+                                                <component
+                                                    :is="item.icon"
+                                                    class="h-5 w-5 shrink-0"
+                                                />
+                                                <span v-if="!isCollapsed">{{
+                                                    item.title
+                                                }}</span>
+                                            </span>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                </template>
                             </SidebarMenu>
                         </SidebarGroupContent>
                     </CollapsibleContent>

@@ -413,10 +413,8 @@ class DailyTimeRecordController extends Controller
      */
     protected function createManualAttendanceLog(DailyTimeRecord $dtr, Carbon $time, string $direction): AttendanceLog
     {
-        $deviceId = \App\Models\BiometricDevice::first()?->id;
-
         return AttendanceLog::create([
-            'biometric_device_id' => $deviceId,
+            'biometric_device_id' => null,
             'employee_id' => $dtr->employee_id,
             'device_person_id' => (string) $dtr->employee_id,
             'device_record_id' => 'MANUAL-'.now()->format('YmdHis'),
@@ -427,8 +425,9 @@ class DailyTimeRecordController extends Controller
             'direction' => $direction,
             'person_name' => $dtr->employee?->full_name,
             'captured_photo' => null,
+            'source' => \App\Enums\AttendanceSource::Manual,
             'raw_payload' => [
-                'source' => 'manual_review_resolution',
+                'origin' => 'manual_review_resolution',
                 'resolved_by' => auth()->id(),
                 'resolved_at' => now()->toISOString(),
             ],

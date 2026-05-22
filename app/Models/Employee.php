@@ -320,6 +320,14 @@ class Employee extends TenantModel
     }
 
     /**
+     * Get the employee's manual attendance requests.
+     */
+    public function manualAttendanceRequests(): HasMany
+    {
+        return $this->hasMany(ManualAttendanceRequest::class);
+    }
+
+    /**
      * Get leave applications pending this employee's approval.
      */
     public function pendingLeaveApprovals(): HasMany
