@@ -18,7 +18,7 @@ uses(RefreshDatabase::class);
 /**
  * Helper to bind tenant to the application container for tests.
  */
-function bindTenantContextForProfile(Tenant $tenant): void
+function bindTenantContextForEmployeeProfile(Tenant $tenant): void
 {
     app()->instance('tenant', $tenant);
 }
@@ -50,7 +50,7 @@ beforeEach(function () {
 
 it('renders employee profile page with all employee data', function () {
     $tenant = Tenant::factory()->create(['slug' => 'acme']);
-    bindTenantContextForProfile($tenant);
+    bindTenantContextForEmployeeProfile($tenant);
 
     $admin = createTenantUserForProfile($tenant, TenantUserRole::Admin);
     $this->actingAs($admin);
@@ -106,7 +106,7 @@ it('renders employee profile page with all employee data', function () {
 
 it('displays personal info fields correctly', function () {
     $tenant = Tenant::factory()->create(['slug' => 'acme']);
-    bindTenantContextForProfile($tenant);
+    bindTenantContextForEmployeeProfile($tenant);
 
     $admin = createTenantUserForProfile($tenant, TenantUserRole::Admin);
     $this->actingAs($admin);
@@ -148,7 +148,7 @@ it('displays personal info fields correctly', function () {
 
 it('displays employment details correctly', function () {
     $tenant = Tenant::factory()->create(['slug' => 'acme']);
-    bindTenantContextForProfile($tenant);
+    bindTenantContextForEmployeeProfile($tenant);
 
     $admin = createTenantUserForProfile($tenant, TenantUserRole::Admin);
     $this->actingAs($admin);
@@ -198,7 +198,7 @@ it('displays employment details correctly', function () {
 
 it('displays government IDs correctly', function () {
     $tenant = Tenant::factory()->create(['slug' => 'acme']);
-    bindTenantContextForProfile($tenant);
+    bindTenantContextForEmployeeProfile($tenant);
 
     $admin = createTenantUserForProfile($tenant, TenantUserRole::Admin);
     $this->actingAs($admin);
