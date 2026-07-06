@@ -158,6 +158,26 @@ function getCsrfToken(): string {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
+const actionError = ref('');
+
+async function errorMessageFrom(response: Response, fallback: string): Promise<string> {
+    try {
+        const data = await response.json();
+        if (data?.errors) {
+            const first = Object.values(data.errors)[0];
+            if (Array.isArray(first) && first.length) {
+                return first[0] as string;
+            }
+        }
+        if (data?.message) {
+            return data.message as string;
+        }
+    } catch {
+        // response had no JSON body
+    }
+    return fallback;
+}
+
 // Confirmation dialog
 const showConfirmDialog = ref(false);
 const confirmDialogTitle = ref('');
@@ -181,6 +201,7 @@ function handleSubmitRequisition(requisition: JobRequisition) {
 async function executeSubmit(requisition: JobRequisition) {
     showConfirmDialog.value = false;
     isProcessing.value = true;
+    actionError.value = '';
     try {
         const response = await fetch(`/api/job-requisitions/${requisition.id}/submit`, {
             method: 'POST',
@@ -195,9 +216,13 @@ async function executeSubmit(requisition: JobRequisition) {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            actionError.value = await errorMessageFrom(
+                response,
+                `Could not submit ${requisition.reference_number} (error ${response.status}).`,
+            );
         }
     } catch {
+        actionError.value = 'A network error occurred. Please try again.';
     } finally {
         isProcessing.value = false;
     }
@@ -211,8 +236,10 @@ function handleCancelRequisition(requisition: JobRequisition) {
 
 async function executeCancelRequisition() {
     if (!cancellingRequisition.value) return;
+    const reference = cancellingRequisition.value.reference_number;
     showCancelDialog.value = false;
     isProcessing.value = true;
+    actionError.value = '';
     try {
         const response = await fetch(`/api/job-requisitions/${cancellingRequisition.value.id}/cancel`, {
             method: 'POST',
@@ -228,9 +255,13 @@ async function executeCancelRequisition() {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            actionError.value = await errorMessageFrom(
+                response,
+                `Could not cancel ${reference} (error ${response.status}).`,
+            );
         }
     } catch {
+        actionError.value = 'A network error occurred. Please try again.';
     } finally {
         isProcessing.value = false;
         cancellingRequisition.value = null;
@@ -248,6 +279,7 @@ function handleDeleteRequisition(requisition: JobRequisition) {
 async function executeDelete(requisition: JobRequisition) {
     showConfirmDialog.value = false;
     isProcessing.value = true;
+    actionError.value = '';
     try {
         const response = await fetch(`/api/job-requisitions/${requisition.id}`, {
             method: 'DELETE',
@@ -261,9 +293,13 @@ async function executeDelete(requisition: JobRequisition) {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            actionError.value = await errorMessageFrom(
+                response,
+                `Could not delete ${requisition.reference_number} (error ${response.status}).`,
+            );
         }
     } catch {
+        actionError.value = 'A network error occurred. Please try again.';
     } finally {
         isProcessing.value = false;
     }
@@ -288,6 +324,17 @@ async function executeDelete(requisition: JobRequisition) {
                 <Button v-if="canManage" as-child>
                     <Link href="/recruitment/requisitions/create">New Requisition</Link>
                 </Button>
+            </div>
+
+            <!-- Action error banner -->
+            <div
+                v-if="actionError"
+                class="flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300"
+            >
+                <span>{{ actionError }}</span>
+                <button type="button" class="shrink-0 font-medium hover:underline" @click="actionError = ''">
+                    Dismiss
+                </button>
             </div>
 
             <!-- Filters -->
