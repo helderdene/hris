@@ -19,14 +19,14 @@ use Inertia\Response;
 class JobRequisitionPageController extends Controller
 {
     /**
-     * Roles permitted to create job requisitions.
+     * Roles permitted to create and manage job requisitions.
      *
      * Keep in sync with the `ensure-role:...` middleware on the
-     * requisition create (web) and store (api) routes.
+     * requisition create (web) and store/submit/cancel/destroy (api) routes.
      *
      * @var array<TenantUserRole>
      */
-    private const CREATOR_ROLES = [
+    private const MANAGER_ROLES = [
         TenantUserRole::Admin,
         TenantUserRole::HrManager,
         TenantUserRole::HrStaff,
@@ -35,9 +35,9 @@ class JobRequisitionPageController extends Controller
     ];
 
     /**
-     * Determine whether the given user may create job requisitions.
+     * Determine whether the given user may create and manage job requisitions.
      */
-    private function canCreateRequisition(User $user): bool
+    private function canManageRequisitions(User $user): bool
     {
         if ($user->isSuperAdmin()) {
             return true;
@@ -51,7 +51,7 @@ class JobRequisitionPageController extends Controller
 
         $role = $user->getRoleInTenant($tenant);
 
-        return $role !== null && in_array($role, self::CREATOR_ROLES, true);
+        return $role !== null && in_array($role, self::MANAGER_ROLES, true);
     }
 
     /**
@@ -125,7 +125,7 @@ class JobRequisitionPageController extends Controller
             ] : null,
             'requisitions' => $requisitions,
             'departments' => $departments,
-            'canCreate' => $this->canCreateRequisition($user),
+            'canManage' => $this->canManageRequisitions($user),
             'statuses' => JobRequisitionStatus::options(),
             'urgencies' => JobRequisitionUrgency::options(),
             'employmentTypes' => array_map(fn ($t) => [

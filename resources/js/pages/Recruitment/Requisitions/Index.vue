@@ -90,7 +90,7 @@ const props = defineProps<{
     employee: Employee | null;
     requisitions: { data: JobRequisition[]; links: any; meta: any };
     departments: Department[];
-    canCreate: boolean;
+    canManage: boolean;
     statuses: StatusOption[];
     urgencies: UrgencyOption[];
     employmentTypes: EmploymentTypeOption[];
@@ -285,7 +285,7 @@ async function executeDelete(requisition: JobRequisition) {
                         Manage hiring requests and track requisition approvals.
                     </p>
                 </div>
-                <Button v-if="canCreate" as-child>
+                <Button v-if="canManage" as-child>
                     <Link href="/recruitment/requisitions/create">New Requisition</Link>
                 </Button>
             </div>
@@ -414,20 +414,20 @@ async function executeDelete(requisition: JobRequisition) {
                                                 <Link :href="`/recruitment/requisitions/${req.id}`">View Details</Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
-                                                v-if="req.status === 'draft'"
+                                                v-if="canManage && req.status === 'draft'"
                                                 @click="handleSubmitRequisition(req)"
                                             >
                                                 Submit for Approval
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
-                                                v-if="req.can_be_cancelled"
+                                                v-if="canManage && req.can_be_cancelled"
                                                 class="text-amber-600 focus:text-amber-600"
                                                 @click="handleCancelRequisition(req)"
                                             >
                                                 Cancel
                                             </DropdownMenuItem>
                                             <DropdownMenuItem
-                                                v-if="req.status === 'draft'"
+                                                v-if="canManage && req.status === 'draft'"
                                                 class="text-red-600 focus:text-red-600"
                                                 @click="handleDeleteRequisition(req)"
                                             >

@@ -546,12 +546,15 @@ Route::prefix('job-requisitions')->group(function () {
     Route::put('/{job_requisition}', [\App\Http\Controllers\Api\JobRequisitionController::class, 'update'])
         ->name('api.job-requisitions.update');
     Route::delete('/{job_requisition}', [\App\Http\Controllers\Api\JobRequisitionController::class, 'destroy'])
+        ->middleware('ensure-role:admin,hr_manager,hr_staff,hr_consultant,supervisor')
         ->name('api.job-requisitions.destroy');
 
     // Workflow actions
     Route::post('/{job_requisition}/submit', [\App\Http\Controllers\Api\JobRequisitionController::class, 'submit'])
+        ->middleware('ensure-role:admin,hr_manager,hr_staff,hr_consultant,supervisor')
         ->name('api.job-requisitions.submit');
     Route::post('/{job_requisition}/cancel', [\App\Http\Controllers\Api\JobRequisitionController::class, 'cancel'])
+        ->middleware('ensure-role:admin,hr_manager,hr_staff,hr_consultant,supervisor')
         ->name('api.job-requisitions.cancel');
 });
 

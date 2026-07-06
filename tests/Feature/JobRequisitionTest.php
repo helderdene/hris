@@ -454,7 +454,27 @@ describe('JobRequisition Create Authorization', function () {
             ->assertForbidden();
     });
 
-    it('exposes canCreate on the index for permitted vs non-permitted roles', function () {
+    it('forbids submit, cancel, and delete for users without a permitted role', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $requisition = JobRequisition::factory()->create([
+            'position_id' => Position::factory()->create()->id,
+            'department_id' => Department::factory()->create()->id,
+            'requested_by_employee_id' => Employee::factory()->create()->id,
+        ]);
+
+        $user = createTenantUserForJobReq($tenant, TenantUserRole::Employee);
+        $this->actingAs($user);
+
+        $base = "http://{$tenant->slug}.kasamahr.test/api/job-requisitions/{$requisition->id}";
+
+        $this->postJson("{$base}/submit")->assertForbidden();
+        $this->postJson("{$base}/cancel")->assertForbidden();
+        $this->deleteJson($base)->assertForbidden();
+    });
+
+    it('exposes canManage on the index for permitted vs non-permitted roles', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForJobReq($tenant);
 
@@ -463,11 +483,11 @@ describe('JobRequisition Create Authorization', function () {
         $hr = createTenantUserForJobReq($tenant, TenantUserRole::HrManager);
         $this->actingAs($hr);
         $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions")
-            ->assertInertia(fn ($page) => $page->where('canCreate', true));
+            ->assertInertia(fn ($page) => $page->where('canManage', true));
 
         $employee = createTenantUserForJobReq($tenant, TenantUserRole::Employee);
         $this->actingAs($employee);
         $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions")
-            ->assertInertia(fn ($page) => $page->where('canCreate', false));
+            ->assertInertia(fn ($page) => $page->where('canManage', false));
     });
 });
