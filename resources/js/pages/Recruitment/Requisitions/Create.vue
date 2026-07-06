@@ -24,6 +24,7 @@ interface Employee {
 
 const props = defineProps<{
     employee: Employee | null;
+    employees: { id: number; full_name: string; employee_number: string }[];
     departments: { id: number; name: string }[];
     positions: { id: number; name: string }[];
     urgencies: { value: string; label: string; color: string }[];
@@ -40,6 +41,7 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const form = ref({
+    requested_by_employee_id: props.employee ? String(props.employee.id) : '',
     position_id: '',
     department_id: '',
     headcount: 1,
@@ -62,10 +64,6 @@ function getCsrfToken(): string {
 }
 
 async function handleSubmit() {
-    if (!props.employee) {
-        submitError.value = 'Your account is not linked to an employee record, so you cannot create a requisition.';
-        return;
-    }
     isSubmitting.value = true;
     errors.value = {};
     submitError.value = '';
@@ -73,7 +71,7 @@ async function handleSubmit() {
     const body: Record<string, any> = {
         position_id: Number(form.value.position_id),
         department_id: Number(form.value.department_id),
-        requested_by_employee_id: props.employee.id,
+        requested_by_employee_id: Number(form.value.requested_by_employee_id),
         headcount: Number(form.value.headcount),
         employment_type: form.value.employment_type,
         urgency: form.value.urgency,
@@ -145,6 +143,22 @@ async function handleSubmit() {
                     class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300"
                 >
                     {{ submitError }}
+                </div>
+
+                <!-- Requested By -->
+                <div class="space-y-2">
+                    <Label for="requested-by">Requested By <span class="text-red-500">*</span></Label>
+                    <Select v-model="form.requested_by_employee_id">
+                        <SelectTrigger id="requested-by">
+                            <SelectValue placeholder="Select requesting employee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="emp in employees" :key="emp.id" :value="String(emp.id)">
+                                {{ emp.full_name }} ({{ emp.employee_number }})
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p v-if="errors.requested_by_employee_id" class="text-sm text-red-500">{{ errors.requested_by_employee_id }}</p>
                 </div>
 
                 <!-- Position & Department -->
@@ -260,7 +274,7 @@ async function handleSubmit() {
                 <!-- Actions -->
                 <div class="flex justify-end gap-3">
                     <Button variant="outline" @click="router.visit('/recruitment/requisitions')">Cancel</Button>
-                    <Button @click="handleSubmit" :disabled="isSubmitting || !employee">
+                    <Button @click="handleSubmit" :disabled="isSubmitting">
                         {{ isSubmitting ? 'Creating...' : 'Create Draft' }}
                     </Button>
                 </div>

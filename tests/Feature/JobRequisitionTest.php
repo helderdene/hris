@@ -368,10 +368,32 @@ describe('JobRequisition Create Page', function () {
         $response->assertInertia(fn ($page) => $page
             ->component('Recruitment/Requisitions/Create')
             ->where('employee.id', $employee->id)
+            ->has('employees')
             ->has('departments')
             ->has('positions')
             ->has('urgencies')
             ->has('employmentTypes')
+        );
+    });
+
+    it('renders the create page with a requester list for an admin without an employee record', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        // Admin user with NO linked employee record (mirrors the prod admin@zimo case)
+        $user = createTenantUserForJobReq($tenant, TenantUserRole::Admin);
+        Employee::factory()->count(3)->create();
+
+        $this->withoutVite();
+        $this->actingAs($user);
+
+        $response = $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/create");
+
+        $response->assertSuccessful();
+        $response->assertInertia(fn ($page) => $page
+            ->component('Recruitment/Requisitions/Create')
+            ->where('employee', null)
+            ->has('employees', 3)
         );
     });
 

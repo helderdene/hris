@@ -284,7 +284,7 @@ async function executeDelete(requisition: JobRequisition) {
                         Manage hiring requests and track requisition approvals.
                     </p>
                 </div>
-                <Button v-if="employee" as-child>
+                <Button as-child>
                     <Link href="/recruitment/requisitions/create">New Requisition</Link>
                 </Button>
             </div>

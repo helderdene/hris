@@ -119,12 +119,23 @@ class JobRequisitionPageController extends Controller
             'name' => $p->title,
         ]);
 
+        $employees = Employee::query()
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->map(fn ($e) => [
+                'id' => $e->id,
+                'full_name' => $e->full_name,
+                'employee_number' => $e->employee_number,
+            ]);
+
         return Inertia::render('Recruitment/Requisitions/Create', [
             'employee' => $employee ? [
                 'id' => $employee->id,
                 'full_name' => $employee->full_name,
                 'employee_number' => $employee->employee_number,
             ] : null,
+            'employees' => $employees,
             'departments' => $departments,
             'positions' => $positions,
             'urgencies' => JobRequisitionUrgency::options(),
