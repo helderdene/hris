@@ -413,3 +413,61 @@ describe('JobRequisition Create Page', function () {
         $response->assertInertia(fn ($page) => $page->component('Recruitment/Requisitions/Create'));
     });
 });
+
+describe('JobRequisition Create Authorization', function () {
+    it('allows a supervisor to open the create page', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $user = createTenantUserForJobReq($tenant, TenantUserRole::Supervisor);
+        Employee::factory()->count(2)->create();
+
+        $this->withoutVite();
+        $this->actingAs($user);
+
+        $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/create")
+            ->assertSuccessful();
+    });
+
+    it('forbids the create page for users without a permitted role', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $user = createTenantUserForJobReq($tenant, TenantUserRole::Employee);
+
+        $this->withoutVite();
+        $this->actingAs($user);
+
+        $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/create")
+            ->assertForbidden();
+    });
+
+    it('forbids storing a requisition for users without a permitted role', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $user = createTenantUserForJobReq($tenant, TenantUserRole::Employee);
+
+        $this->actingAs($user);
+
+        $this->postJson("http://{$tenant->slug}.kasamahr.test/api/job-requisitions", [])
+            ->assertForbidden();
+    });
+
+    it('exposes canCreate on the index for permitted vs non-permitted roles', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $this->withoutVite();
+
+        $hr = createTenantUserForJobReq($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hr);
+        $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions")
+            ->assertInertia(fn ($page) => $page->where('canCreate', true));
+
+        $employee = createTenantUserForJobReq($tenant, TenantUserRole::Employee);
+        $this->actingAs($employee);
+        $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions")
+            ->assertInertia(fn ($page) => $page->where('canCreate', false));
+    });
+});

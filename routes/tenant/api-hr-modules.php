@@ -539,6 +539,7 @@ Route::prefix('job-requisitions')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\JobRequisitionController::class, 'index'])
         ->name('api.job-requisitions.index');
     Route::post('/', [\App\Http\Controllers\Api\JobRequisitionController::class, 'store'])
+        ->middleware('ensure-role:admin,hr_manager,hr_staff,hr_consultant,supervisor')
         ->name('api.job-requisitions.store');
     Route::get('/{job_requisition}', [\App\Http\Controllers\Api\JobRequisitionController::class, 'show'])
         ->name('api.job-requisitions.show');

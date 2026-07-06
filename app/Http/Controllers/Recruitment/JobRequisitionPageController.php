@@ -5,17 +5,55 @@ namespace App\Http\Controllers\Recruitment;
 use App\Enums\EmploymentType;
 use App\Enums\JobRequisitionStatus;
 use App\Enums\JobRequisitionUrgency;
+use App\Enums\TenantUserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Models\JobRequisition;
 use App\Models\Position;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class JobRequisitionPageController extends Controller
 {
+    /**
+     * Roles permitted to create job requisitions.
+     *
+     * Keep in sync with the `ensure-role:...` middleware on the
+     * requisition create (web) and store (api) routes.
+     *
+     * @var array<TenantUserRole>
+     */
+    private const CREATOR_ROLES = [
+        TenantUserRole::Admin,
+        TenantUserRole::HrManager,
+        TenantUserRole::HrStaff,
+        TenantUserRole::HrConsultant,
+        TenantUserRole::Supervisor,
+    ];
+
+    /**
+     * Determine whether the given user may create job requisitions.
+     */
+    private function canCreateRequisition(User $user): bool
+    {
+        if ($user->isSuperAdmin()) {
+            return true;
+        }
+
+        $tenant = tenant();
+
+        if ($tenant === null) {
+            return false;
+        }
+
+        $role = $user->getRoleInTenant($tenant);
+
+        return $role !== null && in_array($role, self::CREATOR_ROLES, true);
+    }
+
     /**
      * Display the job requisitions index page.
      */
@@ -87,6 +125,7 @@ class JobRequisitionPageController extends Controller
             ] : null,
             'requisitions' => $requisitions,
             'departments' => $departments,
+            'canCreate' => $this->canCreateRequisition($user),
             'statuses' => JobRequisitionStatus::options(),
             'urgencies' => JobRequisitionUrgency::options(),
             'employmentTypes' => array_map(fn ($t) => [

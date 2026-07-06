@@ -90,6 +90,7 @@ const props = defineProps<{
     employee: Employee | null;
     requisitions: { data: JobRequisition[]; links: any; meta: any };
     departments: Department[];
+    canCreate: boolean;
     statuses: StatusOption[];
     urgencies: UrgencyOption[];
     employmentTypes: EmploymentTypeOption[];
@@ -284,7 +285,7 @@ async function executeDelete(requisition: JobRequisition) {
                         Manage hiring requests and track requisition approvals.
                     </p>
                 </div>
-                <Button as-child>
+                <Button v-if="canCreate" as-child>
                     <Link href="/recruitment/requisitions/create">New Requisition</Link>
                 </Button>
             </div>
