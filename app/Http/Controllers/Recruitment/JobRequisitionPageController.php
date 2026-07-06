@@ -79,11 +79,6 @@ class JobRequisitionPageController extends Controller
             'name' => $d->name,
         ]);
 
-        $positions = Position::query()->orderBy('title')->get()->map(fn ($p) => [
-            'id' => $p->id,
-            'name' => $p->title,
-        ]);
-
         return Inertia::render('Recruitment/Requisitions/Index', [
             'employee' => $employee ? [
                 'id' => $employee->id,
@@ -92,7 +87,6 @@ class JobRequisitionPageController extends Controller
             ] : null,
             'requisitions' => $requisitions,
             'departments' => $departments,
-            'positions' => $positions,
             'statuses' => JobRequisitionStatus::options(),
             'urgencies' => JobRequisitionUrgency::options(),
             'employmentTypes' => array_map(fn ($t) => [
@@ -104,6 +98,40 @@ class JobRequisitionPageController extends Controller
                 'urgency' => $urgency,
                 'department_id' => $departmentId,
             ],
+        ]);
+    }
+
+    /**
+     * Display the create job requisition page.
+     */
+    public function create(Request $request): Response
+    {
+        $user = $request->user();
+        $employee = Employee::where('user_id', $user->id)->first();
+
+        $departments = Department::query()->orderBy('name')->get()->map(fn ($d) => [
+            'id' => $d->id,
+            'name' => $d->name,
+        ]);
+
+        $positions = Position::query()->orderBy('title')->get()->map(fn ($p) => [
+            'id' => $p->id,
+            'name' => $p->title,
+        ]);
+
+        return Inertia::render('Recruitment/Requisitions/Create', [
+            'employee' => $employee ? [
+                'id' => $employee->id,
+                'full_name' => $employee->full_name,
+                'employee_number' => $employee->employee_number,
+            ] : null,
+            'departments' => $departments,
+            'positions' => $positions,
+            'urgencies' => JobRequisitionUrgency::options(),
+            'employmentTypes' => array_map(fn ($t) => [
+                'value' => $t->value,
+                'label' => $t->label(),
+            ], EmploymentType::cases()),
         ]);
     }
 

@@ -118,7 +118,7 @@ async function handleSubmit() {
 
         if (response.ok) {
             const data = await response.json();
-            router.visit(`/recruitment/job-postings/${data.data.id}`);
+            router.visit(`/recruitment/job-postings/${data.id}`);
         } else if (response.status === 422) {
             const data = await response.json();
             const errs: Record<string, string> = {};

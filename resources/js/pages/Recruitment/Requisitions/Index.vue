@@ -17,8 +17,6 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -52,11 +50,6 @@ interface UrgencyOption {
 }
 
 interface Department {
-    id: number;
-    name: string;
-}
-
-interface PositionOption {
     id: number;
     name: string;
 }
@@ -97,7 +90,6 @@ const props = defineProps<{
     employee: Employee | null;
     requisitions: { data: JobRequisition[]; links: any; meta: any };
     departments: Department[];
-    positions: PositionOption[];
     statuses: StatusOption[];
     urgencies: UrgencyOption[];
     employmentTypes: EmploymentTypeOption[];
@@ -275,92 +267,6 @@ async function executeDelete(requisition: JobRequisition) {
         isProcessing.value = false;
     }
 }
-
-// Create dialog
-const showCreateDialog = ref(false);
-const createForm = ref({
-    position_id: '',
-    department_id: '',
-    headcount: 1,
-    employment_type: '',
-    urgency: '',
-    justification: '',
-    salary_range_min: '',
-    salary_range_max: '',
-    preferred_start_date: '',
-    remarks: '',
-});
-const createErrors = ref<Record<string, string>>({});
-const isCreating = ref(false);
-
-function openCreateDialog() {
-    createForm.value = {
-        position_id: '',
-        department_id: '',
-        headcount: 1,
-        employment_type: '',
-        urgency: '',
-        justification: '',
-        salary_range_min: '',
-        salary_range_max: '',
-        preferred_start_date: '',
-        remarks: '',
-    };
-    createErrors.value = {};
-    showCreateDialog.value = true;
-}
-
-async function executeCreate() {
-    if (!props.employee) {
-        return;
-    }
-    isCreating.value = true;
-    createErrors.value = {};
-
-    const body: Record<string, any> = {
-        position_id: Number(createForm.value.position_id),
-        department_id: Number(createForm.value.department_id),
-        requested_by_employee_id: props.employee.id,
-        headcount: Number(createForm.value.headcount),
-        employment_type: createForm.value.employment_type,
-        urgency: createForm.value.urgency,
-        justification: createForm.value.justification,
-    };
-    if (createForm.value.salary_range_min) body.salary_range_min = Number(createForm.value.salary_range_min);
-    if (createForm.value.salary_range_max) body.salary_range_max = Number(createForm.value.salary_range_max);
-    if (createForm.value.preferred_start_date) body.preferred_start_date = createForm.value.preferred_start_date;
-    if (createForm.value.remarks) body.remarks = createForm.value.remarks;
-
-    try {
-        const response = await fetch('/api/job-requisitions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-                'X-XSRF-TOKEN': getCsrfToken(),
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify(body),
-        });
-
-        if (response.ok) {
-            showCreateDialog.value = false;
-            reloadPage();
-        } else if (response.status === 422) {
-            const data = await response.json();
-            const errs: Record<string, string> = {};
-            for (const [key, messages] of Object.entries(data.errors || {})) {
-                errs[key] = (messages as string[])[0];
-            }
-            createErrors.value = errs;
-        } else {
-            const data = await response.json();
-        }
-    } catch {
-    } finally {
-        isCreating.value = false;
-    }
-}
 </script>
 
 <template>
@@ -378,7 +284,9 @@ async function executeCreate() {
                         Manage hiring requests and track requisition approvals.
                     </p>
                 </div>
-                <Button v-if="employee" @click="openCreateDialog">New Requisition</Button>
+                <Button v-if="employee" as-child>
+                    <Link href="/recruitment/requisitions/create">New Requisition</Link>
+                </Button>
             </div>
 
             <!-- Filters -->
@@ -603,178 +511,6 @@ async function executeCreate() {
                         @click="confirmDialogAction?.()"
                     >
                         Confirm
-                    </Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-
-        <!-- Create Requisition Dialog -->
-        <Dialog v-model:open="showCreateDialog">
-            <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-                <DialogHeader>
-                    <DialogTitle>New Job Requisition</DialogTitle>
-                    <DialogDescription>
-                        Create a new requisition as a draft. You can submit it for approval later.
-                    </DialogDescription>
-                </DialogHeader>
-                <div class="grid gap-4 py-4">
-                    <!-- Position & Department -->
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="create-position">Position <span class="text-red-500">*</span></Label>
-                            <Select v-model="createForm.position_id">
-                                <SelectTrigger id="create-position">
-                                    <SelectValue placeholder="Select position" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem
-                                        v-for="pos in positions"
-                                        :key="pos.id"
-                                        :value="String(pos.id)"
-                                    >
-                                        {{ pos.name }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p v-if="createErrors.position_id" class="text-sm text-red-500">{{ createErrors.position_id }}</p>
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="create-department">Department <span class="text-red-500">*</span></Label>
-                            <Select v-model="createForm.department_id">
-                                <SelectTrigger id="create-department">
-                                    <SelectValue placeholder="Select department" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem
-                                        v-for="dept in departments"
-                                        :key="dept.id"
-                                        :value="String(dept.id)"
-                                    >
-                                        {{ dept.name }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p v-if="createErrors.department_id" class="text-sm text-red-500">{{ createErrors.department_id }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Headcount & Employment Type -->
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="create-headcount">Headcount <span class="text-red-500">*</span></Label>
-                            <Input
-                                id="create-headcount"
-                                v-model.number="createForm.headcount"
-                                type="number"
-                                min="1"
-                                max="100"
-                            />
-                            <p v-if="createErrors.headcount" class="text-sm text-red-500">{{ createErrors.headcount }}</p>
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="create-employment-type">Employment Type <span class="text-red-500">*</span></Label>
-                            <Select v-model="createForm.employment_type">
-                                <SelectTrigger id="create-employment-type">
-                                    <SelectValue placeholder="Select type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem
-                                        v-for="et in employmentTypes"
-                                        :key="et.value"
-                                        :value="et.value"
-                                    >
-                                        {{ et.label }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p v-if="createErrors.employment_type" class="text-sm text-red-500">{{ createErrors.employment_type }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Urgency & Preferred Start Date -->
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="create-urgency">Urgency <span class="text-red-500">*</span></Label>
-                            <Select v-model="createForm.urgency">
-                                <SelectTrigger id="create-urgency">
-                                    <SelectValue placeholder="Select urgency" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem
-                                        v-for="u in urgencies"
-                                        :key="u.value"
-                                        :value="u.value"
-                                    >
-                                        {{ u.label }}
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                            <p v-if="createErrors.urgency" class="text-sm text-red-500">{{ createErrors.urgency }}</p>
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="create-start-date">Preferred Start Date</Label>
-                            <Input
-                                id="create-start-date"
-                                v-model="createForm.preferred_start_date"
-                                type="date"
-                            />
-                            <p v-if="createErrors.preferred_start_date" class="text-sm text-red-500">{{ createErrors.preferred_start_date }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Salary Range -->
-                    <div class="grid gap-4 sm:grid-cols-2">
-                        <div class="space-y-2">
-                            <Label for="create-salary-min">Salary Range Min</Label>
-                            <Input
-                                id="create-salary-min"
-                                v-model="createForm.salary_range_min"
-                                type="number"
-                                min="0"
-                                placeholder="0.00"
-                            />
-                            <p v-if="createErrors.salary_range_min" class="text-sm text-red-500">{{ createErrors.salary_range_min }}</p>
-                        </div>
-                        <div class="space-y-2">
-                            <Label for="create-salary-max">Salary Range Max</Label>
-                            <Input
-                                id="create-salary-max"
-                                v-model="createForm.salary_range_max"
-                                type="number"
-                                min="0"
-                                placeholder="0.00"
-                            />
-                            <p v-if="createErrors.salary_range_max" class="text-sm text-red-500">{{ createErrors.salary_range_max }}</p>
-                        </div>
-                    </div>
-
-                    <!-- Justification -->
-                    <div class="space-y-2">
-                        <Label for="create-justification">Justification <span class="text-red-500">*</span></Label>
-                        <Textarea
-                            id="create-justification"
-                            v-model="createForm.justification"
-                            placeholder="Explain why this position is needed..."
-                            rows="3"
-                        />
-                        <p v-if="createErrors.justification" class="text-sm text-red-500">{{ createErrors.justification }}</p>
-                    </div>
-
-                    <!-- Remarks -->
-                    <div class="space-y-2">
-                        <Label for="create-remarks">Remarks</Label>
-                        <Textarea
-                            id="create-remarks"
-                            v-model="createForm.remarks"
-                            placeholder="Additional notes (optional)"
-                            rows="2"
-                        />
-                    </div>
-                </div>
-                <DialogFooter>
-                    <Button variant="outline" @click="showCreateDialog = false">Cancel</Button>
-                    <Button @click="executeCreate" :disabled="isCreating">
-                        {{ isCreating ? 'Creating...' : 'Create Draft' }}
                     </Button>
                 </DialogFooter>
             </DialogContent>

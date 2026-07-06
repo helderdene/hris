@@ -166,7 +166,7 @@ async function submit() {
 
         if (response.ok) {
             const data = await response.json();
-            router.visit(`/recruitment/candidates/${data.data.id}`);
+            router.visit(`/recruitment/candidates/${data.id}`);
         } else if (response.status === 422) {
             const data = await response.json();
             errors.value = data.errors || {};

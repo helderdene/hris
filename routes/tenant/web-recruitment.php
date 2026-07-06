@@ -19,6 +19,8 @@ Route::prefix('recruitment')->group(function () {
 
     Route::get('/requisitions', [\App\Http\Controllers\Recruitment\JobRequisitionPageController::class, 'index'])
         ->name('recruitment.requisitions.index');
+    Route::get('/requisitions/create', [\App\Http\Controllers\Recruitment\JobRequisitionPageController::class, 'create'])
+        ->name('recruitment.requisitions.create');
     Route::get('/requisitions/{job_requisition}', [\App\Http\Controllers\Recruitment\JobRequisitionPageController::class, 'show'])
         ->name('recruitment.requisitions.show');
     Route::get('/approvals', [\App\Http\Controllers\Recruitment\JobRequisitionApprovalPageController::class, 'index'])

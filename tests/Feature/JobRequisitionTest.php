@@ -348,3 +348,46 @@ describe('JobRequisition Store Validation', function () {
         expect($validator->errors()->has('salary_range_max'))->toBeTrue();
     });
 });
+
+describe('JobRequisition Create Page', function () {
+    it('renders the create job requisition page', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $user = createTenantUserForJobReq($tenant, TenantUserRole::HrManager);
+        $employee = Employee::factory()->create(['user_id' => $user->id]);
+        Department::factory()->create();
+        Position::factory()->create();
+
+        $this->withoutVite();
+        $this->actingAs($user);
+
+        $response = $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/create");
+
+        $response->assertSuccessful();
+        $response->assertInertia(fn ($page) => $page
+            ->component('Recruitment/Requisitions/Create')
+            ->where('employee.id', $employee->id)
+            ->has('departments')
+            ->has('positions')
+            ->has('urgencies')
+            ->has('employmentTypes')
+        );
+    });
+
+    it('does not capture the create path as a requisition id on the show route', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $user = createTenantUserForJobReq($tenant, TenantUserRole::HrManager);
+        Employee::factory()->create(['user_id' => $user->id]);
+
+        $this->withoutVite();
+        $this->actingAs($user);
+
+        $response = $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/create");
+
+        $response->assertSuccessful();
+        $response->assertInertia(fn ($page) => $page->component('Recruitment/Requisitions/Create'));
+    });
+});
