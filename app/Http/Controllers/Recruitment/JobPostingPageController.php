@@ -118,6 +118,16 @@ class JobPostingPageController extends Controller
             'name' => $p->title,
         ]);
 
+        $employees = Employee::query()
+            ->orderBy('first_name')
+            ->orderBy('last_name')
+            ->get()
+            ->map(fn ($e) => [
+                'id' => $e->id,
+                'full_name' => $e->full_name,
+                'employee_number' => $e->employee_number,
+            ]);
+
         $requisition = null;
         if ($request->filled('requisition_id')) {
             $req = JobRequisition::with(['position', 'department'])->find($request->input('requisition_id'));
@@ -140,6 +150,7 @@ class JobPostingPageController extends Controller
                 'id' => $employee->id,
                 'full_name' => $employee->full_name,
             ] : null,
+            'employees' => $employees,
             'departments' => $departments,
             'positions' => $positions,
             'employmentTypes' => array_map(fn ($t) => [

@@ -29,6 +29,7 @@ interface Requisition {
 
 const props = defineProps<{
     employee: { id: number; full_name: string } | null;
+    employees: { id: number; full_name: string; employee_number: string }[];
     departments: { id: number; name: string }[];
     positions: { id: number; name: string }[];
     employmentTypes: { value: string; label: string }[];
@@ -59,9 +60,11 @@ const form = ref({
     salary_range_max: '',
     application_instructions: '',
     job_requisition_id: '',
+    created_by_employee_id: props.employee ? String(props.employee.id) : '',
 });
 
 const errors = ref<Record<string, string>>({});
+const submitError = ref('');
 const isSubmitting = ref(false);
 
 onMounted(() => {
@@ -82,12 +85,12 @@ function getCsrfToken(): string {
 }
 
 async function handleSubmit() {
-    if (!props.employee) return;
     isSubmitting.value = true;
     errors.value = {};
+    submitError.value = '';
 
     const body: Record<string, any> = {
-        created_by_employee_id: props.employee.id,
+        created_by_employee_id: Number(form.value.created_by_employee_id),
         title: form.value.title,
         department_id: Number(form.value.department_id),
         description: form.value.description,
@@ -119,15 +122,27 @@ async function handleSubmit() {
         if (response.ok) {
             const data = await response.json();
             router.visit(`/recruitment/job-postings/${data.id}`);
-        } else if (response.status === 422) {
+            return;
+        }
+
+        if (response.status === 422) {
             const data = await response.json();
             const errs: Record<string, string> = {};
             for (const [key, messages] of Object.entries(data.errors || {})) {
                 errs[key] = (messages as string[])[0];
             }
             errors.value = errs;
+            submitError.value = 'Please correct the highlighted fields and try again.';
+        } else if (response.status === 419) {
+            submitError.value = 'Your session expired. Please refresh the page and try again.';
+        } else {
+            const message = await response.text();
+            console.error('Create job posting failed', response.status, message);
+            submitError.value = `Could not create the job posting (error ${response.status}). Please try again.`;
         }
-    } catch {
+    } catch (e) {
+        console.error('Create job posting request errored', e);
+        submitError.value = 'A network error occurred. Please check your connection and try again.';
     } finally {
         isSubmitting.value = false;
     }
@@ -150,11 +165,35 @@ async function handleSubmit() {
             </div>
 
             <div class="space-y-6 rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900">
+                <!-- Submit error banner -->
+                <div
+                    v-if="submitError"
+                    class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300"
+                >
+                    {{ submitError }}
+                </div>
+
                 <!-- Title -->
                 <div class="space-y-2">
                     <Label for="title">Job Title <span class="text-red-500">*</span></Label>
                     <Input id="title" v-model="form.title" placeholder="e.g. Senior Software Engineer" />
                     <p v-if="errors.title" class="text-sm text-red-500">{{ errors.title }}</p>
+                </div>
+
+                <!-- Created By -->
+                <div class="space-y-2">
+                    <Label for="created-by">Created By <span class="text-red-500">*</span></Label>
+                    <Select v-model="form.created_by_employee_id">
+                        <SelectTrigger id="created-by">
+                            <SelectValue placeholder="Select employee" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem v-for="emp in employees" :key="emp.id" :value="String(emp.id)">
+                                {{ emp.full_name }} ({{ emp.employee_number }})
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <p v-if="errors.created_by_employee_id" class="text-sm text-red-500">{{ errors.created_by_employee_id }}</p>
                 </div>
 
                 <!-- Department & Position -->
