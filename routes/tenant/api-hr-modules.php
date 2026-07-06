@@ -544,6 +544,7 @@ Route::prefix('job-requisitions')->group(function () {
     Route::get('/{job_requisition}', [\App\Http\Controllers\Api\JobRequisitionController::class, 'show'])
         ->name('api.job-requisitions.show');
     Route::put('/{job_requisition}', [\App\Http\Controllers\Api\JobRequisitionController::class, 'update'])
+        ->middleware('ensure-role:admin,hr_manager,hr_staff,hr_consultant,supervisor')
         ->name('api.job-requisitions.update');
     Route::delete('/{job_requisition}', [\App\Http\Controllers\Api\JobRequisitionController::class, 'destroy'])
         ->middleware('ensure-role:admin,hr_manager,hr_staff,hr_consultant,supervisor')

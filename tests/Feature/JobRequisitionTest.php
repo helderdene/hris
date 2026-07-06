@@ -454,7 +454,7 @@ describe('JobRequisition Create Authorization', function () {
             ->assertForbidden();
     });
 
-    it('forbids submit, cancel, and delete for users without a permitted role', function () {
+    it('forbids update, submit, cancel, and delete for users without a permitted role', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForJobReq($tenant);
 
@@ -469,6 +469,7 @@ describe('JobRequisition Create Authorization', function () {
 
         $base = "http://{$tenant->slug}.kasamahr.test/api/job-requisitions/{$requisition->id}";
 
+        $this->putJson($base, [])->assertForbidden();
         $this->postJson("{$base}/submit")->assertForbidden();
         $this->postJson("{$base}/cancel")->assertForbidden();
         $this->deleteJson($base)->assertForbidden();
