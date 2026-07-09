@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Tenant extends Model
 {
@@ -34,6 +35,8 @@ class Tenant extends Model
         'trial_ends_at',
         'trial_expired_notified_at',
         'employee_count_cache',
+        'api_token_hash',
+        'api_token_last_used_at',
     ];
 
     /**
@@ -49,6 +52,7 @@ class Tenant extends Model
             'leave_defaults' => 'array',
             'trial_ends_at' => 'datetime',
             'trial_expired_notified_at' => 'datetime',
+            'api_token_last_used_at' => 'datetime',
         ];
     }
 
@@ -251,5 +255,54 @@ class Tenant extends Model
             ->sum(fn (TenantAddon $addon) => $addon->extraUnits());
 
         return $base + $extra;
+    }
+
+    /**
+     * Generate a new API token for external integrations.
+     *
+     * Returns the plaintext token (shown once to the user).
+     * The SHA-256 hash is stored in the database.
+     */
+    public function generateApiToken(): string
+    {
+        $plaintext = Str::random(64);
+
+        $this->update([
+            'api_token_hash' => hash('sha256', $plaintext),
+            'api_token_last_used_at' => null,
+        ]);
+
+        return $plaintext;
+    }
+
+    /**
+     * Validate an API token against the stored hash.
+     */
+    public function hasValidApiToken(string $token): bool
+    {
+        if ($this->api_token_hash === null) {
+            return false;
+        }
+
+        return hash_equals($this->api_token_hash, hash('sha256', $token));
+    }
+
+    /**
+     * Record the last usage timestamp for the API token.
+     */
+    public function recordApiTokenUsage(): void
+    {
+        $this->update(['api_token_last_used_at' => now()]);
+    }
+
+    /**
+     * Revoke the current API token.
+     */
+    public function revokeApiToken(): void
+    {
+        $this->update([
+            'api_token_hash' => null,
+            'api_token_last_used_at' => null,
+        ]);
     }
 }

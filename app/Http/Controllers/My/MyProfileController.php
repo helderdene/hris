@@ -23,8 +23,6 @@ class MyProfileController extends Controller
             ->with(['department', 'position', 'workLocation', 'supervisor'])
             ->first();
 
-        $profilePhoto = $employee?->getProfilePhoto();
-
         return Inertia::render('My/Profile', [
             'employee' => $employee ? [
                 'id' => $employee->id,
@@ -59,9 +57,7 @@ class MyProfileController extends Controller
                 'umid' => $employee->umid,
                 'passport_number' => $employee->passport_number,
                 'drivers_license' => $employee->drivers_license,
-                'profile_photo_url' => $profilePhoto?->file_path
-                    ? asset('storage/'.$profilePhoto->file_path)
-                    : null,
+                'profile_photo_url' => $employee->getProfilePhoto()?->getUrl(),
                 'business_card_enabled' => (bool) $employee->business_card_enabled,
                 'business_card_token' => $employee->business_card_token,
             ] : null,

@@ -21,6 +21,10 @@ const sidebarNavItems = computed<NavItem[]>(() => {
 
     items.push({ title: 'Appearance', href: '/settings/appearance' });
 
+    if (page.props.tenant?.user_role === 'admin') {
+        items.push({ title: 'API Token', href: '/settings/api-token' });
+    }
+
     return items;
 });
 

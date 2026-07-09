@@ -27,9 +27,11 @@ use App\Observers\EmployeeObserver;
 use App\Policies\TenantPolicy;
 use App\Services\FeatureGateService;
 use App\Services\Tenant\TenantDatabaseManager;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -55,6 +57,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Disable data wrapping for API resources (required for Inertia)
         JsonResource::withoutWrapping();
+
+        $this->configureRateLimiting();
 
         Employee::observe(EmployeeObserver::class);
 
@@ -109,6 +113,19 @@ class AppServiceProvider extends ServiceProvider
             ComplianceAssignmentOverdue::class,
             HandleComplianceAssignmentOverdue::class
         );
+    }
+
+    /**
+     * Configure rate limiters for the application.
+     */
+    protected function configureRateLimiting(): void
+    {
+        RateLimiter::for('external-api', function ($request) {
+            $tenant = tenant();
+            $key = $tenant ? 'tenant:'.$tenant->id : 'ip:'.$request->ip();
+
+            return Limit::perMinute(60)->by($key);
+        });
     }
 
     /**

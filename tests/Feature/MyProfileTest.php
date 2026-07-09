@@ -146,6 +146,21 @@ describe('My Profile Show', function () {
         expect($data['employee']['business_card_token'])->toBe('test-token-123');
     });
 
+    it('returns profile photo url using document getUrl method', function () {
+        $tenant = Tenant::factory()->create(['slug' => 'testco']);
+        bindTenantContextForProfile($tenant);
+
+        [$user, $employee] = createEmployeeUserForProfile($tenant);
+
+        $this->actingAs($user);
+
+        $response = callProfileShowController($user);
+        $data = getInertiaResponseDataForProfile($response);
+
+        // Without a profile photo document, profile_photo_url should be null
+        expect($data['employee']['profile_photo_url'])->toBeNull();
+    });
+
     it('returns null employee when user has no linked employee', function () {
         $tenant = Tenant::factory()->create(['slug' => 'testco']);
         bindTenantContextForProfile($tenant);

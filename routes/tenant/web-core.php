@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Help\HelpCenterController;
+use App\Http\Controllers\Settings\ApiTokenController;
 use App\Http\Controllers\Settings\AuditLogPageController;
 use App\Http\Controllers\Settings\HelpAdminPageController;
 use App\Http\Controllers\Settings\PasswordController;
@@ -33,6 +34,18 @@ Route::get('/settings/appearance', function () {
 
 Route::get('/settings/two-factor', [TwoFactorAuthenticationController::class, 'show'])
     ->name('tenant.two-factor.show');
+
+// API Token Management
+// This page allows Admin users to generate/revoke external API tokens
+Route::get('/settings/api-token', [ApiTokenController::class, 'show'])
+    ->middleware('ensure-role:admin')
+    ->name('settings.api-token');
+Route::post('/settings/api-token', [ApiTokenController::class, 'store'])
+    ->middleware('ensure-role:admin')
+    ->name('settings.api-token.store');
+Route::delete('/settings/api-token', [ApiTokenController::class, 'destroy'])
+    ->middleware('ensure-role:admin')
+    ->name('settings.api-token.destroy');
 
 // Audit Logs
 // This page allows Admin users to view all model changes for compliance

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\AuthenticateExternalApi;
 use App\Http\Middleware\AuthenticateFromMainDomain;
 use App\Http\Middleware\AuthenticateFromToken;
 use App\Http\Middleware\EnsureActiveSubscription;
@@ -35,6 +36,13 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware(['web', 'tenant'])
                 ->domain('{tenant}.'.config('app.main_domain', 'kasamahr.test'))
                 ->group(base_path('routes/tenant.php'));
+
+            // Register external API routes on the main domain
+            // These routes use API key authentication (no sessions, CSRF, or Inertia)
+            Route::middleware(['throttle:external-api', 'external-api'])
+                ->prefix('external-api/v1/{tenantSlug}')
+                ->domain(config('app.main_domain', 'kasamahr.test'))
+                ->group(base_path('routes/external-api.php'));
 
             // Register broadcasting routes for tenant subdomains
             // Required for WebSocket channel authorization on tenant subdomains
@@ -74,6 +82,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'subscribed' => EnsureActiveSubscription::class,
             'module' => EnsureModuleAccess::class,
             'tenant.password.confirm' => RequirePasswordConfirmation::class,
+            'external-api' => AuthenticateExternalApi::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
