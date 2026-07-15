@@ -492,3 +492,76 @@ describe('JobRequisition Create Authorization', function () {
             ->assertInertia(fn ($page) => $page->where('canManage', false));
     });
 });
+
+describe('JobRequisition Show Page Approval Actions', function () {
+    function setUpPendingRequisitionForShow(Tenant $tenant): array
+    {
+        $approverUser = createTenantUserForJobReq($tenant, TenantUserRole::HrManager);
+        $approver = Employee::factory()->create([
+            'user_id' => $approverUser->id,
+            'employment_status' => EmploymentStatus::Active,
+        ]);
+
+        $department = Department::factory()->create(['department_head_id' => $approver->id]);
+
+        $requesterUser = createTenantUserForJobReq($tenant, TenantUserRole::Supervisor);
+        $requester = Employee::factory()->create([
+            'user_id' => $requesterUser->id,
+            'department_id' => $department->id,
+            'employment_status' => EmploymentStatus::Active,
+        ]);
+
+        $requisition = JobRequisition::factory()->draft()->create([
+            'position_id' => Position::factory()->create()->id,
+            'department_id' => $department->id,
+            'requested_by_employee_id' => $requester->id,
+        ]);
+
+        $submitted = app(JobRequisitionService::class)->submit($requisition);
+
+        return [$submitted, $approver, $approverUser, $requesterUser];
+    }
+
+    it('exposes can_approve to the current-level pending approver', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+        $this->withoutVite();
+
+        [$submitted, , $approverUser] = setUpPendingRequisitionForShow($tenant);
+
+        $this->actingAs($approverUser);
+        $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/{$submitted->id}")
+            ->assertInertia(fn ($page) => $page->where('requisition.can_approve', true));
+    });
+
+    it('does not expose can_approve to users who are not the pending approver', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+        $this->withoutVite();
+
+        [$submitted, , , $requesterUser] = setUpPendingRequisitionForShow($tenant);
+
+        $this->actingAs($requesterUser);
+        $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/{$submitted->id}")
+            ->assertInertia(fn ($page) => $page->where('requisition.can_approve', false));
+
+        $userWithoutEmployee = createTenantUserForJobReq($tenant, TenantUserRole::Admin);
+        $this->actingAs($userWithoutEmployee);
+        $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/{$submitted->id}")
+            ->assertInertia(fn ($page) => $page->where('requisition.can_approve', false));
+    });
+
+    it('does not expose can_approve once the requisition is decided', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+        $this->withoutVite();
+
+        [$submitted, $approver, $approverUser] = setUpPendingRequisitionForShow($tenant);
+
+        app(JobRequisitionService::class)->approve($submitted, $approver, 'Approved');
+
+        $this->actingAs($approverUser);
+        $this->get("http://{$tenant->slug}.kasamahr.test/recruitment/requisitions/{$submitted->id}")
+            ->assertInertia(fn ($page) => $page->where('requisition.can_approve', false));
+    });
+});

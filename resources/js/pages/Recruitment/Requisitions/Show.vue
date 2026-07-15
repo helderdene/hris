@@ -1,9 +1,19 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
+import { Textarea } from '@/components/ui/textarea';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
+import { ref } from 'vue';
 
 interface Approval {
     id: number;
@@ -56,6 +66,7 @@ interface Requisition {
     created_at: string;
     can_be_edited: boolean;
     can_be_cancelled: boolean;
+    can_approve: boolean;
 }
 
 const props = defineProps<{
@@ -111,6 +122,115 @@ function formatCurrency(amount: number | null): string {
     if (amount === null) return '-';
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
 }
+
+function getCsrfToken(): string {
+    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
+const actionError = ref('');
+const isProcessing = ref(false);
+
+async function errorMessageFrom(response: Response, fallback: string): Promise<string> {
+    try {
+        const data = await response.json();
+        if (data?.errors) {
+            const first = Object.values(data.errors)[0];
+            if (Array.isArray(first) && first.length) {
+                return first[0] as string;
+            }
+        }
+        if (data?.message) {
+            return data.message as string;
+        }
+    } catch {
+        // response had no JSON body
+    }
+    return fallback;
+}
+
+// Approve dialog
+const showApproveDialog = ref(false);
+const approveRemarks = ref('');
+
+// Reject dialog
+const showRejectDialog = ref(false);
+const rejectReason = ref('');
+
+function handleApprove() {
+    approveRemarks.value = '';
+    showApproveDialog.value = true;
+}
+
+async function executeApprove() {
+    showApproveDialog.value = false;
+    isProcessing.value = true;
+    actionError.value = '';
+    try {
+        const response = await fetch(`/api/job-requisition-approvals/${props.requisition.id}/approve`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ remarks: approveRemarks.value || null }),
+        });
+
+        if (response.ok) {
+            router.reload();
+        } else {
+            actionError.value = await errorMessageFrom(
+                response,
+                `Could not approve ${props.requisition.reference_number} (error ${response.status}).`,
+            );
+        }
+    } catch {
+        actionError.value = 'A network error occurred. Please try again.';
+    } finally {
+        isProcessing.value = false;
+    }
+}
+
+function handleReject() {
+    rejectReason.value = '';
+    showRejectDialog.value = true;
+}
+
+async function executeReject() {
+    if (!rejectReason.value.trim()) {
+        return;
+    }
+    showRejectDialog.value = false;
+    isProcessing.value = true;
+    actionError.value = '';
+    try {
+        const response = await fetch(`/api/job-requisition-approvals/${props.requisition.id}/reject`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ reason: rejectReason.value }),
+        });
+
+        if (response.ok) {
+            router.reload();
+        } else {
+            actionError.value = await errorMessageFrom(
+                response,
+                `Could not reject ${props.requisition.reference_number} (error ${response.status}).`,
+            );
+        }
+    } catch {
+        actionError.value = 'A network error occurred. Please try again.';
+    } finally {
+        isProcessing.value = false;
+    }
+}
 </script>
 
 <template>
@@ -143,10 +263,37 @@ function formatCurrency(amount: number | null): string {
                     </p>
                 </div>
                 <div class="flex gap-2">
+                    <template v-if="requisition.can_approve">
+                        <Button
+                            class="bg-green-600 hover:bg-green-700"
+                            :disabled="isProcessing"
+                            @click="handleApprove"
+                        >
+                            Approve
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            :disabled="isProcessing"
+                            @click="handleReject"
+                        >
+                            Reject
+                        </Button>
+                    </template>
                     <Button variant="outline" as-child>
                         <Link href="/recruitment/requisitions">Back to List</Link>
                     </Button>
                 </div>
+            </div>
+
+            <!-- Action error banner -->
+            <div
+                v-if="actionError"
+                class="flex items-start justify-between gap-3 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900/50 dark:bg-red-900/20 dark:text-red-300"
+            >
+                <span>{{ actionError }}</span>
+                <button type="button" class="shrink-0 font-medium hover:underline" @click="actionError = ''">
+                    Dismiss
+                </button>
             </div>
 
             <div class="grid gap-6 lg:grid-cols-3">
@@ -333,5 +480,55 @@ function formatCurrency(amount: number | null): string {
                 </div>
             </div>
         </div>
+
+        <!-- Approve Dialog -->
+        <Dialog v-model:open="showApproveDialog">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Approve Requisition</DialogTitle>
+                    <DialogDescription>
+                        Approve {{ requisition.reference_number }}?
+                    </DialogDescription>
+                </DialogHeader>
+                <div class="py-4">
+                    <Textarea
+                        v-model="approveRemarks"
+                        placeholder="Remarks (optional)"
+                        rows="3"
+                    />
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" @click="showApproveDialog = false">Cancel</Button>
+                    <Button class="bg-green-600 hover:bg-green-700" @click="executeApprove">
+                        Approve
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
+        <!-- Reject Dialog -->
+        <Dialog v-model:open="showRejectDialog">
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>Reject Requisition</DialogTitle>
+                    <DialogDescription>
+                        Reject {{ requisition.reference_number }}? A reason is required.
+                    </DialogDescription>
+                </DialogHeader>
+                <div class="py-4">
+                    <Textarea
+                        v-model="rejectReason"
+                        placeholder="Reason for rejection (required)"
+                        rows="3"
+                    />
+                </div>
+                <DialogFooter>
+                    <Button variant="outline" @click="showRejectDialog = false">Cancel</Button>
+                    <Button variant="destructive" @click="executeReject">
+                        Reject
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </TenantLayout>
 </template>

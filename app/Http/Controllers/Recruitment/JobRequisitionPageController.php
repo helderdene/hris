@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Recruitment;
 use App\Enums\EmploymentType;
 use App\Enums\JobRequisitionStatus;
 use App\Enums\JobRequisitionUrgency;
+use App\Enums\LeaveApprovalDecision;
 use App\Enums\TenantUserRole;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
@@ -188,7 +189,7 @@ class JobRequisitionPageController extends Controller
     /**
      * Display a specific job requisition.
      */
-    public function show(JobRequisition $jobRequisition): Response
+    public function show(Request $request, JobRequisition $jobRequisition): Response
     {
         $jobRequisition->load([
             'position',
@@ -197,6 +198,16 @@ class JobRequisitionPageController extends Controller
             'requestedByEmployee.position',
             'approvals.approverEmployee',
         ]);
+
+        $employee = Employee::where('user_id', $request->user()->id)->first();
+
+        $canApprove = $employee !== null
+            && $jobRequisition->status === JobRequisitionStatus::Pending
+            && $jobRequisition->approvals->contains(
+                fn ($approval) => $approval->approval_level === $jobRequisition->current_approval_level
+                    && $approval->approver_employee_id === $employee->id
+                    && $approval->decision === LeaveApprovalDecision::Pending
+            );
 
         return Inertia::render('Recruitment/Requisitions/Show', [
             'requisition' => [
@@ -254,6 +265,7 @@ class JobRequisitionPageController extends Controller
                 'created_at' => $jobRequisition->created_at->format('Y-m-d H:i:s'),
                 'can_be_edited' => $jobRequisition->can_be_edited,
                 'can_be_cancelled' => $jobRequisition->can_be_cancelled,
+                'can_approve' => $canApprove,
             ],
         ]);
     }
