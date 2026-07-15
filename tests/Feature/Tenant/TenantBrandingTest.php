@@ -46,9 +46,9 @@ it('injects tenant context into inertia shared data when on subdomain', function
     // Bind the tenant to the app container (simulating ResolveTenant middleware)
     app()->instance('tenant', $tenant);
 
-    // Request to main domain dashboard (where tenant context is injected via HandleInertiaRequests)
+    // Request to a main domain Inertia page (tenant context is injected via HandleInertiaRequests)
     $response = $this->actingAs($user)
-        ->get(route('dashboard'));
+        ->get(route('home'));
 
     $response->assertInertia(fn ($page) => $page
         ->has('tenant')
@@ -69,10 +69,10 @@ it('injects tenant context into inertia shared data when on subdomain', function
 it('does not inject tenant context on main domain', function () {
     $user = User::factory()->create();
 
-    // Request to main domain dashboard (no tenant context)
+    // Request to a main domain Inertia page (no tenant context)
     $this->actingAs($user)
         ->withHeaders(['Host' => 'kasamahr.test'])
-        ->get('http://kasamahr.test/dashboard')
+        ->get('http://kasamahr.test/')
         ->assertInertia(fn ($page) => $page
             ->where('tenant', null)
         );

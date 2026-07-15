@@ -11,6 +11,7 @@
 use App\Http\Controllers\InvitationController;
 use App\Http\Controllers\PayMongoWebhookController;
 use App\Http\Controllers\PlatformAdminController;
+use App\Http\Controllers\PlatformDashboardController;
 use App\Http\Controllers\TenantRegistrationController;
 use App\Http\Controllers\TenantSelectorController;
 use Illuminate\Support\Facades\Route;
@@ -23,9 +24,9 @@ Route::get('/', function () {
     ]);
 })->name('home');
 
-Route::get('/dashboard', function () {
-    return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', PlatformDashboardController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // Tenant Selection Routes
 // These routes allow authenticated users to select which tenant to access
