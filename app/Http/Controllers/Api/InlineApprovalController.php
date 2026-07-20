@@ -319,6 +319,9 @@ class InlineApprovalController extends Controller
     /**
      * Broadcast an action center update event.
      *
+     * Broadcast failures are reported instead of thrown so a websocket server
+     * outage cannot fail the request after the approval has been persisted.
+     *
      * @param  array<string, mixed>  $data
      */
     protected function broadcastActionCenterUpdate(string $action, array $data): void
@@ -326,7 +329,7 @@ class InlineApprovalController extends Controller
         $tenant = tenant();
 
         if ($tenant) {
-            broadcast(new ActionCenterUpdated($action, $data))->toOthers();
+            rescue(fn () => broadcast(new ActionCenterUpdated($action, $data))->toOthers());
         }
     }
 }

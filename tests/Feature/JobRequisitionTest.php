@@ -4,16 +4,21 @@ use App\Enums\EmploymentStatus;
 use App\Enums\EmploymentType;
 use App\Enums\JobRequisitionStatus;
 use App\Enums\JobRequisitionUrgency;
+use App\Enums\LeaveApprovalDecision;
 use App\Enums\TenantUserRole;
 use App\Models\Department;
 use App\Models\Employee;
+use App\Models\JobPosting;
 use App\Models\JobRequisition;
 use App\Models\Position;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\JobRequisitionApproved;
+use App\Services\JobPostingService;
 use App\Services\JobRequisitionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Notification;
 
 uses(RefreshDatabase::class);
 
@@ -141,7 +146,10 @@ describe('JobRequisitionService', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForJobReq($tenant);
 
-        $supervisor = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $supervisor = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
         $supervisorUser = createTenantUserForJobReq($tenant, TenantUserRole::Admin);
         $supervisor->update(['user_id' => $supervisorUser->id]);
 
@@ -194,7 +202,10 @@ describe('JobRequisitionService', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForJobReq($tenant);
 
-        $supervisor = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $supervisor = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
         $supervisorUser = createTenantUserForJobReq($tenant, TenantUserRole::Admin);
         $supervisor->update(['user_id' => $supervisorUser->id]);
 
@@ -221,11 +232,108 @@ describe('JobRequisitionService', function () {
         expect($approved->approved_at)->not->toBeNull();
     });
 
+    it('creates a job posting and notifies the requester on final approval', function () {
+        Notification::fake();
+
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $supervisor = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
+        $supervisorUser = createTenantUserForJobReq($tenant, TenantUserRole::Admin);
+        $supervisor->update(['user_id' => $supervisorUser->id]);
+
+        $requesterUser = createTenantUserForJobReq($tenant, TenantUserRole::Employee);
+        $employee = Employee::factory()->create([
+            'supervisor_id' => $supervisor->id,
+            'employment_status' => EmploymentStatus::Active,
+            'user_id' => $requesterUser->id,
+        ]);
+
+        $position = Position::factory()->create();
+        $department = Department::factory()->create();
+
+        $requisition = JobRequisition::factory()->draft()->create([
+            'position_id' => $position->id,
+            'department_id' => $department->id,
+            'requested_by_employee_id' => $employee->id,
+            'reference_number' => 'JR-2026-APPROVE2',
+        ]);
+
+        $service = app(JobRequisitionService::class);
+        $submitted = $service->submit($requisition);
+        $approved = $service->approve($submitted, $supervisor, 'Looks good');
+
+        expect($approved->status)->toBe(JobRequisitionStatus::Approved);
+
+        $posting = JobPosting::where('job_requisition_id', $approved->id)->first();
+        expect($posting)->not->toBeNull();
+        expect($posting->created_by_employee_id)->toBe($employee->id);
+
+        Notification::assertSentTo($requesterUser, JobRequisitionApproved::class);
+    });
+
+    it('rolls back the approval and sends no notification when job posting creation fails', function () {
+        Notification::fake();
+
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $supervisor = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
+        $supervisorUser = createTenantUserForJobReq($tenant, TenantUserRole::Admin);
+        $supervisor->update(['user_id' => $supervisorUser->id]);
+
+        $requesterUser = createTenantUserForJobReq($tenant, TenantUserRole::Employee);
+        $employee = Employee::factory()->create([
+            'supervisor_id' => $supervisor->id,
+            'employment_status' => EmploymentStatus::Active,
+            'user_id' => $requesterUser->id,
+        ]);
+
+        $position = Position::factory()->create();
+        $department = Department::factory()->create();
+
+        $requisition = JobRequisition::factory()->draft()->create([
+            'position_id' => $position->id,
+            'department_id' => $department->id,
+            'requested_by_employee_id' => $employee->id,
+            'reference_number' => 'JR-2026-APPROVE3',
+        ]);
+
+        $submitted = app(JobRequisitionService::class)->submit($requisition);
+
+        $this->mock(JobPostingService::class, function ($mock) {
+            $mock->shouldReceive('createFromRequisition')
+                ->once()
+                ->andThrow(new RuntimeException('Posting creation failed'));
+        });
+
+        $service = app(JobRequisitionService::class);
+
+        expect(fn () => $service->approve($submitted, $supervisor, 'Looks good'))
+            ->toThrow(RuntimeException::class);
+
+        $fresh = $submitted->fresh();
+        expect($fresh->status)->toBe(JobRequisitionStatus::Pending);
+        expect($fresh->approvals()->where('decision', LeaveApprovalDecision::Pending)->count())->toBe(1);
+        expect(JobPosting::where('job_requisition_id', $submitted->id)->exists())->toBeFalse();
+
+        Notification::assertNotSentTo($requesterUser, JobRequisitionApproved::class);
+    });
+
     it('rejects a job requisition', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForJobReq($tenant);
 
-        $supervisor = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $supervisor = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
         $supervisorUser = createTenantUserForJobReq($tenant, TenantUserRole::Admin);
         $supervisor->update(['user_id' => $supervisorUser->id]);
 
@@ -256,7 +364,10 @@ describe('JobRequisitionService', function () {
         $tenant = Tenant::factory()->create();
         bindTenantContextForJobReq($tenant);
 
-        $supervisor = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $supervisor = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
         $supervisorUser = createTenantUserForJobReq($tenant, TenantUserRole::Admin);
         $supervisor->update(['user_id' => $supervisorUser->id]);
 

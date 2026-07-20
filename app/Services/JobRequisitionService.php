@@ -7,11 +7,12 @@ use App\Enums\LeaveApprovalDecision;
 use App\Models\Employee;
 use App\Models\JobRequisition;
 use App\Models\JobRequisitionApproval;
+use App\Models\User;
 use App\Notifications\JobRequisitionApproved;
 use App\Notifications\JobRequisitionCancelled;
 use App\Notifications\JobRequisitionRejected;
 use App\Notifications\JobRequisitionSubmitted;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Notifications\Notification;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -42,7 +43,7 @@ class JobRequisitionService
             ]);
         }
 
-        return DB::transaction(function () use ($requisition) {
+        $submitted = $requisition->getConnection()->transaction(function () use ($requisition) {
             // Build approval chain
             $employee = $requisition->requestedByEmployee;
             $approvers = $this->chainResolver->resolveChain($employee);
@@ -89,12 +90,13 @@ class JobRequisitionService
 
             $requisition->save();
 
-            // Notify first approver
-            $firstApproval = $requisition->approvals()->where('approval_level', 1)->first();
-            $firstApproval?->approverEmployee?->user?->notify(new JobRequisitionSubmitted($requisition));
-
             return $requisition->fresh(['approvals', 'position', 'department', 'requestedByEmployee']);
         });
+
+        $firstApproval = $submitted->approvals->firstWhere('approval_level', 1);
+        $this->notifyQuietly($firstApproval?->approverEmployee?->user, new JobRequisitionSubmitted($submitted));
+
+        return $submitted;
     }
 
     /**
@@ -125,7 +127,7 @@ class JobRequisitionService
             ]);
         }
 
-        return DB::transaction(function () use ($requisition, $approval, $remarks) {
+        $approved = $requisition->getConnection()->transaction(function () use ($requisition, $approval, $remarks) {
             $approval->approve($remarks);
 
             if ($requisition->current_approval_level >= $requisition->total_approval_levels) {
@@ -133,9 +135,6 @@ class JobRequisitionService
                 $requisition->status = JobRequisitionStatus::Approved;
                 $requisition->approved_at = now();
                 $requisition->save();
-
-                // Notify requester
-                $requisition->requestedByEmployee?->user?->notify(new JobRequisitionApproved($requisition));
 
                 // Auto-create job posting from approved requisition
                 $this->jobPostingService->createFromRequisition(
@@ -146,16 +145,19 @@ class JobRequisitionService
                 // Advance to next level
                 $requisition->current_approval_level++;
                 $requisition->save();
-
-                // Notify next approver
-                $nextApproval = $requisition->approvals()
-                    ->where('approval_level', $requisition->current_approval_level)
-                    ->first();
-                $nextApproval?->approverEmployee?->user?->notify(new JobRequisitionSubmitted($requisition));
             }
 
             return $requisition->fresh(['approvals', 'position', 'department', 'requestedByEmployee']);
         });
+
+        if ($approved->status === JobRequisitionStatus::Approved) {
+            $this->notifyQuietly($approved->requestedByEmployee?->user, new JobRequisitionApproved($approved));
+        } else {
+            $nextApproval = $approved->approvals->firstWhere('approval_level', $approved->current_approval_level);
+            $this->notifyQuietly($nextApproval?->approverEmployee?->user, new JobRequisitionSubmitted($approved));
+        }
+
+        return $approved;
     }
 
     /**
@@ -186,18 +188,19 @@ class JobRequisitionService
             ]);
         }
 
-        return DB::transaction(function () use ($requisition, $approval, $reason) {
+        $rejected = $requisition->getConnection()->transaction(function () use ($requisition, $approval, $reason) {
             $approval->reject($reason);
 
             $requisition->status = JobRequisitionStatus::Rejected;
             $requisition->rejected_at = now();
             $requisition->save();
 
-            // Notify requester
-            $requisition->requestedByEmployee?->user?->notify(new JobRequisitionRejected($requisition, $reason));
-
             return $requisition->fresh(['approvals', 'position', 'department', 'requestedByEmployee']);
         });
+
+        $this->notifyQuietly($rejected->requestedByEmployee?->user, new JobRequisitionRejected($rejected, $reason));
+
+        return $rejected;
     }
 
     /**
@@ -215,14 +218,13 @@ class JobRequisitionService
             ]);
         }
 
-        return DB::transaction(function () use ($requisition, $reason) {
-            // Notify pending approvers before status change
-            $requisition->approvals()
-                ->where('decision', LeaveApprovalDecision::Pending)
-                ->each(function (JobRequisitionApproval $approval) use ($requisition) {
-                    $approval->approverEmployee?->user?->notify(new JobRequisitionCancelled($requisition));
-                });
+        $pendingApproverUsers = $requisition->approvals()
+            ->where('decision', LeaveApprovalDecision::Pending)
+            ->get()
+            ->map(fn (JobRequisitionApproval $approval) => $approval->approverEmployee?->user)
+            ->filter();
 
+        $cancelled = $requisition->getConnection()->transaction(function () use ($requisition, $reason) {
             $requisition->status = JobRequisitionStatus::Cancelled;
             $requisition->cancelled_at = now();
             $requisition->cancellation_reason = $reason;
@@ -230,5 +232,24 @@ class JobRequisitionService
 
             return $requisition->fresh(['approvals', 'position', 'department', 'requestedByEmployee']);
         });
+
+        foreach ($pendingApproverUsers as $user) {
+            $this->notifyQuietly($user, new JobRequisitionCancelled($cancelled));
+        }
+
+        return $cancelled;
+    }
+
+    /**
+     * Send a notification after the surrounding transaction has committed.
+     *
+     * Delivery failures are reported instead of thrown so a mail or broadcast
+     * outage cannot fail the request after state has already been persisted.
+     */
+    protected function notifyQuietly(?User $user, Notification $notification): void
+    {
+        if ($user) {
+            rescue(fn () => $user->notify($notification));
+        }
     }
 }
