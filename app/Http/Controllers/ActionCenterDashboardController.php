@@ -294,7 +294,7 @@ class ActionCenterDashboardController extends Controller
         } else {
             $requisition = $approval->jobRequisition;
             $data['title'] = 'Job Requisition';
-            $data['employee_name'] = $requisition?->requestedBy?->full_name ?? 'Unknown';
+            $data['employee_name'] = $requisition?->requestedByEmployee?->full_name ?? 'Unknown';
             $data['description'] = $requisition?->position?->name ?? 'New Position';
             $data['hours_overdue'] = $approval->hours_overdue ?? 0;
             $data['hours_remaining'] = $approval->hours_remaining ?? 0;
@@ -468,7 +468,7 @@ class ActionCenterDashboardController extends Controller
         return JobRequisitionApproval::query()
             ->pending()
             ->forApprover($employee)
-            ->with(['jobRequisition.position', 'jobRequisition.department', 'jobRequisition.requestedBy'])
+            ->with(['jobRequisition.position', 'jobRequisition.department', 'jobRequisition.requestedByEmployee'])
             ->orderBy('created_at')
             ->limit(20)
             ->get()
@@ -477,7 +477,7 @@ class ActionCenterDashboardController extends Controller
                 'job_requisition_id' => $approval->job_requisition_id,
                 'position_name' => $approval->jobRequisition?->position?->name,
                 'department_name' => $approval->jobRequisition?->department?->name,
-                'requested_by' => $approval->jobRequisition?->requestedBy?->full_name,
+                'requested_by' => $approval->jobRequisition?->requestedByEmployee?->full_name,
                 'number_of_positions' => $approval->jobRequisition?->number_of_positions,
                 'justification' => $approval->jobRequisition?->justification,
                 'is_overdue' => $approval->is_overdue,

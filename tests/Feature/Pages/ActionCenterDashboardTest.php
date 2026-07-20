@@ -4,6 +4,8 @@ use App\Enums\LeaveApprovalDecision;
 use App\Enums\TenantUserRole;
 use App\Http\Controllers\ActionCenterDashboardController;
 use App\Models\Employee;
+use App\Models\JobRequisition;
+use App\Models\JobRequisitionApproval;
 use App\Models\LeaveApplication;
 use App\Models\LeaveApplicationApproval;
 use App\Models\LeaveType;
@@ -203,6 +205,47 @@ it('returns zero counts when no pending approvals exist', function () {
         ->and($props['pendingActions']['probationaryEvaluations'])->toBe(0)
         ->and($props['pendingActions']['documentRequests'])->toBe(0)
         ->and($props['pendingActions']['onboardingTasks'])->toBe(0);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Pending Requisition Details Tests
+|--------------------------------------------------------------------------
+*/
+
+it('renders pending requisition details for an approver without error', function () {
+    $tenant = Tenant::factory()->create(['slug' => 'acme']);
+    bindTenantContextForActionCenter($tenant);
+
+    $admin = createTenantUserForActionCenter($tenant, TenantUserRole::Admin);
+    $approverEmployee = createEmployeeForUser($admin);
+    $this->actingAs($admin);
+
+    $requester = Employee::factory()->create();
+    $requisition = JobRequisition::factory()->pending()->create([
+        'requested_by_employee_id' => $requester->id,
+    ]);
+
+    JobRequisitionApproval::factory()
+        ->pending()
+        ->forApprover($approverEmployee)
+        ->create([
+            'job_requisition_id' => $requisition->id,
+        ]);
+
+    $request = request();
+    $request->setUserResolver(fn () => $admin);
+
+    $controller = app(ActionCenterDashboardController::class);
+    $response = $controller($request);
+
+    $reflection = new ReflectionClass($response);
+    $propsProperty = $reflection->getProperty('props');
+    $propsProperty->setAccessible(true);
+    $props = $propsProperty->getValue($response);
+
+    expect($props['pendingRequisitionDetails'])->toHaveCount(1)
+        ->and($props['pendingRequisitionDetails'][0]['requested_by'])->toBe($requester->full_name);
 });
 
 /*
