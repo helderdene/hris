@@ -31,7 +31,7 @@
             }
         </style>
 
-        <title inertia>{{ config('app.name', 'Laravel') }}</title>
+        <title inertia>{{ config('app.name', 'KasamaHR') }}</title>
 
         <link rel="icon" href="/favicon.ico?v=2" sizes="any">
         <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">

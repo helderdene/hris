@@ -49,7 +49,7 @@ const currentYear = computed(() => new Date().getFullYear());
 </script>
 
 <template>
-    <Head title="KasamaHR - Your HR Companion">
+    <Head title="Your HR Companion">
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
             rel="preconnect"
