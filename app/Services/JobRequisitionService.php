@@ -191,6 +191,8 @@ class JobRequisitionService
         $rejected = $requisition->getConnection()->transaction(function () use ($requisition, $approval, $reason) {
             $approval->reject($reason);
 
+            $this->skipPendingApprovals($requisition, 'Requisition rejected at an earlier level');
+
             $requisition->status = JobRequisitionStatus::Rejected;
             $requisition->rejected_at = now();
             $requisition->save();
@@ -225,6 +227,8 @@ class JobRequisitionService
             ->filter();
 
         $cancelled = $requisition->getConnection()->transaction(function () use ($requisition, $reason) {
+            $this->skipPendingApprovals($requisition, 'Requisition cancelled');
+
             $requisition->status = JobRequisitionStatus::Cancelled;
             $requisition->cancelled_at = now();
             $requisition->cancellation_reason = $reason;
@@ -238,6 +242,21 @@ class JobRequisitionService
         }
 
         return $cancelled;
+    }
+
+    /**
+     * Mark all still-pending approvals as skipped so they no longer surface
+     * as pending actions or priority alerts once the requisition is closed.
+     */
+    protected function skipPendingApprovals(JobRequisition $requisition, string $reason): void
+    {
+        $requisition->approvals()
+            ->where('decision', LeaveApprovalDecision::Pending)
+            ->update([
+                'decision' => LeaveApprovalDecision::Skipped,
+                'remarks' => $reason,
+                'decided_at' => now(),
+            ]);
     }
 
     /**

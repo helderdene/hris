@@ -2,6 +2,7 @@
 
 use App\Enums\EmploymentStatus;
 use App\Enums\LeaveApplicationStatus;
+use App\Enums\LeaveApprovalDecision;
 use App\Enums\TenantUserRole;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
@@ -398,6 +399,10 @@ describe('LeaveApplicationService', function () {
         // Check balance was released
         $balance->refresh();
         expect((float) $balance->pending)->toBe(0.0);
+
+        // Pending approvals are closed out so they no longer surface as alerts
+        expect($cancelled->approvals()->where('decision', LeaveApprovalDecision::Pending)->count())->toBe(0);
+        expect($cancelled->approvals()->where('decision', LeaveApprovalDecision::Skipped)->count())->toBe(1);
     });
 });
 

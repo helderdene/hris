@@ -210,9 +210,16 @@ describe('OvertimeRequestService Approval', function () {
         bindTenantContextForOT($tenant);
 
         $employee = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $approver = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
 
         $request = OvertimeRequest::factory()->pending()->create([
             'employee_id' => $employee->id,
+        ]);
+
+        OvertimeRequestApproval::factory()->pending()->create([
+            'overtime_request_id' => $request->id,
+            'approval_level' => 1,
+            'approver_employee_id' => $approver->id,
         ]);
 
         $service = new OvertimeRequestService(new ApprovalChainResolver);
@@ -221,6 +228,8 @@ describe('OvertimeRequestService Approval', function () {
         expect($cancelled->status)->toBe(OvertimeRequestStatus::Cancelled);
         expect($cancelled->cancelled_at)->not->toBeNull();
         expect($cancelled->cancellation_reason)->toBe('Changed plans');
+        expect($cancelled->approvals()->where('decision', OvertimeApprovalDecision::Pending)->count())->toBe(0);
+        expect($cancelled->approvals()->where('decision', OvertimeApprovalDecision::Skipped)->count())->toBe(1);
     });
 });
 

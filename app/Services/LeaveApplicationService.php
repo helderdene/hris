@@ -217,6 +217,8 @@ class LeaveApplicationService
             // Record rejection
             $approval->reject($reason);
 
+            $this->skipPendingApprovals($application, 'Application rejected at an earlier level');
+
             // Release pending balance
             $application->leaveBalance?->releasePending((float) $application->total_days);
 
@@ -266,6 +268,8 @@ class LeaveApplicationService
                 }
             }
 
+            $this->skipPendingApprovals($application, 'Application cancelled');
+
             // Update application status
             $application->status = LeaveApplicationStatus::Cancelled;
             $application->cancelled_at = now();
@@ -274,6 +278,21 @@ class LeaveApplicationService
 
             return $application->fresh(['approvals', 'leaveType', 'employee']);
         });
+    }
+
+    /**
+     * Mark all still-pending approvals as skipped so they no longer surface
+     * as pending actions or priority alerts once the application is closed.
+     */
+    protected function skipPendingApprovals(LeaveApplication $application, string $reason): void
+    {
+        $application->approvals()
+            ->where('decision', LeaveApprovalDecision::Pending)
+            ->update([
+                'decision' => LeaveApprovalDecision::Skipped,
+                'remarks' => $reason,
+                'decided_at' => now(),
+            ]);
     }
 
     /**

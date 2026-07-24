@@ -176,6 +176,8 @@ class OvertimeRequestService
         return DB::transaction(function () use ($request, $approval, $reason) {
             $approval->reject($reason);
 
+            $this->skipPendingApprovals($request, 'Request rejected at an earlier level');
+
             $request->status = OvertimeRequestStatus::Rejected;
             $request->rejected_at = now();
             $request->save();
@@ -202,6 +204,8 @@ class OvertimeRequestService
         }
 
         return DB::transaction(function () use ($request, $reason) {
+            $this->skipPendingApprovals($request, 'Request cancelled');
+
             $request->status = OvertimeRequestStatus::Cancelled;
             $request->cancelled_at = now();
             $request->cancellation_reason = $reason;
@@ -209,6 +213,21 @@ class OvertimeRequestService
 
             return $request->fresh(['approvals', 'employee']);
         });
+    }
+
+    /**
+     * Mark all still-pending approvals as skipped so they no longer surface
+     * as pending actions or priority alerts once the request is closed.
+     */
+    protected function skipPendingApprovals(OvertimeRequest $request, string $reason): void
+    {
+        $request->approvals()
+            ->where('decision', OvertimeApprovalDecision::Pending)
+            ->update([
+                'decision' => OvertimeApprovalDecision::Skipped,
+                'remarks' => $reason,
+                'decided_at' => now(),
+            ]);
     }
 
     /**

@@ -392,6 +392,51 @@ describe('JobRequisitionService', function () {
 
         expect($cancelled->status)->toBe(JobRequisitionStatus::Cancelled);
         expect($cancelled->cancellation_reason)->toBe('Plans changed');
+        expect($cancelled->approvals()->where('decision', LeaveApprovalDecision::Pending)->count())->toBe(0);
+        expect($cancelled->approvals()->where('decision', LeaveApprovalDecision::Skipped)->count())->toBe(1);
+    });
+
+    it('skips remaining pending approvals when rejected mid-chain', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForJobReq($tenant);
+
+        $departmentHead = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+        ]);
+        $adminManager = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
+
+        $department = Department::factory()->create([
+            'department_head_id' => $departmentHead->id,
+        ]);
+
+        $employee = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'department_id' => $department->id,
+        ]);
+
+        $position = Position::factory()->create();
+
+        $requisition = JobRequisition::factory()->draft()->create([
+            'position_id' => $position->id,
+            'department_id' => $department->id,
+            'requested_by_employee_id' => $employee->id,
+            'reference_number' => 'JR-2026-REJECT2',
+        ]);
+
+        $service = app(JobRequisitionService::class);
+        $submitted = $service->submit($requisition);
+
+        expect($submitted->total_approval_levels)->toBe(2);
+
+        $rejected = $service->reject($submitted, $departmentHead, 'Budget constraints');
+
+        expect($rejected->status)->toBe(JobRequisitionStatus::Rejected);
+        expect($rejected->approvals()->where('decision', LeaveApprovalDecision::Pending)->count())->toBe(0);
+        expect($rejected->approvals()->where('decision', LeaveApprovalDecision::Rejected)->count())->toBe(1);
+        expect($rejected->approvals()->where('decision', LeaveApprovalDecision::Skipped)->count())->toBe(1);
     });
 
     it('prevents cancelling an approved requisition', function () {
