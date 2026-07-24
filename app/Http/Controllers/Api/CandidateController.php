@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class CandidateController extends Controller
 {
@@ -143,6 +145,23 @@ class CandidateController extends Controller
         $candidate->delete();
 
         return response()->json(['message' => 'Candidate deleted successfully.']);
+    }
+
+    /**
+     * Download the candidate's resume file.
+     */
+    public function downloadResume(Candidate $candidate): StreamedResponse|JsonResponse
+    {
+        Gate::authorize('can-manage-organization');
+
+        if (! $candidate->resume_file_path || ! Storage::disk('local')->exists($candidate->resume_file_path)) {
+            return response()->json(['message' => 'Resume not found.'], 404);
+        }
+
+        return Storage::disk('local')->download(
+            $candidate->resume_file_path,
+            $candidate->resume_file_name ?? basename($candidate->resume_file_path)
+        );
     }
 
     /**

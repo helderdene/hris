@@ -329,7 +329,16 @@ const pipelineSteps = [
                         </div>
                         <div>
                             <dt class="text-xs text-slate-500 dark:text-slate-400">Resume</dt>
-                            <dd class="mt-0.5 text-sm text-slate-900 dark:text-slate-100">{{ application.candidate.resume_file_name || 'Not uploaded' }}</dd>
+                            <dd class="mt-0.5 text-sm">
+                                <a
+                                    v-if="application.candidate.resume_file_name"
+                                    :href="`/api/candidates/${application.candidate.id}/resume`"
+                                    class="font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                                >
+                                    {{ application.candidate.resume_file_name }}
+                                </a>
+                                <span v-else class="text-slate-900 dark:text-slate-100">Not uploaded</span>
+                            </dd>
                         </div>
                     </dl>
                     <div v-if="application.candidate.skills?.length" class="mt-3 flex flex-wrap gap-1">

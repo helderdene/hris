@@ -17,6 +17,8 @@ Route::prefix('candidates')->group(function () {
         ->name('api.candidates.check-duplicates');
     Route::get('/{candidate}', [\App\Http\Controllers\Api\CandidateController::class, 'show'])
         ->name('api.candidates.show');
+    Route::get('/{candidate}/resume', [\App\Http\Controllers\Api\CandidateController::class, 'downloadResume'])
+        ->name('api.candidates.resume.download');
     Route::put('/{candidate}', [\App\Http\Controllers\Api\CandidateController::class, 'update'])
         ->name('api.candidates.update');
     Route::delete('/{candidate}', [\App\Http\Controllers\Api\CandidateController::class, 'destroy'])

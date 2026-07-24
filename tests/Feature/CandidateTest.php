@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -76,8 +77,8 @@ describe('Candidate API', function () {
         ]);
         Gate::define('can-manage-organization', fn () => true);
 
-        Candidate::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
-        Candidate::factory()->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
+        Candidate::factory()->create(['first_name' => 'John', 'last_name' => 'Doe', 'email' => 'john.doe@example.com']);
+        Candidate::factory()->create(['first_name' => 'Jane', 'last_name' => 'Smith', 'email' => 'jane.smith@example.com']);
 
         $this->actingAs($user)
             ->getJson("{$this->baseUrl}/api/candidates?search=John")
@@ -142,5 +143,88 @@ describe('Candidate API', function () {
             ->assertSuccessful();
 
         expect(Candidate::find($candidate->id))->toBeNull();
+    });
+});
+
+describe('Resume Download', function () {
+    beforeEach(function () {
+        Storage::fake('local');
+
+        $this->user = User::factory()->create();
+        $this->user->tenants()->attach($this->tenant->id, [
+            'role' => TenantUserRole::HrManager->value,
+            'invited_at' => now(),
+            'invitation_accepted_at' => now(),
+        ]);
+    });
+
+    it('downloads the resume with its original filename', function () {
+        Storage::disk('local')->put('resumes/stored-file.pdf', 'fake pdf content');
+        Gate::define('can-manage-organization', fn () => true);
+
+        $candidate = Candidate::factory()->create([
+            'resume_file_path' => 'resumes/stored-file.pdf',
+            'resume_file_name' => 'john-doe-resume.pdf',
+        ]);
+
+        $this->actingAs($this->user)
+            ->get("{$this->baseUrl}/api/candidates/{$candidate->id}/resume")
+            ->assertSuccessful()
+            ->assertDownload('john-doe-resume.pdf');
+    });
+
+    it('falls back to the stored filename when the original name is missing', function () {
+        Storage::disk('local')->put('resumes/stored-file.pdf', 'fake pdf content');
+        Gate::define('can-manage-organization', fn () => true);
+
+        $candidate = Candidate::factory()->create([
+            'resume_file_path' => 'resumes/stored-file.pdf',
+            'resume_file_name' => null,
+        ]);
+
+        $this->actingAs($this->user)
+            ->get("{$this->baseUrl}/api/candidates/{$candidate->id}/resume")
+            ->assertSuccessful()
+            ->assertDownload('stored-file.pdf');
+    });
+
+    it('returns 404 when the candidate has no resume', function () {
+        Gate::define('can-manage-organization', fn () => true);
+
+        $candidate = Candidate::factory()->create([
+            'resume_file_path' => null,
+            'resume_file_name' => null,
+        ]);
+
+        $this->actingAs($this->user)
+            ->getJson("{$this->baseUrl}/api/candidates/{$candidate->id}/resume")
+            ->assertNotFound();
+    });
+
+    it('returns 404 when the resume file is missing from storage', function () {
+        Gate::define('can-manage-organization', fn () => true);
+
+        $candidate = Candidate::factory()->create([
+            'resume_file_path' => 'resumes/deleted-file.pdf',
+            'resume_file_name' => 'john-doe-resume.pdf',
+        ]);
+
+        $this->actingAs($this->user)
+            ->getJson("{$this->baseUrl}/api/candidates/{$candidate->id}/resume")
+            ->assertNotFound();
+    });
+
+    it('forbids users without organization management permission', function () {
+        Storage::disk('local')->put('resumes/stored-file.pdf', 'fake pdf content');
+        Gate::define('can-manage-organization', fn () => false);
+
+        $candidate = Candidate::factory()->create([
+            'resume_file_path' => 'resumes/stored-file.pdf',
+            'resume_file_name' => 'john-doe-resume.pdf',
+        ]);
+
+        $this->actingAs($this->user)
+            ->getJson("{$this->baseUrl}/api/candidates/{$candidate->id}/resume")
+            ->assertForbidden();
     });
 });
