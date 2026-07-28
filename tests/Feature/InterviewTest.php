@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\InterviewCalendarService;
 use App\Services\InterviewService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Validation\ValidationException;
 
@@ -275,6 +276,19 @@ describe('InterviewCalendarService', function () {
         expect($ics)->toContain('meet.example.com');
         expect($ics)->toContain('END:VEVENT');
         expect($ics)->toContain('END:VCALENDAR');
+    });
+
+    it('converts scheduled time to UTC so calendar apps show the same date as the email', function () {
+        $interview = Interview::factory()->create([
+            'scheduled_at' => Carbon::parse('2026-07-20 17:05:00', 'Asia/Manila'),
+            'duration_minutes' => 60,
+        ]);
+
+        $service = new InterviewCalendarService;
+        $ics = $service->generateIcs($interview);
+
+        expect($ics)->toContain('DTSTART:20260720T090500Z');
+        expect($ics)->toContain('DTEND:20260720T100500Z');
     });
 
     it('includes location when set', function () {

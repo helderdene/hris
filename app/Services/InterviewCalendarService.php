@@ -16,9 +16,9 @@ class InterviewCalendarService
     {
         $interview->load(['jobApplication.candidate', 'panelists.employee']);
 
-        $start = $interview->scheduled_at->format('Ymd\THis\Z');
-        $end = $interview->scheduled_at->addMinutes($interview->duration_minutes)->format('Ymd\THis\Z');
-        $created = $interview->created_at->format('Ymd\THis\Z');
+        $start = $interview->scheduled_at->copy()->utc()->format('Ymd\THis\Z');
+        $end = $interview->scheduled_at->copy()->addMinutes($interview->duration_minutes)->utc()->format('Ymd\THis\Z');
+        $created = $interview->created_at->copy()->utc()->format('Ymd\THis\Z');
         $uid = "interview-{$interview->id}@kasamahr";
         $summary = $this->escapeIcal($interview->title);
         $candidate = $interview->jobApplication->candidate->full_name ?? 'Unknown';
