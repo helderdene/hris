@@ -10,9 +10,11 @@ use App\Models\Interview;
 use App\Models\JobApplication;
 use App\Notifications\InterviewCancelled;
 use App\Notifications\InterviewScheduled;
+use App\Notifications\InterviewScheduledCandidate;
 use App\Services\InterviewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 
 class InterviewController extends Controller
 {
@@ -91,6 +93,12 @@ class InterviewController extends Controller
             if ($panelist->employee->user) {
                 $panelist->employee->user->notify(new InterviewScheduled($interview));
             }
+        }
+
+        $candidate = $interview->jobApplication->candidate;
+        if ($candidate?->email) {
+            Notification::route('mail', $candidate->email)
+                ->notify(new InterviewScheduledCandidate($interview));
         }
 
         $this->interviewService->markInvitationsSent($interview);

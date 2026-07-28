@@ -2,17 +2,23 @@
 
 use App\Enums\InterviewStatus;
 use App\Enums\InterviewType;
+use App\Enums\TenantUserRole;
 use App\Models\Employee;
 use App\Models\Interview;
 use App\Models\InterviewPanelist;
 use App\Models\JobApplication;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Notifications\InterviewScheduled;
+use App\Notifications\InterviewScheduledCandidate;
 use App\Services\InterviewCalendarService;
 use App\Services\InterviewService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
@@ -312,6 +318,55 @@ describe('InterviewCalendarService', function () {
         $ics = $service->generateIcs($interview);
 
         expect($ics)->toContain('ATTENDEE');
+    });
+});
+
+describe('Send Invitations API', function () {
+    it('notifies panelists and the candidate', function () {
+        Notification::fake();
+
+        $user = User::factory()->create();
+        $user->tenants()->attach($this->tenant->id, [
+            'role' => TenantUserRole::HrManager->value,
+            'invited_at' => now(),
+            'invitation_accepted_at' => now(),
+        ]);
+        Gate::define('can-manage-organization', fn () => true);
+
+        $panelistUser = User::factory()->create();
+        $employee = Employee::factory()->create(['user_id' => $panelistUser->id]);
+        $interview = Interview::factory()->create();
+        InterviewPanelist::factory()->create([
+            'interview_id' => $interview->id,
+            'employee_id' => $employee->id,
+        ]);
+
+        $baseUrl = "http://{$this->tenant->slug}.kasamahr.test";
+
+        $this->actingAs($user)
+            ->postJson("{$baseUrl}/api/interviews/{$interview->id}/send-invitations")
+            ->assertSuccessful();
+
+        Notification::assertSentTo($panelistUser, InterviewScheduled::class);
+
+        $candidateEmail = $interview->jobApplication->candidate->email;
+        Notification::assertSentOnDemand(
+            InterviewScheduledCandidate::class,
+            fn ($notification, $channels, $notifiable) => $notifiable->routes['mail'] === $candidateEmail
+        );
+    });
+
+    it('attaches a UTC calendar invite to the candidate email', function () {
+        $interview = Interview::factory()->create([
+            'scheduled_at' => Carbon::parse('2026-07-20 17:05:00', 'Asia/Manila'),
+            'duration_minutes' => 60,
+        ]);
+
+        $mail = (new InterviewScheduledCandidate($interview))->toMail(new AnonymousNotifiable);
+
+        expect($mail->rawAttachments)->toHaveCount(1);
+        expect($mail->rawAttachments[0]['name'])->toBe('interview.ics');
+        expect($mail->rawAttachments[0]['data'])->toContain('DTSTART:20260720T090500Z');
     });
 });
 
