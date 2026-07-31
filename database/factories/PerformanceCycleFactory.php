@@ -43,6 +43,8 @@ class PerformanceCycleFactory extends Factory
         return match ($type) {
             PerformanceCycleType::Annual => 'Annual Performance Review',
             PerformanceCycleType::MidYear => 'Mid-Year Performance Review',
+            PerformanceCycleType::Quarterly => 'Quarterly Performance Review',
+            PerformanceCycleType::Monthly => 'Monthly Performance Review',
             PerformanceCycleType::Probationary => 'Probationary Review',
             PerformanceCycleType::ProjectBased => 'Project Performance Review',
         };
@@ -97,6 +99,28 @@ class PerformanceCycleFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'name' => 'Mid-Year Performance Review',
             'cycle_type' => PerformanceCycleType::MidYear,
+        ]);
+    }
+
+    /**
+     * Create a quarterly cycle.
+     */
+    public function quarterly(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Quarterly Performance Review',
+            'cycle_type' => PerformanceCycleType::Quarterly,
+        ]);
+    }
+
+    /**
+     * Create a monthly cycle.
+     */
+    public function monthly(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'name' => 'Monthly Performance Review',
+            'cycle_type' => PerformanceCycleType::Monthly,
         ]);
     }
 

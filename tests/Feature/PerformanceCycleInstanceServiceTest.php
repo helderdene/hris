@@ -77,6 +77,60 @@ describe('PerformanceCycleInstanceService', function () {
             expect($secondHalf->name)->toContain('Second Half');
         });
 
+        it('generates four instances for quarterly cycle with correct dates', function () {
+            $cycle = PerformanceCycle::factory()->quarterly()->create();
+            $service = new PerformanceCycleInstanceService;
+
+            $result = $service->generateInstancesForYear($cycle, 2026, false);
+
+            expect($result->count())->toBe(4);
+
+            $q1 = PerformanceCycleInstance::where('performance_cycle_id', $cycle->id)
+                ->where('year', 2026)
+                ->where('instance_number', 1)
+                ->first();
+
+            expect($q1->start_date->format('Y-m-d'))->toBe('2026-01-01');
+            expect($q1->end_date->format('Y-m-d'))->toBe('2026-03-31');
+            expect($q1->name)->toContain('Q1');
+
+            $q4 = PerformanceCycleInstance::where('performance_cycle_id', $cycle->id)
+                ->where('year', 2026)
+                ->where('instance_number', 4)
+                ->first();
+
+            expect($q4->start_date->format('Y-m-d'))->toBe('2026-10-01');
+            expect($q4->end_date->format('Y-m-d'))->toBe('2026-12-31');
+            expect($q4->name)->toContain('Q4');
+        });
+
+        it('generates twelve instances for monthly cycle with correct dates', function () {
+            $cycle = PerformanceCycle::factory()->monthly()->create();
+            $service = new PerformanceCycleInstanceService;
+
+            $result = $service->generateInstancesForYear($cycle, 2026, false);
+
+            expect($result->count())->toBe(12);
+
+            $february = PerformanceCycleInstance::where('performance_cycle_id', $cycle->id)
+                ->where('year', 2026)
+                ->where('instance_number', 2)
+                ->first();
+
+            expect($february->start_date->format('Y-m-d'))->toBe('2026-02-01');
+            expect($february->end_date->format('Y-m-d'))->toBe('2026-02-28');
+            expect($february->name)->toContain('February');
+
+            $december = PerformanceCycleInstance::where('performance_cycle_id', $cycle->id)
+                ->where('year', 2026)
+                ->where('instance_number', 12)
+                ->first();
+
+            expect($december->start_date->format('Y-m-d'))->toBe('2026-12-01');
+            expect($december->end_date->format('Y-m-d'))->toBe('2026-12-31');
+            expect($december->name)->toContain('December');
+        });
+
         it('throws exception for non-recurring cycle types', function () {
             $cycle = PerformanceCycle::factory()->probationary()->create();
             $service = new PerformanceCycleInstanceService;

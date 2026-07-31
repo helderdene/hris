@@ -9,6 +9,8 @@ enum PerformanceCycleType: string
 {
     case Annual = 'annual';
     case MidYear = 'mid_year';
+    case Quarterly = 'quarterly';
+    case Monthly = 'monthly';
     case Probationary = 'probationary';
     case ProjectBased = 'project_based';
 
@@ -20,6 +22,8 @@ enum PerformanceCycleType: string
         return match ($this) {
             self::Annual => 'Annual',
             self::MidYear => 'Mid-Year',
+            self::Quarterly => 'Quarterly',
+            self::Monthly => 'Monthly',
             self::Probationary => 'Probationary',
             self::ProjectBased => 'Project-Based',
         };
@@ -33,6 +37,8 @@ enum PerformanceCycleType: string
         return match ($this) {
             self::Annual => 'Yearly comprehensive performance review',
             self::MidYear => 'Semi-annual performance check-in',
+            self::Quarterly => 'Quarterly performance check-in',
+            self::Monthly => 'Monthly performance check-in',
             self::Probationary => 'Evaluation during employee probation period',
             self::ProjectBased => 'Performance review tied to specific projects',
         };
@@ -46,6 +52,8 @@ enum PerformanceCycleType: string
         return match ($this) {
             self::Annual => 1,
             self::MidYear => 2,
+            self::Quarterly => 4,
+            self::Monthly => 12,
             self::Probationary => null, // Variable - depends on hire dates
             self::ProjectBased => null, // Variable - depends on projects
         };
@@ -57,7 +65,7 @@ enum PerformanceCycleType: string
     public function isRecurring(): bool
     {
         return match ($this) {
-            self::Annual, self::MidYear => true,
+            self::Annual, self::MidYear, self::Quarterly, self::Monthly => true,
             self::Probationary, self::ProjectBased => false,
         };
     }

@@ -15,7 +15,7 @@ use Illuminate\Support\Collection;
  * Service for generating and managing performance cycle instances.
  *
  * This service provides methods to generate performance evaluation instances for a given cycle
- * and year, handling different cycle types (annual, mid-year) and calculating appropriate
+ * and year, handling different cycle types (annual, mid-year, quarterly, monthly) and calculating appropriate
  * date ranges. It also handles participant assignment.
  */
 class PerformanceCycleInstanceService
@@ -48,97 +48,32 @@ class PerformanceCycleInstanceService
                 ->forceDelete();
         }
 
-        return match ($cycle->cycle_type) {
-            PerformanceCycleType::Annual => $this->generateAnnualInstances($cycle, $year),
-            PerformanceCycleType::MidYear => $this->generateMidYearInstances($cycle, $year),
-            default => collect(),
-        };
-    }
-
-    /**
-     * Generate annual performance instances (1 instance per year).
-     *
-     * @return Collection<int, PerformanceCycleInstance>
-     */
-    public function generateAnnualInstances(PerformanceCycle $cycle, int $year): Collection
-    {
         $periods = collect();
+        $count = $cycle->cycle_type->instancesPerYear();
+        $monthsPerPeriod = 12 / $count;
 
-        // Check if instance already exists
-        $existingInstance = PerformanceCycleInstance::query()
-            ->forCycle($cycle->id)
-            ->forYear($year)
-            ->where('instance_number', 1)
-            ->first();
+        foreach (range(1, $count) as $number) {
+            $exists = PerformanceCycleInstance::query()
+                ->forCycle($cycle->id)
+                ->forYear($year)
+                ->where('instance_number', $number)
+                ->exists();
 
-        if ($existingInstance) {
-            return $periods;
-        }
+            if ($exists) {
+                continue;
+            }
 
-        $instance = PerformanceCycleInstance::create([
-            'performance_cycle_id' => $cycle->id,
-            'name' => $this->generateInstanceName($cycle, $year, 1),
-            'year' => $year,
-            'instance_number' => 1,
-            'start_date' => Carbon::create($year, 1, 1),
-            'end_date' => Carbon::create($year, 12, 31),
-            'status' => PerformanceCycleInstanceStatus::Draft,
-        ]);
+            $start = Carbon::create($year, ($number - 1) * $monthsPerPeriod + 1, 1);
 
-        $periods->push($instance);
-
-        return $periods;
-    }
-
-    /**
-     * Generate mid-year performance instances (2 instances per year).
-     *
-     * @return Collection<int, PerformanceCycleInstance>
-     */
-    public function generateMidYearInstances(PerformanceCycle $cycle, int $year): Collection
-    {
-        $periods = collect();
-
-        // First half: January 1 - June 30
-        $existingFirst = PerformanceCycleInstance::query()
-            ->forCycle($cycle->id)
-            ->forYear($year)
-            ->where('instance_number', 1)
-            ->first();
-
-        if (! $existingFirst) {
-            $firstHalf = PerformanceCycleInstance::create([
+            $periods->push(PerformanceCycleInstance::create([
                 'performance_cycle_id' => $cycle->id,
-                'name' => $this->generateInstanceName($cycle, $year, 1, true),
+                'name' => $this->generateInstanceName($cycle, $year, $number),
                 'year' => $year,
-                'instance_number' => 1,
-                'start_date' => Carbon::create($year, 1, 1),
-                'end_date' => Carbon::create($year, 6, 30),
+                'instance_number' => $number,
+                'start_date' => $start,
+                'end_date' => $start->copy()->addMonths($monthsPerPeriod)->subDay(),
                 'status' => PerformanceCycleInstanceStatus::Draft,
-            ]);
-
-            $periods->push($firstHalf);
-        }
-
-        // Second half: July 1 - December 31
-        $existingSecond = PerformanceCycleInstance::query()
-            ->forCycle($cycle->id)
-            ->forYear($year)
-            ->where('instance_number', 2)
-            ->first();
-
-        if (! $existingSecond) {
-            $secondHalf = PerformanceCycleInstance::create([
-                'performance_cycle_id' => $cycle->id,
-                'name' => $this->generateInstanceName($cycle, $year, 2, true),
-                'year' => $year,
-                'instance_number' => 2,
-                'start_date' => Carbon::create($year, 7, 1),
-                'end_date' => Carbon::create($year, 12, 31),
-                'status' => PerformanceCycleInstanceStatus::Draft,
-            ]);
-
-            $periods->push($secondHalf);
+            ]));
         }
 
         return $periods;
@@ -147,21 +82,16 @@ class PerformanceCycleInstanceService
     /**
      * Generate a human-readable name for an instance.
      */
-    protected function generateInstanceName(
-        PerformanceCycle $cycle,
-        int $year,
-        int $instanceNumber,
-        bool $isMidYear = false
-    ): string {
-        $cycleName = $cycle->name;
+    protected function generateInstanceName(PerformanceCycle $cycle, int $year, int $instanceNumber): string
+    {
+        $suffix = match ($cycle->cycle_type) {
+            PerformanceCycleType::MidYear => $instanceNumber === 1 ? ' - First Half' : ' - Second Half',
+            PerformanceCycleType::Quarterly => " - Q{$instanceNumber}",
+            PerformanceCycleType::Monthly => ' - '.Carbon::create($year, $instanceNumber, 1)->format('F'),
+            default => '',
+        };
 
-        if ($isMidYear) {
-            $half = $instanceNumber === 1 ? 'First Half' : 'Second Half';
-
-            return "{$cycleName} {$year} - {$half}";
-        }
-
-        return "{$cycleName} {$year}";
+        return "{$cycle->name} {$year}{$suffix}";
     }
 
     /**
