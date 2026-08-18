@@ -40,35 +40,55 @@ interface JobApplicationData {
     job_posting: { id: number; title: string };
 }
 
+interface EditableOffer {
+    id: number;
+    offer_template_id: number | null;
+    content: string | null;
+    salary: string;
+    salary_currency: string | null;
+    salary_frequency: string | null;
+    benefits: string[] | null;
+    terms: string | null;
+    start_date: string | null;
+    expiry_date: string | null;
+    position_title: string;
+    department: string | null;
+    work_location: string | null;
+    employment_type: string | null;
+}
+
 const props = defineProps<{
     jobApplication: JobApplicationData | null;
     jobApplications: JobApplicationOption[];
     templates: Template[];
+    offer?: EditableOffer | null;
 }>();
 
 const { tenantName } = useTenant();
 
+const isEditing = !!props.offer;
+
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Offers', href: '/recruitment/offers' },
-    { title: 'Create', href: '#' },
+    { title: isEditing ? 'Edit' : 'Create', href: '#' },
 ];
 
 const form = ref({
     job_application_id: props.jobApplication?.id ? String(props.jobApplication.id) : '',
-    offer_template_id: '',
-    content: '',
-    salary: '',
-    salary_currency: 'PHP',
-    salary_frequency: 'monthly',
-    benefits: [''],
-    terms: '',
-    start_date: '',
-    expiry_date: '',
-    position_title: props.jobApplication?.job_posting?.title ?? '',
-    department: '',
-    work_location: '',
-    employment_type: 'full_time',
+    offer_template_id: props.offer?.offer_template_id ? String(props.offer.offer_template_id) : '',
+    content: props.offer?.content ?? '',
+    salary: props.offer?.salary ? String(Number(props.offer.salary)) : '',
+    salary_currency: props.offer?.salary_currency ?? 'PHP',
+    salary_frequency: props.offer?.salary_frequency ?? 'monthly',
+    benefits: props.offer?.benefits?.length ? [...props.offer.benefits] : [''],
+    terms: props.offer?.terms ?? '',
+    start_date: props.offer?.start_date ?? '',
+    expiry_date: props.offer?.expiry_date ?? '',
+    position_title: props.offer?.position_title ?? props.jobApplication?.job_posting?.title ?? '',
+    department: props.offer?.department ?? '',
+    work_location: props.offer?.work_location ?? '',
+    employment_type: props.offer?.employment_type ?? 'full_time',
 });
 
 const errors = ref<Record<string, string>>({});
@@ -76,11 +96,13 @@ const processing = ref(false);
 const showPreview = ref(false);
 const editorRef = ref<InstanceType<typeof RichTextEditor> | null>(null);
 
-// Set default template
-const defaultTemplate = props.templates.find((t) => t.is_default);
-if (defaultTemplate) {
-    form.value.offer_template_id = String(defaultTemplate.id);
-    form.value.content = defaultTemplate.content;
+// Set default template (only for new offers — never overwrite saved draft content)
+if (!isEditing) {
+    const defaultTemplate = props.templates.find((t) => t.is_default);
+    if (defaultTemplate) {
+        form.value.offer_template_id = String(defaultTemplate.id);
+        form.value.content = defaultTemplate.content;
+    }
 }
 
 watch(
@@ -131,25 +153,31 @@ function submit(): void {
         benefits: form.value.benefits.filter((b) => b.trim()),
     };
 
-    router.post('/api/offers', data, {
-        onError: (errs) => {
+    const options = {
+        onError: (errs: Record<string, string>) => {
             errors.value = errs;
         },
         onFinish: () => {
             processing.value = false;
         },
-    });
+    };
+
+    if (props.offer) {
+        router.put(`/api/offers/${props.offer.id}`, data, options);
+    } else {
+        router.post('/api/offers', data, options);
+    }
 }
 </script>
 
 <template>
-    <Head :title="`Create Offer - ${tenantName}`" />
+    <Head :title="`${isEditing ? 'Edit' : 'Create'} Offer - ${tenantName}`" />
 
     <TenantLayout :breadcrumbs="breadcrumbs">
         <div class="mx-auto max-w-4xl">
             <div class="mb-6">
                 <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-                    Create Offer
+                    {{ isEditing ? 'Edit Offer' : 'Create Offer' }}
                 </h1>
                 <p
                     v-if="jobApplication"
@@ -356,11 +384,15 @@ function submit(): void {
                 </Card>
 
                 <div class="flex justify-end gap-3">
-                    <Button type="button" variant="outline" @click="router.visit('/recruitment/offers')">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        @click="router.visit(offer ? `/recruitment/offers/${offer.id}` : '/recruitment/offers')"
+                    >
                         Cancel
                     </Button>
                     <Button type="submit" :disabled="processing">
-                        {{ processing ? 'Creating...' : 'Create Offer' }}
+                        {{ processing ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Offer' }}
                     </Button>
                 </div>
             </form>

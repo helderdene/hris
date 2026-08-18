@@ -74,6 +74,8 @@ Route::prefix('recruitment')->group(function () {
         ->name('recruitment.offers.index');
     Route::get('/offers/create', [\App\Http\Controllers\Recruitment\OfferPageController::class, 'create'])
         ->name('recruitment.offers.create');
+    Route::get('/offers/{offer}/edit', [\App\Http\Controllers\Recruitment\OfferPageController::class, 'edit'])
+        ->name('recruitment.offers.edit');
     Route::get('/offers/{offer}', [\App\Http\Controllers\Recruitment\OfferPageController::class, 'show'])
         ->name('recruitment.offers.show');
 });

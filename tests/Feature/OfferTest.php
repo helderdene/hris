@@ -171,3 +171,57 @@ it('can download offer pdf', function () {
         ->get("{$this->baseUrl}/api/offers/{$offer->id}/pdf")
         ->assertSuccessful();
 });
+
+it('can update a draft offer', function () {
+    $offer = Offer::factory()->withStatus(OfferStatus::Draft)->create([
+        'created_by' => $this->user->id,
+    ]);
+
+    $this->actingAs($this->user)
+        ->putJson("{$this->baseUrl}/api/offers/{$offer->id}", [
+            'salary' => 75000,
+            'start_date' => now()->addDays(45)->toDateString(),
+            'position_title' => 'Senior Software Engineer',
+        ])
+        ->assertRedirect("/recruitment/offers/{$offer->id}");
+
+    $offer->refresh();
+    expect((float) $offer->salary)->toBe(75000.0);
+    expect($offer->position_title)->toBe('Senior Software Engineer');
+});
+
+it('cannot update a sent offer', function () {
+    $offer = Offer::factory()->withStatus(OfferStatus::Sent)->create([
+        'created_by' => $this->user->id,
+    ]);
+
+    $this->actingAs($this->user)
+        ->putJson("{$this->baseUrl}/api/offers/{$offer->id}", [
+            'salary' => 99999,
+            'start_date' => now()->addDays(45)->toDateString(),
+            'position_title' => 'Hacked Title',
+        ])
+        ->assertForbidden();
+
+    expect($offer->fresh()->position_title)->not->toBe('Hacked Title');
+});
+
+it('shows the edit page for a draft offer', function () {
+    $offer = Offer::factory()->withStatus(OfferStatus::Draft)->create([
+        'created_by' => $this->user->id,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get("{$this->baseUrl}/recruitment/offers/{$offer->id}/edit")
+        ->assertSuccessful();
+});
+
+it('denies the edit page for a sent offer', function () {
+    $offer = Offer::factory()->withStatus(OfferStatus::Sent)->create([
+        'created_by' => $this->user->id,
+    ]);
+
+    $this->actingAs($this->user)
+        ->get("{$this->baseUrl}/recruitment/offers/{$offer->id}/edit")
+        ->assertForbidden();
+});

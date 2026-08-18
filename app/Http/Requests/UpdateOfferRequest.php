@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Enums\OfferStatus;
 use App\Models\OfferTemplate;
 use App\Services\HtmlSanitizerService;
 use Illuminate\Foundation\Http\FormRequest;
@@ -11,10 +12,12 @@ class UpdateOfferRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
+     *
+     * Only draft offers may be edited; sent or finalized offers are immutable.
      */
     public function authorize(): bool
     {
-        return true;
+        return $this->route('offer')->status === OfferStatus::Draft;
     }
 
     /**

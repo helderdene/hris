@@ -8,7 +8,7 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { Download, Send, XCircle } from 'lucide-vue-next';
+import { Download, Pencil, Send, XCircle } from 'lucide-vue-next';
 import { ref } from 'vue';
 
 interface Signature {
@@ -113,6 +113,15 @@ function downloadPdf(): void {
                     </p>
                 </div>
                 <div class="flex items-center gap-2">
+                    <Button
+                        v-if="offer.status === 'draft'"
+                        variant="outline"
+                        class="gap-2"
+                        @click="router.visit(`/recruitment/offers/${offer.id}/edit`)"
+                    >
+                        <Pencil class="h-4 w-4" />
+                        Edit
+                    </Button>
                     <Button
                         v-if="offer.allowed_transitions.some((t) => t.value === 'sent')"
                         class="gap-2"

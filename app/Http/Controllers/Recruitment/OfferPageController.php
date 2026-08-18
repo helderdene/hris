@@ -112,6 +112,59 @@ class OfferPageController extends Controller
     }
 
     /**
+     * Show the form for editing a draft offer.
+     */
+    public function edit(Offer $offer): Response
+    {
+        abort_unless($offer->status === OfferStatus::Draft, 403, 'Only draft offers can be edited.');
+
+        $offer->load(['jobApplication.candidate', 'jobApplication.jobPosting']);
+
+        $templates = OfferTemplate::active()
+            ->orderBy('name')
+            ->get()
+            ->map(fn (OfferTemplate $t) => [
+                'id' => $t->id,
+                'name' => $t->name,
+                'content' => $t->content,
+                'is_default' => $t->is_default,
+            ]);
+
+        return Inertia::render('Recruitment/Offers/Create', [
+            'offer' => [
+                'id' => $offer->id,
+                'offer_template_id' => $offer->offer_template_id,
+                'content' => $offer->content,
+                'salary' => $offer->salary,
+                'salary_currency' => $offer->salary_currency,
+                'salary_frequency' => $offer->salary_frequency,
+                'benefits' => $offer->benefits,
+                'terms' => $offer->terms,
+                'start_date' => $offer->start_date?->format('Y-m-d'),
+                'expiry_date' => $offer->expiry_date?->format('Y-m-d'),
+                'position_title' => $offer->position_title,
+                'department' => $offer->department,
+                'work_location' => $offer->work_location,
+                'employment_type' => $offer->employment_type,
+            ],
+            'jobApplication' => [
+                'id' => $offer->jobApplication->id,
+                'candidate' => [
+                    'id' => $offer->jobApplication->candidate->id,
+                    'full_name' => $offer->jobApplication->candidate->full_name,
+                    'email' => $offer->jobApplication->candidate->email,
+                ],
+                'job_posting' => [
+                    'id' => $offer->jobApplication->jobPosting->id,
+                    'title' => $offer->jobApplication->jobPosting->title,
+                ],
+            ],
+            'jobApplications' => [],
+            'templates' => $templates,
+        ]);
+    }
+
+    /**
      * Display the specified offer.
      */
     public function show(Offer $offer): Response

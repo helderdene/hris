@@ -71,13 +71,13 @@ class OfferController extends Controller
     /**
      * Update the specified offer.
      */
-    public function update(UpdateOfferRequest $request, Offer $offer): OfferResource
+    public function update(UpdateOfferRequest $request, Offer $offer): RedirectResponse
     {
         Gate::authorize('can-manage-organization');
 
         $offer->update($request->validated());
 
-        return new OfferResource($offer->fresh());
+        return redirect("/recruitment/offers/{$offer->id}");
     }
 
     /**
