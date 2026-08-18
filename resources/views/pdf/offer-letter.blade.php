@@ -168,6 +168,12 @@
                 <td>{{ is_array($offer->benefits) ? implode(', ', $offer->benefits) : $offer->benefits }}</td>
             </tr>
             @endif
+            @if($offer->allowances)
+            <tr>
+                <th>Allowances</th>
+                <td>{{ is_array($offer->allowances) ? implode(', ', $offer->allowances) : $offer->allowances }}</td>
+            </tr>
+            @endif
             <tr>
                 <th>Start Date</th>
                 <td>{{ $offer->start_date?->format('F j, Y') }}</td>

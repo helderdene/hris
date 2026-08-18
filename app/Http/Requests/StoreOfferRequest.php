@@ -34,6 +34,8 @@ class StoreOfferRequest extends FormRequest
             'salary_frequency' => ['nullable', 'string', 'max:50'],
             'benefits' => ['nullable', 'array'],
             'benefits.*' => ['string', 'max:500'],
+            'allowances' => ['nullable', 'array'],
+            'allowances.*' => ['string', 'max:500'],
             'terms' => ['nullable', 'string'],
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'expiry_date' => ['nullable', 'date', 'after:today'],

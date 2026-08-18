@@ -36,6 +36,7 @@ interface OfferData {
     salary_currency: string;
     salary_frequency: string;
     benefits: string[] | null;
+    allowances: string[] | null;
     terms: string | null;
     start_date: string | null;
     expiry_date: string | null;
@@ -202,6 +203,13 @@ function downloadPdf(): void {
                                 <dt class="text-sm font-medium text-muted-foreground">Benefits</dt>
                                 <ul class="mt-1 list-inside list-disc text-sm">
                                     <li v-for="benefit in offer.benefits" :key="benefit">{{ benefit }}</li>
+                                </ul>
+                            </div>
+
+                            <div v-if="offer.allowances && offer.allowances.length" class="mt-4">
+                                <dt class="text-sm font-medium text-muted-foreground">Allowances</dt>
+                                <ul class="mt-1 list-inside list-disc text-sm">
+                                    <li v-for="allowance in offer.allowances" :key="allowance">{{ allowance }}</li>
                                 </ul>
                             </div>
 

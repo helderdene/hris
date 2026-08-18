@@ -30,6 +30,7 @@ class Offer extends TenantModel
         'salary_currency',
         'salary_frequency',
         'benefits',
+        'allowances',
         'terms',
         'start_date',
         'expiry_date',
@@ -60,6 +61,7 @@ class Offer extends TenantModel
         return [
             'status' => OfferStatus::class,
             'benefits' => 'array',
+            'allowances' => 'array',
             'salary' => 'decimal:2',
             'start_date' => 'date',
             'expiry_date' => 'date',

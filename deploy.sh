@@ -25,6 +25,10 @@ npm run build
 echo "🗃️ Running migrations..."
 php artisan migrate --force
 
+# Run tenant-schema migrations against all tenant databases
+echo "🗃️ Running tenant migrations..."
+php artisan tenant:migrate
+
 # Clear and rebuild caches
 echo "🧹 Clearing caches..."
 php artisan config:clear

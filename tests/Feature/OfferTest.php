@@ -47,6 +47,7 @@ it('can create an offer for a job application', function () {
             'salary' => 50000,
             'salary_currency' => 'PHP',
             'salary_frequency' => 'monthly',
+            'allowances' => ['Rice Allowance - PHP 2,000/month'],
             'start_date' => now()->addDays(30)->toDateString(),
             'expiry_date' => now()->addDays(14)->toDateString(),
             'position_title' => 'Software Engineer',
@@ -54,7 +55,9 @@ it('can create an offer for a job application', function () {
         ])
         ->assertRedirect();
 
-    expect(Offer::where('job_application_id', $application->id)->exists())->toBeTrue();
+    $offer = Offer::where('job_application_id', $application->id)->first();
+    expect($offer)->not->toBeNull();
+    expect($offer->allowances)->toBe(['Rice Allowance - PHP 2,000/month']);
 });
 
 it('can send an offer', function () {
@@ -182,12 +185,14 @@ it('can update a draft offer', function () {
             'salary' => 75000,
             'start_date' => now()->addDays(45)->toDateString(),
             'position_title' => 'Senior Software Engineer',
+            'allowances' => ['Transportation Allowance - PHP 1,500/month'],
         ])
         ->assertRedirect("/recruitment/offers/{$offer->id}");
 
     $offer->refresh();
     expect((float) $offer->salary)->toBe(75000.0);
     expect($offer->position_title)->toBe('Senior Software Engineer');
+    expect($offer->allowances)->toBe(['Transportation Allowance - PHP 1,500/month']);
 });
 
 it('cannot update a sent offer', function () {

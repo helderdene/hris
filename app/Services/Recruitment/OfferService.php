@@ -203,6 +203,7 @@ class OfferService
             '{{salary}}' => number_format((float) ($data['salary'] ?? 0), 2).' '.($data['salary_currency'] ?? 'PHP'),
             '{{start_date}}' => $data['start_date'] ?? '',
             '{{benefits}}' => is_array($data['benefits'] ?? null) ? implode(', ', $data['benefits']) : ($data['benefits'] ?? ''),
+            '{{allowances}}' => is_array($data['allowances'] ?? null) ? implode(', ', $data['allowances']) : ($data['allowances'] ?? ''),
             '{{department}}' => $data['department'] ?? '',
             '{{work_location}}' => $data['work_location'] ?? '',
             '{{employment_type}}' => $data['employment_type'] ?? '',

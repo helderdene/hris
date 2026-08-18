@@ -19,6 +19,7 @@ const placeholders = [
     { label: 'Salary Frequency', value: '{{salary_frequency}}' },
     { label: 'Start Date', value: '{{start_date}}' },
     { label: 'Benefits', value: '{{benefits}}' },
+    { label: 'Allowances', value: '{{allowances}}' },
     { label: 'Department', value: '{{department}}' },
     { label: 'Work Location', value: '{{work_location}}' },
     { label: 'Employment Type', value: '{{employment_type}}' },

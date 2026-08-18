@@ -34,6 +34,7 @@ class OfferFactory extends Factory
             'salary_currency' => 'PHP',
             'salary_frequency' => 'monthly',
             'benefits' => ['Health Insurance', '13th Month Pay', 'Paid Leave'],
+            'allowances' => ['Rice Allowance - PHP 2,000/month', 'Transportation Allowance - PHP 1,500/month'],
             'terms' => fake()->optional(0.5)->paragraph(),
             'start_date' => now()->addDays(30)->toDateString(),
             'expiry_date' => now()->addDays(14)->toDateString(),

@@ -54,6 +54,7 @@ class OfferResource extends JsonResource
             'salary_currency' => $this->salary_currency,
             'salary_frequency' => $this->salary_frequency,
             'benefits' => $this->benefits,
+            'allowances' => $this->allowances,
             'terms' => $this->terms,
             'start_date' => $this->start_date?->format('Y-m-d'),
             'expiry_date' => $this->expiry_date?->format('Y-m-d'),

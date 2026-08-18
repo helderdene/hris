@@ -48,6 +48,7 @@ interface EditableOffer {
     salary_currency: string | null;
     salary_frequency: string | null;
     benefits: string[] | null;
+    allowances: string[] | null;
     terms: string | null;
     start_date: string | null;
     expiry_date: string | null;
@@ -82,6 +83,7 @@ const form = ref({
     salary_currency: props.offer?.salary_currency ?? 'PHP',
     salary_frequency: props.offer?.salary_frequency ?? 'monthly',
     benefits: props.offer?.benefits?.length ? [...props.offer.benefits] : [''],
+    allowances: props.offer?.allowances?.length ? [...props.offer.allowances] : [''],
     terms: props.offer?.terms ?? '',
     start_date: props.offer?.start_date ?? '',
     expiry_date: props.offer?.expiry_date ?? '',
@@ -130,12 +132,12 @@ watch(
     },
 );
 
-function addBenefit(): void {
-    form.value.benefits.push('');
+function addItem(list: string[]): void {
+    list.push('');
 }
 
-function removeBenefit(index: number): void {
-    form.value.benefits.splice(index, 1);
+function removeItem(list: string[], index: number): void {
+    list.splice(index, 1);
 }
 
 function handleInsertPlaceholder(placeholder: string): void {
@@ -151,6 +153,7 @@ function submit(): void {
         job_application_id: Number(form.value.job_application_id) || '',
         offer_template_id: form.value.offer_template_id ? Number(form.value.offer_template_id) : null,
         benefits: form.value.benefits.filter((b) => b.trim()),
+        allowances: form.value.allowances.filter((a) => a.trim()),
     };
 
     const options = {
@@ -312,14 +315,33 @@ function submit(): void {
                                     type="button"
                                     variant="ghost"
                                     size="sm"
-                                    @click="removeBenefit(index)"
+                                    @click="removeItem(form.benefits, index)"
                                     :disabled="form.benefits.length <= 1"
                                 >
                                     Remove
                                 </Button>
                             </div>
-                            <Button type="button" variant="outline" size="sm" @click="addBenefit">
+                            <Button type="button" variant="outline" size="sm" @click="addItem(form.benefits)">
                                 Add Benefit
+                            </Button>
+                        </div>
+
+                        <div class="space-y-2">
+                            <Label>Allowances</Label>
+                            <div v-for="(allowance, index) in form.allowances" :key="index" class="flex items-center gap-2">
+                                <Input v-model="form.allowances[index]" placeholder="e.g., Rice Allowance - PHP 2,000/month" />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    @click="removeItem(form.allowances, index)"
+                                    :disabled="form.allowances.length <= 1"
+                                >
+                                    Remove
+                                </Button>
+                            </div>
+                            <Button type="button" variant="outline" size="sm" @click="addItem(form.allowances)">
+                                Add Allowance
                             </Button>
                         </div>
 
