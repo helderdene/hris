@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import NavUser from '@/components/NavUser.vue';
 import {
     Sidebar,
     SidebarContent,
@@ -132,6 +133,9 @@ function isActive(href: string): boolean {
                     </SidebarMenuButton>
                 </SidebarMenuItem>
             </SidebarMenu>
+
+            <SidebarSeparator class="my-2" />
+            <NavUser />
         </SidebarFooter>
     </Sidebar>
 </template>
