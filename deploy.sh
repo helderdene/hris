@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# Serialize deploys: the GitHub Action and a manual run both do `npm ci`,
+# which deletes node_modules under the other run's vite build.
+exec 9>/var/lock/kasamahr-deploy.lock
+flock -w 900 9 || { echo "Another deploy is running; gave up after 15 min."; exit 1; }
+
 echo "🚀 Starting deployment..."
 
 cd /var/www/kasamahr
