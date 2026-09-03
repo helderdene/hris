@@ -8,6 +8,7 @@
  */
 
 use App\Enums\TenantUserRole;
+use App\Models\ProficiencyLevel;
 use App\Models\Tenant;
 use App\Models\TenantRedirectToken;
 use App\Models\User;
@@ -168,4 +169,23 @@ it('validates slug URL-safe format', function () {
 
         $response->assertSessionHasErrors('slug');
     }
+});
+
+it('seeds the proficiency level scale on registration', function () {
+    $user = User::factory()->withoutTwoFactor()->create();
+
+    $mockManager = Mockery::mock(TenantDatabaseManager::class);
+    $mockManager->shouldReceive('createSchema');
+    $mockManager->shouldReceive('migrateSchema');
+    $this->app->instance(TenantDatabaseManager::class, $mockManager);
+
+    $this->actingAs($user)->post(route('tenant.register.store'), [
+        'name' => 'Seeded Corp',
+        'slug' => 'seeded-corp',
+        'business_info' => [
+            'company_name' => 'Seeded Corp Inc.',
+        ],
+    ]);
+
+    expect(ProficiencyLevel::orderBy('level')->pluck('level')->all())->toBe([1, 2, 3, 4, 5]);
 });

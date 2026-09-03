@@ -11,6 +11,7 @@ use App\Services\Tenant\TenantDatabaseManager;
 use Database\Seeders\DocumentCategorySeeder;
 use Database\Seeders\GovernmentContributionSeeder;
 use Database\Seeders\HelpContentSeeder;
+use Database\Seeders\ProficiencyLevelSeeder;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -57,6 +58,7 @@ class TenantRegistrationController extends Controller
         (new HelpContentSeeder)->run();
         (new DocumentCategorySeeder)->run();
         (new GovernmentContributionSeeder)->run();
+        (new ProficiencyLevelSeeder)->run();
 
         // Add current user as tenant admin
         $tenant->users()->attach($user->id, ['role' => 'admin']);
