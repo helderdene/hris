@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\LeaveBalanceController;
 use App\Http\Controllers\Api\LeaveSettingsController;
 use App\Http\Controllers\Api\LeaveTypeController;
 use App\Http\Controllers\Api\LoanSettingsController;
+use App\Http\Controllers\Api\OvertimeSettingsController;
 use App\Http\Controllers\Api\PagibigContributionController;
 use App\Http\Controllers\Api\PayrollComputationController;
 use App\Http\Controllers\Api\PayrollCycleController;
@@ -247,6 +248,10 @@ Route::prefix('organization')->group(function () {
     // Leave Approval Settings
     Route::post('/leave-settings/admin-manager', [LeaveSettingsController::class, 'setAdminManager'])
         ->name('api.organization.leave-settings.admin-manager');
+
+    // Overtime Approval Settings
+    Route::post('/overtime-settings/approvers', [OvertimeSettingsController::class, 'setApprovers'])
+        ->name('api.organization.overtime-settings.approvers');
 
     // Loan Approval Settings (CFO, Admin Manager, Releasing officer)
     Route::post('/loan-settings/roles', [LoanSettingsController::class, 'setRoles'])

@@ -39,6 +39,7 @@ export interface TenantContext {
     can_manage_users?: boolean;
     can_manage_organization?: boolean;
     can_manage_employees?: boolean;
+    has_pending_overtime_approvals?: boolean;
     can_view_audit_logs?: boolean;
     subscription?: SubscriptionData;
 }

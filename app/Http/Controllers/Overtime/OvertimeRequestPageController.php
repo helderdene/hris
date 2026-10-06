@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers\Overtime;
 
+use App\Enums\EmploymentStatus;
 use App\Enums\OvertimeRequestStatus;
 use App\Enums\OvertimeType;
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use App\Models\OvertimeRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -70,6 +73,21 @@ class OvertimeRequestPageController extends Controller
                 'overtime_type' => $overtimeType,
                 'search' => $request->input('search'),
             ],
+            'approverSettings' => Gate::allows('can-manage-organization') ? [
+                'approver_ids' => Employee::query()->where('is_overtime_approver', true)->pluck('id'),
+                'active_employees' => Employee::query()
+                    ->where('employment_status', EmploymentStatus::Active)
+                    ->with('department')
+                    ->orderBy('last_name')
+                    ->orderBy('first_name')
+                    ->get()
+                    ->map(fn (Employee $employee) => [
+                        'id' => $employee->id,
+                        'employee_number' => $employee->employee_number,
+                        'full_name' => $employee->full_name,
+                        'department' => $employee->department?->name,
+                    ]),
+            ] : null,
         ]);
     }
 

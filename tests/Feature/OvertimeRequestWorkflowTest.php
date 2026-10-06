@@ -415,3 +415,185 @@ describe('Payroll OT Gating & Capping', function () {
         expect($result['total_overtime_minutes'])->toBe(60);
     });
 });
+
+describe('Level 2 Overtime Approvers', function () {
+    /**
+     * @return array{employee: Employee, departmentHead: Employee, headUser: User}
+     */
+    function createEmployeeWithDepartmentHeadForOT(Tenant $tenant): array
+    {
+        $headUser = createTenantUserForOT($tenant, TenantUserRole::Employee);
+        $departmentHead = Employee::factory()->create([
+            'user_id' => $headUser->id,
+            'employment_status' => EmploymentStatus::Active,
+        ]);
+        $department = \App\Models\Department::factory()->create(['department_head_id' => $departmentHead->id]);
+
+        $employee = Employee::factory()->create([
+            'department_id' => $department->id,
+            'employment_status' => EmploymentStatus::Active,
+        ]);
+
+        return ['employee' => $employee, 'departmentHead' => $departmentHead, 'headUser' => $headUser];
+    }
+
+    it('lets any one of several overtime approvers give the level 2 approval', function () {
+        Notification::fake();
+
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        ['employee' => $employee, 'departmentHead' => $departmentHead, 'headUser' => $headUser] = createEmployeeWithDepartmentHeadForOT($tenant);
+
+        $firstApproverUser = createTenantUserForOT($tenant, TenantUserRole::Employee);
+        $firstApprover = Employee::factory()->create([
+            'user_id' => $firstApproverUser->id,
+            'employment_status' => EmploymentStatus::Active,
+            'is_overtime_approver' => true,
+        ]);
+        $secondApproverUser = createTenantUserForOT($tenant, TenantUserRole::Employee);
+        $secondApprover = Employee::factory()->create([
+            'user_id' => $secondApproverUser->id,
+            'employment_status' => EmploymentStatus::Active,
+            'is_overtime_approver' => true,
+        ]);
+
+        $request = OvertimeRequest::factory()->create(['employee_id' => $employee->id]);
+
+        $service = app(OvertimeRequestService::class);
+        $submitted = $service->submit($request);
+
+        expect($submitted->total_approval_levels)->toBe(2);
+        expect($submitted->approvals->where('approval_level', 2)->pluck('approver_employee_id')->all())
+            ->toEqualCanonicalizing([$firstApprover->id, $secondApprover->id]);
+        Notification::assertSentTo($headUser, \App\Notifications\OvertimeRequestSubmitted::class);
+
+        $service->approve($submitted, $departmentHead);
+
+        Notification::assertSentTo($firstApproverUser, \App\Notifications\OvertimeRequestSubmitted::class);
+        Notification::assertSentTo($secondApproverUser, \App\Notifications\OvertimeRequestSubmitted::class);
+
+        $approved = $service->approve($submitted->fresh(), $secondApprover);
+
+        expect($approved->status)->toBe(OvertimeRequestStatus::Approved);
+        expect($approved->approvals->firstWhere('approver_employee_id', $firstApprover->id)->decision)
+            ->toBe(OvertimeApprovalDecision::Skipped);
+
+        expect(fn () => $service->approve($approved, $firstApprover))
+            ->toThrow(\Illuminate\Validation\ValidationException::class);
+    });
+
+    it('falls back to the leave admin manager when no overtime approver is flagged', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        ['employee' => $employee] = createEmployeeWithDepartmentHeadForOT($tenant);
+        $adminManager = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_leave_admin_manager' => true,
+        ]);
+
+        $levelTwo = app(OvertimeRequestService::class)->resolveApprovers($employee)->where('level', 2);
+
+        expect($levelTwo->pluck('employee.id')->all())->toBe([$adminManager->id]);
+        expect($levelTwo->first()['type'])->toBe('admin_manager');
+    });
+
+    it('excludes the applicant and the department head from level 2', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        ['employee' => $employee, 'departmentHead' => $departmentHead] = createEmployeeWithDepartmentHeadForOT($tenant);
+        $employee->update(['is_overtime_approver' => true]);
+        $departmentHead->update(['is_overtime_approver' => true]);
+        $otherApprover = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_overtime_approver' => true,
+        ]);
+
+        $approvers = app(OvertimeRequestService::class)->resolveApprovers($employee);
+
+        expect($approvers->where('level', 1)->pluck('employee.id')->all())->toBe([$departmentHead->id]);
+        expect($approvers->where('level', 2)->pluck('employee.id')->values()->all())->toBe([$otherApprover->id]);
+    });
+
+    it('lets an admin replace the overtime approver list', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        $previous = Employee::factory()->create([
+            'employment_status' => EmploymentStatus::Active,
+            'is_overtime_approver' => true,
+        ]);
+        [$first, $second] = Employee::factory()->count(2)->create(['employment_status' => EmploymentStatus::Active]);
+
+        $this->actingAs(createTenantUserForOT($tenant, TenantUserRole::Admin));
+
+        $this->postJson("http://{$tenant->slug}.kasamahr.test/api/organization/overtime-settings/approvers", [
+            'employee_ids' => [$first->id, $second->id],
+        ])->assertSuccessful();
+
+        expect($previous->fresh()->is_overtime_approver)->toBeFalse();
+        expect($first->fresh()->is_overtime_approver)->toBeTrue();
+        expect($second->fresh()->is_overtime_approver)->toBeTrue();
+    });
+
+    it('rejects inactive employees as overtime approvers', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        $inactive = Employee::factory()->create(['employment_status' => EmploymentStatus::Resigned]);
+
+        $this->actingAs(createTenantUserForOT($tenant, TenantUserRole::Admin));
+
+        $this->postJson("http://{$tenant->slug}.kasamahr.test/api/organization/overtime-settings/approvers", [
+            'employee_ids' => [$inactive->id],
+        ])->assertUnprocessable()->assertJsonValidationErrors('employee_ids.0');
+    });
+
+    it('forbids non-admins from changing overtime approvers', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        $this->actingAs(createTenantUserForOT($tenant, TenantUserRole::Employee));
+
+        $this->postJson("http://{$tenant->slug}.kasamahr.test/api/organization/overtime-settings/approvers", [
+            'employee_ids' => [],
+        ])->assertForbidden();
+    });
+});
+
+describe('OT Approvals Navigation', function () {
+    it('flags pending overtime approvals only for the approver at the current level', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        $levelOneUser = createTenantUserForOT($tenant, TenantUserRole::Employee);
+        $levelOneApprover = Employee::factory()->create(['user_id' => $levelOneUser->id]);
+        $levelTwoUser = createTenantUserForOT($tenant, TenantUserRole::Employee);
+        $levelTwoApprover = Employee::factory()->create(['user_id' => $levelTwoUser->id]);
+
+        $request = OvertimeRequest::factory()->pending()->create([
+            'current_approval_level' => 1,
+            'total_approval_levels' => 2,
+        ]);
+        OvertimeRequestApproval::factory()->pending()->create([
+            'overtime_request_id' => $request->id,
+            'approval_level' => 1,
+            'approver_employee_id' => $levelOneApprover->id,
+        ]);
+        OvertimeRequestApproval::factory()->pending()->create([
+            'overtime_request_id' => $request->id,
+            'approval_level' => 2,
+            'approver_employee_id' => $levelTwoApprover->id,
+        ]);
+
+        $url = "http://{$tenant->slug}.kasamahr.test/overtime/approvals";
+
+        $this->actingAs($levelOneUser)->get($url)
+            ->assertInertia(fn ($page) => $page->where('tenant.has_pending_overtime_approvals', true));
+
+        $this->actingAs($levelTwoUser)->get($url)
+            ->assertInertia(fn ($page) => $page->where('tenant.has_pending_overtime_approvals', false));
+    });
+});

@@ -162,9 +162,12 @@ const timeAttendanceItems = computed(() => {
         { title: 'OT Requests', href: '/overtime/requests', icon: CalendarClock },
     ];
 
-    // Add OT Approvals for managers/admins
-    if (canManageEmployees.value) {
+    // Add OT Approvals for managers/admins and anyone with OT requests awaiting their decision
+    if (canManageEmployees.value || page.props.tenant?.has_pending_overtime_approvals) {
         items.push({ title: 'OT Approvals', href: '/overtime/approvals', icon: ClipboardCheck });
+    }
+
+    if (canManageEmployees.value) {
         items.push({ title: 'Manual Attendance Approvals', href: '/manual-attendance/approvals', icon: ClipboardCheck });
     }
 

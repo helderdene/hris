@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EmploymentStatus;
 use App\Enums\OvertimeApprovalDecision;
 use App\Enums\OvertimeRequestStatus;
 use App\Models\DailyTimeRecord;
@@ -11,6 +12,7 @@ use App\Models\OvertimeRequestApproval;
 use App\Notifications\OvertimeRequestApproved;
 use App\Notifications\OvertimeRequestRejected;
 use App\Notifications\OvertimeRequestSubmitted;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -39,23 +41,12 @@ class OvertimeRequestService
         }
 
         return DB::transaction(function () use ($request) {
-            $employee = $request->employee;
-            $approvers = $this->chainResolver->resolveChain($employee);
+            $approvers = $this->resolveApprovers($request->employee);
 
             if ($approvers->isEmpty()) {
-                $fallback = $this->chainResolver->getFallbackApprover($employee);
-
-                if ($fallback) {
-                    $approvers = collect([[
-                        'employee' => $fallback,
-                        'type' => 'fallback',
-                        'level' => 1,
-                    ]]);
-                } else {
-                    throw ValidationException::withMessages([
-                        'approver' => 'No approver found. Please contact HR.',
-                    ]);
-                }
+                throw ValidationException::withMessages([
+                    'approver' => 'No approver found. Please contact HR.',
+                ]);
             }
 
             foreach ($approvers as $approverData) {
@@ -72,7 +63,7 @@ class OvertimeRequestService
 
             $request->status = OvertimeRequestStatus::Pending;
             $request->current_approval_level = 1;
-            $request->total_approval_levels = $approvers->count();
+            $request->total_approval_levels = $approvers->max('level');
             $request->submitted_at = now();
             $request->metadata = array_merge($request->metadata ?? [], [
                 'submitted_by' => auth()->id(),
@@ -80,10 +71,7 @@ class OvertimeRequestService
             ]);
             $request->save();
 
-            $firstApproval = $request->approvals()->where('approval_level', 1)->first();
-            if ($firstApproval && $firstApproval->approverEmployee) {
-                $firstApproval->approverEmployee->user?->notify(new OvertimeRequestSubmitted($request));
-            }
+            $this->notifyApproversAtLevel($request, 1);
 
             return $request->fresh(['approvals', 'employee']);
         });
@@ -119,6 +107,7 @@ class OvertimeRequestService
 
         return DB::transaction(function () use ($request, $approval, $remarks) {
             $approval->approve($remarks);
+            $this->skipPendingApprovals($request, "Approved by {$approval->approver_name}", $approval->approval_level);
 
             if ($request->current_approval_level >= $request->total_approval_levels) {
                 $request->status = OvertimeRequestStatus::Approved;
@@ -132,13 +121,7 @@ class OvertimeRequestService
                 $request->current_approval_level++;
                 $request->save();
 
-                $nextApproval = $request->approvals()
-                    ->where('approval_level', $request->current_approval_level)
-                    ->first();
-
-                if ($nextApproval && $nextApproval->approverEmployee) {
-                    $nextApproval->approverEmployee->user?->notify(new OvertimeRequestSubmitted($request));
-                }
+                $this->notifyApproversAtLevel($request, $request->current_approval_level);
             }
 
             return $request->fresh(['approvals', 'employee']);
@@ -216,13 +199,67 @@ class OvertimeRequestService
     }
 
     /**
-     * Mark all still-pending approvals as skipped so they no longer surface
-     * as pending actions or priority alerts once the request is closed.
+     * Resolve the approval levels for an employee.
+     *
+     * Level 1 is the Department Head. Level 2 is every flagged overtime
+     * approver (any one of them may decide), falling back to the tenant
+     * Admin Manager when no overtime approver is configured.
+     *
+     * @return Collection<int, array{employee: Employee, type: string, level: int}>
      */
-    protected function skipPendingApprovals(OvertimeRequest $request, string $reason): void
+    public function resolveApprovers(Employee $employee): Collection
+    {
+        $departmentHead = $this->chainResolver->resolveDepartmentHead($employee);
+
+        $levelTwoApprovers = Employee::query()
+            ->where('is_overtime_approver', true)
+            ->where('employment_status', EmploymentStatus::Active)
+            ->orderBy('id')
+            ->get();
+        $levelTwoType = 'overtime_approver';
+
+        if ($levelTwoApprovers->isEmpty()) {
+            $levelTwoApprovers = collect([$this->chainResolver->resolveAdminManager($employee)])->filter();
+            $levelTwoType = 'admin_manager';
+        }
+
+        $levelTwoApprovers = $levelTwoApprovers
+            ->reject(fn (Employee $approver) => in_array($approver->id, [$employee->id, $departmentHead?->id], true));
+
+        return collect([
+            $departmentHead ? collect([['employee' => $departmentHead, 'type' => 'department_head']]) : collect(),
+            $levelTwoApprovers->map(fn (Employee $approver) => ['employee' => $approver, 'type' => $levelTwoType]),
+        ])
+            ->filter(fn (Collection $approvers) => $approvers->isNotEmpty())
+            ->values()
+            ->flatMap(fn (Collection $approvers, int $index) => $approvers->map(fn (array $approver) => [
+                ...$approver,
+                'level' => $index + 1,
+            ]))
+            ->values();
+    }
+
+    /**
+     * Notify every approver assigned to the given level.
+     */
+    protected function notifyApproversAtLevel(OvertimeRequest $request, int $level): void
+    {
+        $request->approvals()
+            ->where('approval_level', $level)
+            ->with('approverEmployee.user')
+            ->get()
+            ->each(fn (OvertimeRequestApproval $approval) => $approval->approverEmployee?->user?->notify(new OvertimeRequestSubmitted($request)));
+    }
+
+    /**
+     * Mark still-pending approvals (optionally only at one level) as skipped
+     * so they no longer surface as pending actions or priority alerts.
+     */
+    protected function skipPendingApprovals(OvertimeRequest $request, string $reason, ?int $level = null): void
     {
         $request->approvals()
             ->where('decision', OvertimeApprovalDecision::Pending)
+            ->when($level !== null, fn ($query) => $query->where('approval_level', $level))
             ->update([
                 'decision' => OvertimeApprovalDecision::Skipped,
                 'remarks' => $reason,

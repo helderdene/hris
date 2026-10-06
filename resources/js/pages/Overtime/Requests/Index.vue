@@ -11,7 +11,7 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Clock, FileText } from 'lucide-vue-next';
+import { Clock, FileText, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Employee {
@@ -61,6 +61,13 @@ interface PaginatedData {
     links: Array<{ url: string | null; label: string; active: boolean }>;
 }
 
+interface ApproverOption {
+    id: number;
+    employee_number: string;
+    full_name: string;
+    department: string | null;
+}
+
 const props = defineProps<{
     requests: PaginatedData;
     statuses: StatusOption[];
@@ -70,9 +77,89 @@ const props = defineProps<{
         overtime_type: string | null;
         search: string | null;
     };
+    approverSettings: {
+        approver_ids: number[];
+        active_employees: ApproverOption[];
+    } | null;
 }>();
 
-const { tenantName } = useTenant();
+const { tenantName, primaryColor } = useTenant();
+
+const savedApproverIds = ref<number[]>(props.approverSettings?.approver_ids ?? []);
+const approverIds = ref<number[]>([...savedApproverIds.value]);
+const isSavingApprovers = ref(false);
+const approversError = ref<string | null>(null);
+const approversSuccess = ref<string | null>(null);
+
+const selectedApprovers = computed(() =>
+    (props.approverSettings?.active_employees ?? []).filter((employee) =>
+        approverIds.value.includes(employee.id),
+    ),
+);
+
+const availableApprovers = computed(() =>
+    (props.approverSettings?.active_employees ?? []).filter(
+        (employee) => !approverIds.value.includes(employee.id),
+    ),
+);
+
+const approversDirty = computed(
+    () =>
+        [...approverIds.value].sort().join(',') !==
+        [...savedApproverIds.value].sort().join(','),
+);
+
+function addApprover(value: unknown): void {
+    if (value) {
+        approverIds.value.push(Number(value));
+    }
+}
+
+function removeApprover(id: number): void {
+    approverIds.value = approverIds.value.filter((approverId) => approverId !== id);
+}
+
+async function saveApprovers(): Promise<void> {
+    isSavingApprovers.value = true;
+    approversError.value = null;
+    approversSuccess.value = null;
+
+    try {
+        const response = await fetch('/api/organization/overtime-settings/approvers', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+                'X-XSRF-TOKEN': getCsrfToken(),
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({ employee_ids: approverIds.value }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            savedApproverIds.value = data.approver_ids;
+            approverIds.value = [...data.approver_ids];
+            approversSuccess.value = data.message;
+        } else {
+            const firstError = data.errors
+                ? (Object.values(data.errors)[0] as string[])[0]
+                : null;
+            approversError.value =
+                firstError ?? data.message ?? 'Failed to update overtime approvers.';
+        }
+    } catch {
+        approversError.value = 'An unexpected error occurred. Please try again.';
+    } finally {
+        isSavingApprovers.value = false;
+    }
+}
+
+function getCsrfToken(): string {
+    const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : '';
+}
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -155,6 +242,80 @@ function formatDate(dateString: string): string {
                 </h1>
                 <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                     View and manage all overtime requests across the organization.
+                </p>
+            </div>
+
+            <!-- Level 2 Approvers -->
+            <div
+                v-if="approverSettings"
+                class="rounded-xl border border-slate-200 bg-white p-6 dark:border-slate-700 dark:bg-slate-900"
+            >
+                <h2 class="text-base font-semibold text-slate-900 dark:text-slate-100">
+                    Level 2 Approvers
+                </h2>
+                <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                    After the Department Head approves, any one of these employees can give the final approval.
+                    If none are set, requests go to the Leave Admin Manager.
+                </p>
+
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <span
+                        v-for="approver in selectedApprovers"
+                        :key="approver.id"
+                        class="inline-flex items-center gap-1 rounded-md bg-slate-100 py-1 pr-1 pl-2 text-sm text-slate-700 dark:bg-slate-800 dark:text-slate-200"
+                    >
+                        {{ approver.full_name }}
+                        <button
+                            type="button"
+                            class="rounded p-0.5 hover:bg-slate-200 dark:hover:bg-slate-700"
+                            :aria-label="`Remove ${approver.full_name}`"
+                            @click="removeApprover(approver.id)"
+                        >
+                            <X class="h-3.5 w-3.5" />
+                        </button>
+                    </span>
+                    <span
+                        v-if="selectedApprovers.length === 0"
+                        class="text-sm text-amber-700 dark:text-amber-400"
+                    >
+                        None set, so the Leave Admin Manager is used.
+                    </span>
+                </div>
+
+                <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">
+                    <Select :model-value="''" @update:model-value="addApprover">
+                        <SelectTrigger class="sm:w-80" aria-label="Add approver">
+                            <SelectValue placeholder="Add an approver" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem
+                                v-for="employee in availableApprovers"
+                                :key="employee.id"
+                                :value="String(employee.id)"
+                            >
+                                {{ employee.full_name }}
+                                <span class="text-slate-500">
+                                    ({{ employee.employee_number }}{{ employee.department ? ` · ${employee.department}` : '' }})
+                                </span>
+                            </SelectItem>
+                        </SelectContent>
+                    </Select>
+
+                    <Button
+                        type="button"
+                        :disabled="!approversDirty || isSavingApprovers"
+                        :style="{ backgroundColor: primaryColor }"
+                        @click="saveApprovers"
+                    >
+                        {{ isSavingApprovers ? 'Saving...' : 'Save' }}
+                    </Button>
+                </div>
+
+                <p v-if="approversError" class="mt-3 text-sm text-red-600 dark:text-red-400">
+                    {{ approversError }}
+                </p>
+                <p v-if="approversSuccess" class="mt-3 text-sm text-green-600 dark:text-green-400">
+                    {{ approversSuccess }}
                 </p>
             </div>
 
