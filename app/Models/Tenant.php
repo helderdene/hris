@@ -118,6 +118,14 @@ class Tenant extends Model
     }
 
     /**
+     * Whether level 2 overtime approvers may give final approval before level 1 acts.
+     */
+    public function overtimeLevelTwoCanSkip(): bool
+    {
+        return (bool) ($this->payroll_settings['overtime_level_two_can_skip'] ?? false);
+    }
+
+    /**
      * Get the double holiday pay rate from payroll settings.
      *
      * Returns the configured double holiday rate percentage, or 300% as the default.

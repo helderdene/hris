@@ -78,13 +78,16 @@ class OvertimeRequestApproval extends TenantModel
     }
 
     /**
-     * Scope to approvals at their request's current level, i.e. ones the approver can act on now.
+     * Scope to approvals the approver can act on now: at the request's current
+     * level, or at any later level when the tenant lets level 2 skip level 1.
      */
-    public function scopeAtCurrentLevel(Builder $query): Builder
+    public function scopeActionable(Builder $query): Builder
     {
+        $operator = tenant()?->overtimeLevelTwoCanSkip() ? '<=' : '=';
+
         return $query->whereHas('overtimeRequest', fn (Builder $request) => $request
             ->where('status', OvertimeRequestStatus::Pending)
-            ->whereColumn('current_approval_level', 'overtime_request_approvals.approval_level'));
+            ->whereColumn('current_approval_level', $operator, 'overtime_request_approvals.approval_level'));
     }
 
     /**

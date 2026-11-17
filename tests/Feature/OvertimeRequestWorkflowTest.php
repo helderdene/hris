@@ -597,3 +597,133 @@ describe('OT Approvals Navigation', function () {
             ->assertInertia(fn ($page) => $page->where('tenant.has_pending_overtime_approvals', false));
     });
 });
+
+describe('Level 2 Skip Option', function () {
+    /**
+     * @return array{0: OvertimeRequest, 1: Employee, 2: Employee, 3: User}
+     */
+    function createTwoLevelOvertimeRequest(Tenant $tenant): array
+    {
+        $levelOneApprover = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+        $levelTwoUser = createTenantUserForOT($tenant, TenantUserRole::Employee);
+        $levelTwoApprover = Employee::factory()->create([
+            'user_id' => $levelTwoUser->id,
+            'employment_status' => EmploymentStatus::Active,
+        ]);
+
+        $request = OvertimeRequest::factory()->pending()->create([
+            'current_approval_level' => 1,
+            'total_approval_levels' => 2,
+        ]);
+
+        foreach ([1 => $levelOneApprover, 2 => $levelTwoApprover] as $level => $approver) {
+            OvertimeRequestApproval::factory()->pending()->create([
+                'overtime_request_id' => $request->id,
+                'approval_level' => $level,
+                'approver_employee_id' => $approver->id,
+            ]);
+        }
+
+        return [$request, $levelOneApprover, $levelTwoApprover, $levelTwoUser];
+    }
+
+    it('keeps level 2 waiting for level 1 when the option is off', function () {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForOT($tenant);
+
+        [$request, , , $levelTwoUser] = createTwoLevelOvertimeRequest($tenant);
+
+        $this->actingAs($levelTwoUser)
+            ->postJson("http://{$tenant->slug}.kasamahr.test/api/overtime-approvals/{$request->id}/approve")
+            ->assertUnprocessable();
+
+        expect($request->fresh()->status)->toBe(OvertimeRequestStatus::Pending);
+    });
+
+    it('lets level 2 give final approval before level 1 when the option is on', function () {
+        Notification::fake();
+
+        $tenant = Tenant::factory()->create(['payroll_settings' => ['overtime_level_two_can_skip' => true]]);
+        bindTenantContextForOT($tenant);
+
+        [$request, $levelOneApprover, $levelTwoApprover, $levelTwoUser] = createTwoLevelOvertimeRequest($tenant);
+
+        $this->actingAs($levelTwoUser)
+            ->get("http://{$tenant->slug}.kasamahr.test/overtime/approvals")
+            ->assertInertia(fn ($page) => $page
+                ->where('tenant.has_pending_overtime_approvals', true)
+                ->where('summary.pending_count', 1));
+
+        $this->actingAs($levelTwoUser)
+            ->postJson("http://{$tenant->slug}.kasamahr.test/api/overtime-approvals/{$request->id}/approve", [
+                'remarks' => 'Approved early',
+            ])
+            ->assertSuccessful();
+
+        $result = $request->fresh(['approvals']);
+
+        expect($result->status)->toBe(OvertimeRequestStatus::Approved);
+        expect($result->current_approval_level)->toBe(2);
+        expect($result->approvals->firstWhere('approver_employee_id', $levelOneApprover->id)->decision)
+            ->toBe(OvertimeApprovalDecision::Skipped);
+        expect($result->approvals->firstWhere('approver_employee_id', $levelTwoApprover->id)->decision)
+            ->toBe(OvertimeApprovalDecision::Approved);
+    });
+
+    it('notifies level 2 approvers at submission when the option is on', function () {
+        Notification::fake();
+
+        $tenant = Tenant::factory()->create(['payroll_settings' => ['overtime_level_two_can_skip' => true]]);
+        bindTenantContextForOT($tenant);
+
+        ['employee' => $employee, 'headUser' => $headUser] = createEmployeeWithDepartmentHeadForOT($tenant);
+        $levelTwoUser = createTenantUserForOT($tenant, TenantUserRole::Employee);
+        Employee::factory()->create([
+            'user_id' => $levelTwoUser->id,
+            'employment_status' => EmploymentStatus::Active,
+            'is_overtime_approver' => true,
+        ]);
+
+        app(OvertimeRequestService::class)->submit(OvertimeRequest::factory()->create(['employee_id' => $employee->id]));
+
+        Notification::assertSentTo($headUser, \App\Notifications\OvertimeRequestSubmitted::class);
+        Notification::assertSentTo($levelTwoUser, \App\Notifications\OvertimeRequestSubmitted::class);
+    });
+
+    it('still sends level 1 approvals on to level 2 when the option is on', function () {
+        Notification::fake();
+
+        $tenant = Tenant::factory()->create(['payroll_settings' => ['overtime_level_two_can_skip' => true]]);
+        bindTenantContextForOT($tenant);
+
+        [$request, $levelOneApprover, $levelTwoApprover] = createTwoLevelOvertimeRequest($tenant);
+
+        $result = app(OvertimeRequestService::class)->approve($request, $levelOneApprover);
+
+        expect($result->status)->toBe(OvertimeRequestStatus::Pending);
+        expect($result->current_approval_level)->toBe(2);
+        expect($result->approvals->firstWhere('approver_employee_id', $levelTwoApprover->id)->decision)
+            ->toBe(OvertimeApprovalDecision::Pending);
+    });
+
+    it('lets an admin turn the option on and keeps it when omitted', function () {
+        $tenant = Tenant::factory()->create(['payroll_settings' => ['double_holiday_rate' => 260]]);
+        bindTenantContextForOT($tenant);
+
+        $this->actingAs(createTenantUserForOT($tenant, TenantUserRole::Admin));
+        $url = "http://{$tenant->slug}.kasamahr.test/api/organization/overtime-settings/approvers";
+
+        $this->postJson($url, ['employee_ids' => [], 'level_two_can_skip' => true])
+            ->assertSuccessful()
+            ->assertJsonPath('level_two_can_skip', true);
+
+        $this->postJson($url, ['employee_ids' => []])
+            ->assertSuccessful()
+            ->assertJsonPath('level_two_can_skip', true);
+
+        expect($tenant->fresh()->payroll_settings)->toBe([
+            'double_holiday_rate' => 260,
+            'overtime_level_two_can_skip' => true,
+        ]);
+    });
+});

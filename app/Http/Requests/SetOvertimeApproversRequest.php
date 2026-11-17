@@ -27,6 +27,7 @@ class SetOvertimeApproversRequest extends FormRequest
     {
         return [
             'employee_ids' => ['present', 'array'],
+            'level_two_can_skip' => ['sometimes', 'boolean'],
             'employee_ids.*' => [
                 'integer',
                 'distinct',
@@ -46,6 +47,7 @@ class SetOvertimeApproversRequest extends FormRequest
         return [
             'employee_ids.present' => 'Please provide the list of overtime approvers.',
             'employee_ids.*.exists' => 'Each selected employee must be active.',
+            'level_two_can_skip.boolean' => 'The level 2 skip option must be true or false.',
         ];
     }
 }

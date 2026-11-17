@@ -3,7 +3,6 @@
 namespace App\Http\Middleware;
 
 use App\Authorization\RolePermissions;
-use App\Enums\OvertimeRequestStatus;
 use App\Enums\Permission;
 use App\Enums\TenantUserRole;
 use App\Models\OvertimeRequestApproval;
@@ -149,17 +148,14 @@ class HandleInertiaRequests extends Middleware
     }
 
     /**
-     * Check if the user's employee record is the approver at the current level
-     * of any pending overtime request.
+     * Check if the user's employee record has any overtime approval it can act on now.
      */
     protected function hasPendingOvertimeApprovals(int $userId): bool
     {
         return OvertimeRequestApproval::query()
             ->pending()
             ->whereHas('approverEmployee', fn ($query) => $query->where('user_id', $userId))
-            ->whereHas('overtimeRequest', fn ($query) => $query
-                ->where('status', OvertimeRequestStatus::Pending)
-                ->whereColumn('current_approval_level', 'overtime_request_approvals.approval_level'))
+            ->actionable()
             ->exists();
     }
 

@@ -30,11 +30,7 @@ class OvertimeApprovalPageController extends Controller
         if ($employee) {
             $pendingRequests = OvertimeRequest::query()
                 ->where('status', OvertimeRequestStatus::Pending)
-                ->whereHas('approvals', function ($q) use ($employee) {
-                    $q->where('approver_employee_id', $employee->id)
-                        ->where('decision', OvertimeApprovalDecision::Pending)
-                        ->whereColumn('approval_level', 'overtime_requests.current_approval_level');
-                })
+                ->whereHas('approvals', fn ($q) => $q->pending()->forApprover($employee)->actionable())
                 ->with(['employee.department', 'employee.position'])
                 ->orderBy('submitted_at', 'asc')
                 ->get()

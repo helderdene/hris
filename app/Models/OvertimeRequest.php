@@ -165,11 +165,7 @@ class OvertimeRequest extends TenantModel
         $approverId = $approver instanceof Employee ? $approver->id : $approver;
 
         return $query->where('status', OvertimeRequestStatus::Pending)
-            ->whereHas('approvals', function ($q) use ($approverId) {
-                $q->where('approver_employee_id', $approverId)
-                    ->where('decision', OvertimeApprovalDecision::Pending)
-                    ->whereColumn('approval_level', 'overtime_requests.current_approval_level');
-            });
+            ->whereHas('approvals', fn ($q) => $q->pending()->forApprover($approverId)->actionable());
     }
 
     /**

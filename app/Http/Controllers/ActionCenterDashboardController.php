@@ -124,7 +124,7 @@ class ActionCenterDashboardController extends Controller
 
             $counts['overtimeApprovals'] = OvertimeRequestApproval::query()
                 ->pending()
-                ->atCurrentLevel()
+                ->actionable()
                 ->forApprover($employee)
                 ->count();
 
@@ -194,7 +194,7 @@ class ActionCenterDashboardController extends Controller
             // Get overdue overtime approvals
             $overdueOvertime = OvertimeRequestApproval::query()
                 ->overdue()
-                ->atCurrentLevel()
+                ->actionable()
                 ->forApprover($employee)
                 ->with(['overtimeRequest.employee'])
                 ->limit(10)
@@ -207,7 +207,7 @@ class ActionCenterDashboardController extends Controller
             // Get approaching deadline overtime approvals
             $approachingOvertime = OvertimeRequestApproval::query()
                 ->approaching()
-                ->atCurrentLevel()
+                ->actionable()
                 ->forApprover($employee)
                 ->with(['overtimeRequest.employee'])
                 ->limit(10)

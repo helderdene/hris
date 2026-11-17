@@ -75,6 +75,7 @@ class OvertimeRequestPageController extends Controller
             ],
             'approverSettings' => Gate::allows('can-manage-organization') ? [
                 'approver_ids' => Employee::query()->where('is_overtime_approver', true)->pluck('id'),
+                'level_two_can_skip' => tenant()?->overtimeLevelTwoCanSkip() ?? false,
                 'active_employees' => Employee::query()
                     ->where('employment_status', EmploymentStatus::Active)
                     ->with('department')

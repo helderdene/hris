@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import {
     Select,
     SelectContent,
@@ -79,6 +81,7 @@ const props = defineProps<{
     };
     approverSettings: {
         approver_ids: number[];
+        level_two_can_skip: boolean;
         active_employees: ApproverOption[];
     } | null;
 }>();
@@ -87,6 +90,8 @@ const { tenantName, primaryColor } = useTenant();
 
 const savedApproverIds = ref<number[]>(props.approverSettings?.approver_ids ?? []);
 const approverIds = ref<number[]>([...savedApproverIds.value]);
+const savedLevelTwoCanSkip = ref(props.approverSettings?.level_two_can_skip ?? false);
+const levelTwoCanSkip = ref(savedLevelTwoCanSkip.value);
 const isSavingApprovers = ref(false);
 const approversError = ref<string | null>(null);
 const approversSuccess = ref<string | null>(null);
@@ -106,7 +111,8 @@ const availableApprovers = computed(() =>
 const approversDirty = computed(
     () =>
         [...approverIds.value].sort().join(',') !==
-        [...savedApproverIds.value].sort().join(','),
+            [...savedApproverIds.value].sort().join(',') ||
+        levelTwoCanSkip.value !== savedLevelTwoCanSkip.value,
 );
 
 function addApprover(value: unknown): void {
@@ -133,7 +139,10 @@ async function saveApprovers(): Promise<void> {
                 'X-XSRF-TOKEN': getCsrfToken(),
             },
             credentials: 'same-origin',
-            body: JSON.stringify({ employee_ids: approverIds.value }),
+            body: JSON.stringify({
+                employee_ids: approverIds.value,
+                level_two_can_skip: levelTwoCanSkip.value,
+            }),
         });
 
         const data = await response.json();
@@ -141,6 +150,8 @@ async function saveApprovers(): Promise<void> {
         if (response.ok) {
             savedApproverIds.value = data.approver_ids;
             approverIds.value = [...data.approver_ids];
+            savedLevelTwoCanSkip.value = data.level_two_can_skip;
+            levelTwoCanSkip.value = data.level_two_can_skip;
             approversSuccess.value = data.message;
         } else {
             const firstError = data.errors
@@ -280,6 +291,14 @@ function formatDate(dateString: string): string {
                     >
                         None set, so the Leave Admin Manager is used.
                     </span>
+                </div>
+
+                <div class="mt-4 flex items-start gap-2">
+                    <Checkbox id="level-two-can-skip" v-model="levelTwoCanSkip" class="mt-0.5" />
+                    <Label for="level-two-can-skip" class="text-sm font-normal text-slate-700 dark:text-slate-300">
+                        Let level 2 approvers approve before the Department Head.
+                        Their approval is final and the Department Head's step is skipped.
+                    </Label>
                 </div>
 
                 <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center">

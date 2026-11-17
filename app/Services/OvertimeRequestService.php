@@ -73,6 +73,10 @@ class OvertimeRequestService
 
             $this->notifyApproversAtLevel($request, 1);
 
+            if (tenant()?->overtimeLevelTwoCanSkip() && $request->total_approval_levels > 1) {
+                $this->notifyApproversAtLevel($request, 2);
+            }
+
             return $request->fresh(['approvals', 'employee']);
         });
     }
@@ -93,11 +97,7 @@ class OvertimeRequestService
             ]);
         }
 
-        $approval = $request->approvals()
-            ->where('approval_level', $request->current_approval_level)
-            ->where('approver_employee_id', $approver->id)
-            ->where('decision', OvertimeApprovalDecision::Pending)
-            ->first();
+        $approval = $this->findActionableApproval($request, $approver);
 
         if (! $approval) {
             throw ValidationException::withMessages([
@@ -108,6 +108,7 @@ class OvertimeRequestService
         return DB::transaction(function () use ($request, $approval, $remarks) {
             $approval->approve($remarks);
             $this->skipPendingApprovals($request, "Approved by {$approval->approver_name}", $approval->approval_level);
+            $request->current_approval_level = $approval->approval_level;
 
             if ($request->current_approval_level >= $request->total_approval_levels) {
                 $request->status = OvertimeRequestStatus::Approved;
@@ -144,11 +145,7 @@ class OvertimeRequestService
             ]);
         }
 
-        $approval = $request->approvals()
-            ->where('approval_level', $request->current_approval_level)
-            ->where('approver_employee_id', $approver->id)
-            ->where('decision', OvertimeApprovalDecision::Pending)
-            ->first();
+        $approval = $this->findActionableApproval($request, $approver);
 
         if (! $approval) {
             throw ValidationException::withMessages([
@@ -240,6 +237,20 @@ class OvertimeRequestService
     }
 
     /**
+     * Find the approver's pending approval they may act on now: at the current
+     * level, or at a later level when the tenant lets level 2 skip level 1.
+     */
+    protected function findActionableApproval(OvertimeRequest $request, Employee $approver): ?OvertimeRequestApproval
+    {
+        return $request->approvals()
+            ->where('approval_level', tenant()?->overtimeLevelTwoCanSkip() ? '>=' : '=', $request->current_approval_level)
+            ->where('approver_employee_id', $approver->id)
+            ->where('decision', OvertimeApprovalDecision::Pending)
+            ->orderBy('approval_level')
+            ->first();
+    }
+
+    /**
      * Notify every approver assigned to the given level.
      */
     protected function notifyApproversAtLevel(OvertimeRequest $request, int $level): void
@@ -252,14 +263,14 @@ class OvertimeRequestService
     }
 
     /**
-     * Mark still-pending approvals (optionally only at one level) as skipped
+     * Mark still-pending approvals (optionally only up to one level) as skipped
      * so they no longer surface as pending actions or priority alerts.
      */
     protected function skipPendingApprovals(OvertimeRequest $request, string $reason, ?int $level = null): void
     {
         $request->approvals()
             ->where('decision', OvertimeApprovalDecision::Pending)
-            ->when($level !== null, fn ($query) => $query->where('approval_level', $level))
+            ->when($level !== null, fn ($query) => $query->where('approval_level', '<=', $level))
             ->update([
                 'decision' => OvertimeApprovalDecision::Skipped,
                 'remarks' => $reason,
