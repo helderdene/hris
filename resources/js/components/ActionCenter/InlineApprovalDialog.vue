@@ -16,7 +16,7 @@ export type ApprovalAction = 'approve' | 'reject';
 
 export interface ApprovalTarget {
     id: number;
-    type: 'leave_approval' | 'requisition_approval';
+    type: 'leave_approval' | 'requisition_approval' | 'overtime_approval';
     title: string;
     employee_name: string;
     description: string;

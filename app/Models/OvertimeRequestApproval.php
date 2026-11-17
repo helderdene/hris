@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\OvertimeApprovalDecision;
+use App\Enums\OvertimeRequestStatus;
 use App\Enums\PriorityLevel;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
@@ -74,6 +75,16 @@ class OvertimeRequestApproval extends TenantModel
     public function scopePending(Builder $query): Builder
     {
         return $query->where('decision', OvertimeApprovalDecision::Pending);
+    }
+
+    /**
+     * Scope to approvals at their request's current level, i.e. ones the approver can act on now.
+     */
+    public function scopeAtCurrentLevel(Builder $query): Builder
+    {
+        return $query->whereHas('overtimeRequest', fn (Builder $request) => $request
+            ->where('status', OvertimeRequestStatus::Pending)
+            ->whereColumn('current_approval_level', 'overtime_request_approvals.approval_level'));
     }
 
     /**

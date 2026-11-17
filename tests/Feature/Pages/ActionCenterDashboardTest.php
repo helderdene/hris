@@ -9,6 +9,8 @@ use App\Models\JobRequisitionApproval;
 use App\Models\LeaveApplication;
 use App\Models\LeaveApplicationApproval;
 use App\Models\LeaveType;
+use App\Models\OvertimeRequest;
+use App\Models\OvertimeRequestApproval;
 use App\Models\Tenant;
 use App\Models\User;
 use Carbon\Carbon;
@@ -652,4 +654,49 @@ it('InlineApprovalController validates rejection requires reason', function () {
     expect($validator->fails())->toBeTrue();
     expect($validator->errors()->has('reason'))->toBeTrue();
     expect($validator->errors()->first('reason'))->toBe('Please provide a reason for rejection.');
+});
+
+it('only surfaces overtime approvals to the approver at the current level', function () {
+    $tenant = Tenant::factory()->create(['slug' => 'acme']);
+    bindTenantContextForActionCenter($tenant);
+
+    $levelOneUser = createTenantUserForActionCenter($tenant, TenantUserRole::Admin);
+    $levelOneApprover = createEmployeeForUser($levelOneUser);
+    $levelTwoUser = createTenantUserForActionCenter($tenant, TenantUserRole::Admin);
+    $levelTwoApprover = createEmployeeForUser($levelTwoUser);
+
+    $overtimeRequest = OvertimeRequest::factory()->pending()->create([
+        'employee_id' => Employee::factory()->create()->id,
+        'current_approval_level' => 1,
+        'total_approval_levels' => 2,
+    ]);
+
+    foreach ([1 => $levelOneApprover, 2 => $levelTwoApprover] as $level => $approver) {
+        OvertimeRequestApproval::factory()->pending()->create([
+            'overtime_request_id' => $overtimeRequest->id,
+            'approval_level' => $level,
+            'approver_employee_id' => $approver->id,
+            'created_at' => Carbon::now()->subHours(60),
+        ]);
+    }
+
+    $dashboardPropsFor = function (User $user): array {
+        $request = request();
+        $request->setUserResolver(fn () => $user);
+        $response = app(ActionCenterDashboardController::class)($request);
+        $propsProperty = (new ReflectionClass($response))->getProperty('props');
+        $propsProperty->setAccessible(true);
+
+        return $propsProperty->getValue($response);
+    };
+
+    $levelTwoProps = $dashboardPropsFor($levelTwoUser);
+    expect($levelTwoProps['priorityItems'])->toBeEmpty()
+        ->and($levelTwoProps['pendingActions']['overtimeApprovals'])->toBe(0);
+
+    $levelOneProps = $dashboardPropsFor($levelOneUser);
+    expect($levelOneProps['priorityItems'])->toHaveCount(1)
+        ->and($levelOneProps['priorityItems'][0]['type'])->toBe('overtime_approval')
+        ->and($levelOneProps['priorityItems'][0]['overtime_request_id'])->toBe($overtimeRequest->id)
+        ->and($levelOneProps['pendingActions']['overtimeApprovals'])->toBe(1);
 });

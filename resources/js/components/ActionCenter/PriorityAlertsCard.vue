@@ -21,6 +21,7 @@ export interface PriorityItem {
     description: string;
     hours_overdue?: number;
     hours_remaining?: number;
+    overtime_request_id?: number;
     link: string;
     created_at: string;
 }

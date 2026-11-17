@@ -116,7 +116,7 @@ function handleApprove(item: PriorityItem) {
     approvalAction.value = 'approve';
     approvalTarget.value = {
         id: item.id,
-        type: item.type as 'leave_approval' | 'requisition_approval',
+        type: item.type as ApprovalTarget['type'],
         title: item.title,
         employee_name: item.employee_name,
         description: item.description,
@@ -130,7 +130,7 @@ function handleReject(item: PriorityItem) {
     approvalAction.value = 'reject';
     approvalTarget.value = {
         id: item.id,
-        type: item.type as 'leave_approval' | 'requisition_approval',
+        type: item.type as ApprovalTarget['type'],
         title: item.title,
         employee_name: item.employee_name,
         description: item.description,
@@ -161,6 +161,16 @@ async function handleApprovalSubmit(remarks: string) {
             endpoint = approvalAction.value === 'approve'
                 ? `/api/action-center/leave-approvals/${leaveApplicationId}/approve`
                 : `/api/action-center/leave-approvals/${leaveApplicationId}/reject`;
+        } else if (approvalTarget.value.type === 'overtime_approval') {
+            const overtimeRequestId = props.priorityItems.find(
+                (item) => item.type === 'overtime_approval' && item.id === approvalTarget.value!.id,
+            )?.overtime_request_id;
+
+            if (!overtimeRequestId) {
+                throw new Error('Overtime request not found');
+            }
+
+            endpoint = `/api/action-center/overtime-approvals/${overtimeRequestId}/${approvalAction.value}`;
         } else {
             // Find the job requisition ID from the details
             const detail = props.pendingRequisitionDetails?.find(d => d.id === approvalTarget.value!.id);
