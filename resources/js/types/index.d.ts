@@ -24,6 +24,7 @@ export interface NavItem {
 export interface SubscriptionData {
     plan: string | null;
     status: string | null;
+    is_lifetime: boolean;
     is_on_trial: boolean;
     trial_ends_at: string | null;
     available_modules: string[];
@@ -194,6 +195,7 @@ export interface AdminTenantDetail {
         modules: PlanModuleData[];
     } | null;
     trial_ends_at: string | null;
+    is_lifetime: boolean;
     is_on_trial: boolean;
     trial_expired: boolean;
 }

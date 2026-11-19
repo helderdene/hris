@@ -30,6 +30,7 @@ const props = defineProps<{
 const showExtendTrialDialog = ref(false);
 const showAssignPlanDialog = ref(false);
 const showCancelDialog = ref(false);
+const showLifetimeDialog = ref(false);
 
 const trialDays = ref(14);
 const selectedPlanId = ref('');
@@ -50,6 +51,14 @@ function assignPlan() {
     }, {
         onSuccess: () => {
             showAssignPlanDialog.value = false;
+        },
+    });
+}
+
+function toggleLifetime() {
+    router.post(`/admin/tenants/${props.tenant.id}/toggle-lifetime`, {}, {
+        onSuccess: () => {
+            showLifetimeDialog.value = false;
         },
     });
 }
@@ -94,6 +103,7 @@ function usageLabel(max: number | null): string {
 }
 
 const statusClasses: Record<string, string> = {
+    lifetime: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300',
     trial: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
     active: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
     expired: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
@@ -164,6 +174,10 @@ const subscriptionStatusClasses: Record<string, string> = {
                         Subscription Status
                     </h2>
                     <dl class="space-y-3">
+                        <div v-if="tenant.is_lifetime" class="flex justify-between">
+                            <dt class="text-sm text-slate-500 dark:text-slate-400">Access</dt>
+                            <dd class="text-sm font-medium text-indigo-600 dark:text-indigo-400">Lifetime</dd>
+                        </div>
                         <div v-if="tenant.is_on_trial" class="flex justify-between">
                             <dt class="text-sm text-slate-500 dark:text-slate-400">Trial Ends</dt>
                             <dd class="text-sm font-medium text-amber-600 dark:text-amber-400">{{ formatDate(tenant.trial_ends_at) }}</dd>
@@ -199,7 +213,7 @@ const subscriptionStatusClasses: Record<string, string> = {
                                 <dd class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ formatDate(subscription.current_period_end) }}</dd>
                             </div>
                         </template>
-                        <p v-if="!subscription && !tenant.is_on_trial" class="text-sm text-slate-500 dark:text-slate-400">
+                        <p v-if="!subscription && !tenant.is_on_trial && !tenant.is_lifetime" class="text-sm text-slate-500 dark:text-slate-400">
                             No active subscription.
                         </p>
                     </dl>
@@ -324,6 +338,13 @@ const subscriptionStatusClasses: Record<string, string> = {
                         Assign Plan
                     </button>
                     <button
+                        class="rounded-lg border border-indigo-600 px-4 py-2 text-sm font-medium text-indigo-600 transition-colors hover:bg-indigo-50 dark:border-indigo-400 dark:text-indigo-400 dark:hover:bg-indigo-950"
+                        data-test="toggle-lifetime-button"
+                        @click="showLifetimeDialog = true"
+                    >
+                        {{ tenant.is_lifetime ? 'Revoke Lifetime Access' : 'Grant Lifetime Access' }}
+                    </button>
+                    <button
                         v-if="subscription && subscription.paymongo_status === 'active'"
                         class="rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700"
                         @click="showCancelDialog = true"
@@ -403,6 +424,40 @@ const subscriptionStatusClasses: Record<string, string> = {
                             @click="assignPlan"
                         >
                             Assign
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lifetime Access Dialog -->
+            <div
+                v-if="showLifetimeDialog"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+                @click.self="showLifetimeDialog = false"
+            >
+                <div class="w-full max-w-sm rounded-xl bg-white p-6 shadow-xl dark:bg-slate-800">
+                    <h3 class="mb-2 text-lg font-semibold text-slate-900 dark:text-slate-100">
+                        {{ tenant.is_lifetime ? 'Revoke Lifetime Access' : 'Grant Lifetime Access' }}
+                    </h3>
+                    <p v-if="tenant.is_lifetime" class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+                        {{ tenant.name }} will go back to its trial or subscription. If it has neither, it loses access immediately.
+                    </p>
+                    <p v-else class="mb-4 text-sm text-slate-600 dark:text-slate-400">
+                        {{ tenant.name }} will keep access with no expiry, limited to the modules in its plan ({{ tenant.plan?.name ?? 'none assigned' }}).
+                    </p>
+                    <div class="flex justify-end gap-3">
+                        <button
+                            class="rounded-lg border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 dark:border-slate-600 dark:text-slate-300"
+                            @click="showLifetimeDialog = false"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+                            data-test="confirm-toggle-lifetime-button"
+                            @click="toggleLifetime"
+                        >
+                            {{ tenant.is_lifetime ? 'Revoke' : 'Grant' }}
                         </button>
                     </div>
                 </div>

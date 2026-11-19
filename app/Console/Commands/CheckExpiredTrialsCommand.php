@@ -29,7 +29,8 @@ class CheckExpiredTrialsCommand extends Command
      */
     public function handle(): int
     {
-        $tenants = Tenant::where('trial_ends_at', '<', now())
+        $tenants = Tenant::where('is_lifetime', false)
+            ->where('trial_ends_at', '<', now())
             ->whereNull('trial_expired_notified_at')
             ->whereDoesntHave('subscriptions', fn ($q) => $q->where('paymongo_status', SubscriptionStatus::Active->value))
             ->get();

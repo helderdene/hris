@@ -35,10 +35,12 @@ class PlatformAdminController extends Controller
         $activeSubscriptions = Subscription::where('paymongo_status', SubscriptionStatus::Active)
             ->whereNull('ends_at')
             ->count();
-        $activeTrials = Tenant::whereNotNull('trial_ends_at')
+        $activeTrials = Tenant::where('is_lifetime', false)
+            ->whereNotNull('trial_ends_at')
             ->where('trial_ends_at', '>', now())
             ->count();
-        $expiredTrials = Tenant::whereNotNull('trial_ends_at')
+        $expiredTrials = Tenant::where('is_lifetime', false)
+            ->whereNotNull('trial_ends_at')
             ->where('trial_ends_at', '<=', now())
             ->count();
 
@@ -50,8 +52,8 @@ class PlatformAdminController extends Controller
             ->value('total') ?? 0;
 
         // Trial conversion rate
-        $totalTrials = Tenant::whereNotNull('trial_ends_at')->count();
-        $convertedTrials = Tenant::whereNotNull('trial_ends_at')
+        $totalTrials = Tenant::where('is_lifetime', false)->whereNotNull('trial_ends_at')->count();
+        $convertedTrials = Tenant::where('is_lifetime', false)->whereNotNull('trial_ends_at')
             ->whereHas('subscriptions', fn ($q) => $q->where('paymongo_status', SubscriptionStatus::Active))
             ->count();
         $trialConversionRate = $totalTrials > 0 ? round(($convertedTrials / $totalTrials) * 100, 1) : 0;
@@ -118,9 +120,10 @@ class PlatformAdminController extends Controller
         // Filter by status
         if ($status = $request->input('status')) {
             match ($status) {
-                'trial' => $query->whereNotNull('trial_ends_at')->where('trial_ends_at', '>', now()),
+                'lifetime' => $query->where('is_lifetime', true),
+                'trial' => $query->where('is_lifetime', false)->whereNotNull('trial_ends_at')->where('trial_ends_at', '>', now()),
                 'active' => $query->whereHas('subscriptions', fn ($q) => $q->where('paymongo_status', SubscriptionStatus::Active)->whereNull('ends_at')),
-                'expired' => $query->whereNotNull('trial_ends_at')->where('trial_ends_at', '<=', now())
+                'expired' => $query->where('is_lifetime', false)->whereNotNull('trial_ends_at')->where('trial_ends_at', '<=', now())
                     ->whereDoesntHave('subscriptions', fn ($q) => $q->where('paymongo_status', SubscriptionStatus::Active)),
                 'cancelled' => $query->whereHas('subscriptions', fn ($q) => $q->where('paymongo_status', SubscriptionStatus::Cancelled)),
                 'no_subscription' => $query->whereNull('plan_id'),
@@ -208,6 +211,7 @@ class PlatformAdminController extends Controller
                     ])->values(),
                 ] : null,
                 'trial_ends_at' => $tenant->trial_ends_at?->toISOString(),
+                'is_lifetime' => $tenant->is_lifetime,
                 'is_on_trial' => $tenant->onTrial(),
                 'trial_expired' => $tenant->trialExpired(),
             ],
@@ -253,6 +257,21 @@ class PlatformAdminController extends Controller
         $tenant->save();
 
         return back()->with('success', "Trial extended by {$days} days.");
+    }
+
+    /**
+     * Grant or revoke lifetime access for a tenant.
+     *
+     * Only the flag changes; the trial date and any subscription are left as
+     * they are, so revoking returns the tenant to whatever access it had.
+     */
+    public function toggleLifetime(Tenant $tenant): RedirectResponse
+    {
+        $tenant->update(['is_lifetime' => ! $tenant->is_lifetime]);
+
+        $status = $tenant->is_lifetime ? 'granted' : 'revoked';
+
+        return back()->with('success', "Lifetime access {$status}.");
     }
 
     /**
@@ -497,6 +516,10 @@ class PlatformAdminController extends Controller
      */
     protected function getTenantStatus(Tenant $tenant): string
     {
+        if ($tenant->is_lifetime) {
+            return 'lifetime';
+        }
+
         if ($tenant->onTrial()) {
             return 'trial';
         }

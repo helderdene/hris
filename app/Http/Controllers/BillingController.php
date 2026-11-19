@@ -76,6 +76,7 @@ class BillingController extends Controller
                 'extra_units' => $addon->extraUnits(),
                 'monthly_cost' => $addon->monthlyCost(),
             ])->values(),
+            'isLifetime' => (bool) $tenant->is_lifetime,
             'isOnTrial' => $tenant->onTrial(),
             'trialEndsAt' => $tenant->trial_ends_at?->toISOString(),
         ]);

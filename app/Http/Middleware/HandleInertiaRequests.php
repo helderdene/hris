@@ -140,6 +140,7 @@ class HandleInertiaRequests extends Middleware
             'subscription' => [
                 'plan' => $tenant->plan?->slug,
                 'status' => $tenant->subscription('default')?->paymongo_status?->value,
+                'is_lifetime' => (bool) $tenant->is_lifetime,
                 'is_on_trial' => $tenant->onTrial(),
                 'trial_ends_at' => $tenant->trial_ends_at?->toISOString(),
                 'available_modules' => $tenant->availableModules(),

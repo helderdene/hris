@@ -33,6 +33,7 @@ const props = defineProps<{
     subscription: SubscriptionDetail | null;
     usage: UsageStats;
     addons: TenantAddonData[];
+    isLifetime: boolean;
     isOnTrial: boolean;
     trialEndsAt: string | null;
 }>();
@@ -54,7 +55,8 @@ const trialDaysLeft = computed(() => {
 });
 
 const employeeUsagePercent = computed(() => {
-    if (!props.usage.max_employees || props.usage.max_employees === -1) return 0;
+    if (!props.usage.max_employees || props.usage.max_employees === -1)
+        return 0;
     return Math.min(
         100,
         Math.round(
@@ -64,6 +66,7 @@ const employeeUsagePercent = computed(() => {
 });
 
 const statusBadgeVariant = computed(() => {
+    if (props.isLifetime) return 'default';
     if (props.isOnTrial) return 'secondary';
     if (!props.subscription) return 'destructive';
     switch (props.subscription.paymongo_status) {
@@ -79,6 +82,7 @@ const statusBadgeVariant = computed(() => {
 });
 
 const statusLabel = computed(() => {
+    if (props.isLifetime) return 'Lifetime';
     if (props.isOnTrial) return 'Trial';
     if (!props.subscription) return 'No Subscription';
     return (
@@ -153,11 +157,7 @@ function handleCancel() {
                             continue using all features.
                         </p>
                     </div>
-                    <Link
-                        v-if="isAdmin"
-                        href="/billing/plans"
-                        class="shrink-0"
-                    >
+                    <Link v-if="isAdmin" href="/billing/plans" class="shrink-0">
                         <Button
                             size="sm"
                             :style="{ backgroundColor: primaryColor }"

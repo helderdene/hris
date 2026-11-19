@@ -74,6 +74,7 @@ function formatDate(dateStr: string): string {
 }
 
 const statusClasses: Record<string, string> = {
+    lifetime: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/50 dark:text-indigo-300',
     trial: 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
     active: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300',
     expired: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300',
@@ -119,6 +120,7 @@ const statusClasses: Record<string, string> = {
                     class="rounded-lg border border-slate-300 bg-white py-2 pl-3 pr-8 text-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
                 >
                     <option value="">All Statuses</option>
+                    <option value="lifetime">Lifetime</option>
                     <option value="trial">Trial</option>
                     <option value="active">Active</option>
                     <option value="expired">Expired</option>

@@ -1,6 +1,6 @@
+import type { SubscriptionData, TenantContext } from '@/types';
 import { usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
-import type { SubscriptionData, TenantContext } from '@/types';
 
 /**
  * Composable for accessing subscription data from Inertia shared props.
@@ -39,6 +39,10 @@ export function useSubscription() {
         return subscription.value?.is_on_trial ?? false;
     });
 
+    const isLifetime = computed<boolean>(() => {
+        return subscription.value?.is_lifetime ?? false;
+    });
+
     const trialEndsAt = computed<string | null>(() => {
         return subscription.value?.trial_ends_at ?? null;
     });
@@ -48,7 +52,7 @@ export function useSubscription() {
     });
 
     const isActive = computed<boolean>(() => {
-        return status.value === 'active' || isOnTrial.value;
+        return status.value === 'active' || isOnTrial.value || isLifetime.value;
     });
 
     function hasModule(module: string): boolean {
@@ -60,6 +64,7 @@ export function useSubscription() {
         plan,
         status,
         isOnTrial,
+        isLifetime,
         trialEndsAt,
         availableModules,
         isActive,

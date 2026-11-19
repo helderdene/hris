@@ -86,6 +86,7 @@ Route::middleware(['auth', 'verified', 'can:super-admin'])->prefix('admin')->gro
     Route::get('/tenants', [PlatformAdminController::class, 'tenants'])->name('admin.tenants');
     Route::get('/tenants/{tenant}', [PlatformAdminController::class, 'showTenant'])->name('admin.tenants.show');
     Route::post('/tenants/{tenant}/extend-trial', [PlatformAdminController::class, 'extendTrial'])->name('admin.tenants.extend-trial');
+    Route::post('/tenants/{tenant}/toggle-lifetime', [PlatformAdminController::class, 'toggleLifetime'])->name('admin.tenants.toggle-lifetime');
     Route::post('/tenants/{tenant}/assign-plan', [PlatformAdminController::class, 'assignPlan'])->name('admin.tenants.assign-plan');
     Route::post('/tenants/{tenant}/cancel-subscription', [PlatformAdminController::class, 'cancelSubscription'])->name('admin.tenants.cancel-subscription');
     Route::get('/tenants/{tenant}/impersonate', [PlatformAdminController::class, 'impersonate'])->name('admin.tenants.impersonate');

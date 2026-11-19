@@ -37,6 +37,7 @@ class Tenant extends Model
         'plan_id',
         'paymongo_customer_id',
         'trial_ends_at',
+        'is_lifetime',
         'trial_expired_notified_at',
         'employee_count_cache',
         'api_token_hash',
@@ -56,6 +57,7 @@ class Tenant extends Model
             'payroll_settings' => 'array',
             'leave_defaults' => 'array',
             'trial_ends_at' => 'datetime',
+            'is_lifetime' => 'boolean',
             'trial_expired_notified_at' => 'datetime',
             'api_token_last_used_at' => 'datetime',
         ];
@@ -189,7 +191,7 @@ class Tenant extends Model
      */
     public function onTrial(): bool
     {
-        return $this->trial_ends_at !== null && $this->trial_ends_at->isFuture();
+        return ! $this->is_lifetime && $this->trial_ends_at !== null && $this->trial_ends_at->isFuture();
     }
 
     /**
@@ -197,7 +199,7 @@ class Tenant extends Model
      */
     public function trialExpired(): bool
     {
-        return $this->trial_ends_at !== null && $this->trial_ends_at->isPast();
+        return ! $this->is_lifetime && $this->trial_ends_at !== null && $this->trial_ends_at->isPast();
     }
 
     /**
@@ -205,7 +207,7 @@ class Tenant extends Model
      */
     public function hasActiveAccess(): bool
     {
-        return $this->onTrial() || $this->subscribed('default');
+        return $this->is_lifetime || $this->onTrial() || $this->subscribed('default');
     }
 
     /**
