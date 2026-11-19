@@ -3,46 +3,46 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\TenantRegistrationRequest;
+use App\Jobs\ProvisionTenantJob;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\TenantRedirectToken;
-use App\Services\Billing\PayMongoCustomerService;
-use App\Services\Tenant\TenantDatabaseManager;
-use Database\Seeders\DocumentCategorySeeder;
-use Database\Seeders\GovernmentContributionSeeder;
-use Database\Seeders\HelpContentSeeder;
-use Database\Seeders\ProficiencyLevelSeeder;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class TenantRegistrationController extends Controller
 {
-    public function __construct(
-        protected TenantDatabaseManager $tenantDatabaseManager
-    ) {}
-
     /**
      * Display the tenant registration form.
+     *
+     * While an organization is being provisioned the page polls this action,
+     * and receives the subdomain redirect URL once the user has been attached.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
+        $provisioningSlug = $request->query('provisioning');
+        $provisioningSlug = is_string($provisioningSlug) ? $provisioningSlug : null;
+
         return Inertia::render('TenantRegistration', [
             'mainDomain' => config('app.main_domain', 'kasamahr.test'),
+            'provisioningSlug' => $provisioningSlug,
+            'provisionedRedirectUrl' => $provisioningSlug === null
+                ? null
+                : $this->provisionedRedirectUrl($request, $provisioningSlug),
         ]);
     }
 
     /**
-     * Handle tenant registration and provision the tenant schema.
+     * Register the tenant and provision its schema in the background.
      */
-    public function store(TenantRegistrationRequest $request): SymfonyResponse
+    public function store(TenantRegistrationRequest $request): RedirectResponse
     {
         $validated = $request->validated();
-        $user = $request->user();
+        $trialPlan = Plan::where('slug', config('billing.trial_plan', 'professional'))->first();
 
-        // Create the tenant record in platform schema
         $tenant = Tenant::create([
             'name' => $validated['name'],
             'slug' => $validated['slug'],
@@ -50,21 +50,6 @@ class TenantRegistrationController extends Controller
             'timezone' => 'Asia/Manila',
         ]);
 
-        // Provision the tenant database schema
-        $this->tenantDatabaseManager->createSchema($tenant);
-        $this->tenantDatabaseManager->migrateSchema($tenant);
-
-        // Seed initial data for the tenant
-        (new HelpContentSeeder)->run();
-        (new DocumentCategorySeeder)->run();
-        (new GovernmentContributionSeeder)->run();
-        (new ProficiencyLevelSeeder)->run();
-
-        // Add current user as tenant admin
-        $tenant->users()->attach($user->id, ['role' => 'admin']);
-
-        // Assign trial plan and create PayMongo customer
-        $trialPlan = Plan::where('slug', config('billing.trial_plan', 'professional'))->first();
         if ($trialPlan) {
             $tenant->update([
                 'plan_id' => $trialPlan->id,
@@ -72,25 +57,27 @@ class TenantRegistrationController extends Controller
             ]);
         }
 
-        try {
-            app(PayMongoCustomerService::class)->createOrGet($tenant);
-        } catch (\Throwable $e) {
-            Log::warning('Failed to create PayMongo customer during registration', [
-                'tenant_id' => $tenant->id,
-                'error' => $e->getMessage(),
-            ]);
+        ProvisionTenantJob::dispatch($tenant->id, $request->user()->id);
+
+        return to_route('tenant.register', ['provisioning' => $tenant->slug]);
+    }
+
+    /**
+     * Build the subdomain redirect URL once the user belongs to the provisioned tenant.
+     */
+    protected function provisionedRedirectUrl(Request $request, string $slug): ?string
+    {
+        $tenant = $request->user()->tenants()->where('slug', $slug)->first();
+
+        if ($tenant === null) {
+            return null;
         }
 
-        // Generate secure redirect token for cross-subdomain authentication
-        $token = $this->createRedirectToken($user->id, $tenant->id);
-
-        // Build subdomain redirect URL with success indicator
+        $token = $this->createRedirectToken($request->user()->id, $tenant->id);
         $mainDomain = config('app.main_domain', 'kasamahr.test');
         $scheme = $request->secure() ? 'https' : 'http';
-        $redirectUrl = "{$scheme}://{$tenant->slug}.{$mainDomain}/?token={$token->token}&created=1";
 
-        // Use Inertia::location() to force full page redirect (avoids CORS issues with subdomain)
-        return Inertia::location($redirectUrl);
+        return "{$scheme}://{$tenant->slug}.{$mainDomain}/?token={$token->token}&created=1";
     }
 
     /**

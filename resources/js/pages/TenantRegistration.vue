@@ -7,23 +7,57 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthLayout from '@/layouts/AuthLayout.vue';
 import { store as registerOrganizationRoute } from '@/routes/tenant/register';
-import { Form, Head } from '@inertiajs/vue3';
+import { Form, Head, usePoll } from '@inertiajs/vue3';
 import { useDebounceFn } from '@vueuse/core';
 import { computed, ref, watch } from 'vue';
 
 interface Props {
     mainDomain: string;
+    provisioningSlug?: string | null;
+    provisionedRedirectUrl?: string | null;
 }
 
 const props = defineProps<Props>();
 
 const slugInput = ref('');
 const tinInput = ref('');
+const isCreatingOrganization = ref(false);
+const isTakingLong = ref(false);
+
+const { start: startPolling } = usePoll(
+    3000,
+    { only: ['provisionedRedirectUrl'] },
+    { autoStart: false },
+);
+
+watch(
+    () => props.provisioningSlug,
+    (provisioningSlug) => {
+        if (provisioningSlug) {
+            startPolling();
+            setTimeout(() => (isTakingLong.value = true), 5 * 60 * 1000);
+        }
+    },
+    { immediate: true },
+);
+
+watch(
+    () => props.provisionedRedirectUrl,
+    (redirectUrl) => {
+        if (redirectUrl) {
+            window.location.href = redirectUrl;
+        }
+    },
+    { immediate: true },
+);
 const slugAvailability = ref<'idle' | 'checking' | 'available' | 'taken'>(
     'idle',
 );
 
 const subdomainPreview = computed(() => {
+    if (props.provisioningSlug) {
+        return `${props.provisioningSlug}.${props.mainDomain}`;
+    }
     if (!slugInput.value) {
         return `your-company.${props.mainDomain}`;
     }
@@ -109,7 +143,34 @@ function handleTinInput(event: Event) {
             v-bind="registerOrganizationRoute.form()"
             #default="{ errors, processing }"
             class="flex flex-col gap-6"
+            @start="isCreatingOrganization = true"
+            @error="isCreatingOrganization = false"
         >
+            <div
+                v-if="isCreatingOrganization || provisioningSlug"
+                role="status"
+                aria-live="polite"
+                class="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 bg-background p-6 text-center"
+            >
+                <Spinner class="size-8 text-blue-600 dark:text-blue-400" />
+                <p class="text-lg font-medium">Setting up your organization</p>
+                <p class="max-w-sm text-sm text-muted-foreground">
+                    We're creating {{ subdomainPreview }} and preparing your
+                    workspace. This can take a few minutes, and you'll be taken
+                    there automatically when it's ready.
+                </p>
+                <p
+                    v-if="isTakingLong"
+                    class="max-w-sm text-sm text-muted-foreground"
+                >
+                    This is taking longer than expected. You can leave this page
+                    and check
+                    <TextLink href="/select-tenant"
+                        >your organizations</TextLink
+                    >
+                    later.
+                </p>
+            </div>
             <div class="grid gap-6">
                 <!-- Organization Name -->
                 <div class="grid gap-2">
