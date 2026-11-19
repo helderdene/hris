@@ -663,13 +663,14 @@ describe('Employee Adjustments Endpoint', function () {
             'category' => 'earning',
             'active_only' => 1,
         ]);
-        $listed = $controller->employeeAdjustments($request, $employee)->resolve();
+        $listed = $controller->employeeAdjustments($request, $employee)->response()->getData(true);
 
+        expect(array_is_list($listed))->toBeTrue();
         expect($listed)->toHaveCount(1);
         expect($listed[0]['adjustment_type'])->toBe('allowance_meal');
         expect($listed[0]['frequency'])->toBe('recurring');
         expect($listed[0]['is_taxable'])->toBe($isTaxable);
-        expect($listed[0]['amount'])->toBe(1500.0);
+        expect($listed[0]['amount'])->toEqual(1500);
     })->with([
         'taxable' => true,
         'non-taxable' => false,

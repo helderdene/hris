@@ -124,8 +124,9 @@ async function fetchAllowances() {
             throw new Error('Failed to load allowances');
         }
 
-        const data: { data: Allowance[] } = await response.json();
-        allowances.value = data.data.filter(
+        // API resources are unwrapped (JsonResource::withoutWrapping), so the body is the array itself.
+        const data: Allowance[] = await response.json();
+        allowances.value = data.filter(
             (a) =>
                 a.adjustment_type.startsWith('allowance_') &&
                 a.frequency === 'recurring',
