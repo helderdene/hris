@@ -633,6 +633,47 @@ describe('Employee Adjustments Endpoint', function () {
 
         expect($response->count())->toBe(1);
     });
+
+    it('lists a recurring allowance created from the compensation tab with its taxable flag', function (bool $isTaxable) {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForAdjustment($tenant);
+
+        $hrManager = createTenantUserForAdjustment($tenant, TenantUserRole::HrManager);
+        $this->actingAs($hrManager);
+
+        $employee = Employee::factory()->create();
+
+        $controller = new EmployeeAdjustmentController;
+        $storeResponse = $controller->store(createStoreAdjustmentRequest([
+            'employee_id' => $employee->id,
+            'adjustment_type' => 'allowance_meal',
+            'adjustment_code' => 'AM-TEST',
+            'name' => 'Meal Allowance',
+            'amount' => 1500,
+            'is_taxable' => $isTaxable,
+            'frequency' => 'recurring',
+            'recurring_interval' => 'every_period',
+            'recurring_start_date' => '2026-01-01',
+            'has_balance_tracking' => false,
+        ], $hrManager));
+
+        expect($storeResponse->getStatusCode())->toBe(201);
+
+        $request = Request::create('/api/employees/1/adjustments', 'GET', [
+            'category' => 'earning',
+            'active_only' => 1,
+        ]);
+        $listed = $controller->employeeAdjustments($request, $employee)->resolve();
+
+        expect($listed)->toHaveCount(1);
+        expect($listed[0]['adjustment_type'])->toBe('allowance_meal');
+        expect($listed[0]['frequency'])->toBe('recurring');
+        expect($listed[0]['is_taxable'])->toBe($isTaxable);
+        expect($listed[0]['amount'])->toBe(1500.0);
+    })->with([
+        'taxable' => true,
+        'non-taxable' => false,
+    ]);
 });
 
 describe('Period Adjustments Endpoint', function () {

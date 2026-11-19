@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\AdjustmentFrequency;
 use App\Enums\DtrStatus;
 use App\Enums\PayrollCycleType;
 use App\Enums\PayrollEntryStatus;
@@ -7,6 +8,7 @@ use App\Enums\PayType;
 use App\Enums\TenantUserRole;
 use App\Models\DailyTimeRecord;
 use App\Models\Employee;
+use App\Models\EmployeeAdjustment;
 use App\Models\EmployeeCompensation;
 use App\Models\OvertimeRequest;
 use App\Models\PagibigContributionTable;
@@ -17,6 +19,7 @@ use App\Models\PhilhealthContributionTable;
 use App\Models\SssContributionTable;
 use App\Models\Tenant;
 use App\Models\User;
+use App\Models\WithholdingTaxTable;
 use App\Services\Payroll\DeductionsCalculator;
 use App\Services\Payroll\DtrAggregationService;
 use App\Services\Payroll\EarningsCalculator;
@@ -677,6 +680,55 @@ describe('PayrollComputationService', function () {
         expect((float) $entry->basic_salary_snapshot)->toBe(44000.0);
         expect($entry->pay_type_snapshot)->toBe(PayType::Monthly);
     });
+
+    it('excludes non-taxable allowances from the withholding tax basis', function (bool $isTaxable) {
+        $tenant = Tenant::factory()->create();
+        bindTenantContextForPayroll($tenant);
+
+        createAllContributionTablesForPayroll();
+
+        $employee = createEmployeeWithCompensation(44000, PayType::Monthly);
+        $period = createPayrollPeriodWithCycle(periodNumber: 2);
+
+        WithholdingTaxTable::factory()->semiMonthly()->withBrackets()->create([
+            'effective_from' => '2025-01-01',
+        ]);
+
+        createDtrRecordsForPeriod($employee, $period, daysWorked: 11);
+
+        $service = app(PayrollComputationService::class);
+        $baseline = $service->preview($period, $employee);
+
+        expect($baseline['deductions']['withholding_tax'])->toBeGreaterThan(0);
+
+        EmployeeAdjustment::factory()
+            ->forEmployee($employee)
+            ->active()
+            ->transportationAllowance()
+            ->create([
+                'frequency' => AdjustmentFrequency::Recurring,
+                'recurring_start_date' => $period->cutoff_start,
+                'recurring_end_date' => null,
+                'amount' => 5000,
+                'is_taxable' => $isTaxable,
+            ]);
+
+        $withAllowance = $service->preview($period, $employee->fresh());
+
+        expect($withAllowance['earnings']['gross_pay'])
+            ->toEqual($baseline['earnings']['gross_pay'] + 5000);
+
+        if ($isTaxable) {
+            expect($withAllowance['deductions']['withholding_tax'])
+                ->toBeGreaterThan($baseline['deductions']['withholding_tax']);
+        } else {
+            expect($withAllowance['deductions']['withholding_tax'])
+                ->toEqual($baseline['deductions']['withholding_tax']);
+        }
+    })->with([
+        'taxable allowance' => true,
+        'non-taxable allowance' => false,
+    ]);
 });
 
 describe('Payroll Computation Accuracy', function () {

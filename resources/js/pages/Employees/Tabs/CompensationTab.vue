@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import CompensationEditModal from '@/components/CompensationEditModal.vue';
 import CompensationHistoryTimeline from '@/components/CompensationHistoryTimeline.vue';
+import EmployeeAllowancesSection from '@/components/EmployeeAllowancesSection.vue';
 import LabelValueList from '@/components/LabelValueList.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,6 +25,13 @@ const page = usePage();
  */
 const canManageEmployees = computed(
     () => page.props.tenant?.can_manage_employees ?? false,
+);
+
+/**
+ * Allowances use the adjustments API, which requires organization management access.
+ */
+const canManageAllowances = computed(
+    () => page.props.tenant?.can_manage_organization ?? false,
 );
 
 /**
@@ -356,6 +364,11 @@ onMounted(() => {
                         <LabelValueList :items="compensationItems" />
                     </div>
                 </div>
+
+                <EmployeeAllowancesSection
+                    v-if="canManageAllowances"
+                    :employee-id="employeeId"
+                />
 
                 <!-- Bank Account Section -->
                 <div data-test="bank-account-section">

@@ -25,6 +25,8 @@ class DeductionsCalculator
     /**
      * Calculate all deductions for an employee in a payroll period.
      *
+     * Non-taxable earnings are excluded from the withholding tax basis.
+     *
      * @return array{
      *     sss_employee: float,
      *     sss_employer: float,
@@ -39,7 +41,7 @@ class DeductionsCalculator
      *     line_items: Collection
      * }
      */
-    public function calculate(Employee $employee, PayrollPeriod $period, float $grossPay): array
+    public function calculate(Employee $employee, PayrollPeriod $period, float $grossPay, float $nonTaxableEarnings = 0): array
     {
         $lineItems = collect();
 
@@ -53,7 +55,7 @@ class DeductionsCalculator
         $pagibig = $this->calculatePagibig($monthlySalary, $period, $cycleType, $isSecondCutoff, $lineItems);
 
         $preTaxDeductions = $sss['employee'] + $philhealth['employee'] + $pagibig['employee'];
-        $taxableIncome = max(0, $grossPay - $preTaxDeductions);
+        $taxableIncome = max(0, $grossPay - $nonTaxableEarnings - $preTaxDeductions);
 
         $withHoldingTax = $this->calculateWithholdingTax(
             $taxableIncome,

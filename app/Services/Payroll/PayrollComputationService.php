@@ -94,7 +94,12 @@ class PayrollComputationService
 
             $earnings = $this->earningsCalculator->calculate($employee, $period, $dtrSummary);
 
-            $deductions = $this->deductionsCalculator->calculate($employee, $period, $earnings['gross_pay']);
+            $deductions = $this->deductionsCalculator->calculate(
+                $employee,
+                $period,
+                $earnings['gross_pay'],
+                (float) $earnings['line_items']->where('is_taxable', false)->sum('amount')
+            );
 
             $netPay = $earnings['gross_pay'] - $deductions['total_deductions'];
 
@@ -144,7 +149,12 @@ class PayrollComputationService
 
         $dtrSummary = $this->dtrService->aggregateForPeriod($employee, $period);
         $earnings = $this->earningsCalculator->calculate($employee, $period, $dtrSummary);
-        $deductions = $this->deductionsCalculator->calculate($employee, $period, $earnings['gross_pay']);
+        $deductions = $this->deductionsCalculator->calculate(
+            $employee,
+            $period,
+            $earnings['gross_pay'],
+            (float) $earnings['line_items']->where('is_taxable', false)->sum('amount')
+        );
         $netPay = $earnings['gross_pay'] - $deductions['total_deductions'];
 
         return [
