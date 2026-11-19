@@ -27,6 +27,7 @@ class SssContributionBracketResource extends JsonResource
             'employer_contribution' => (float) $this->resource->employer_contribution,
             'total_contribution' => (float) $this->resource->total_contribution,
             'ec_contribution' => (float) $this->resource->ec_contribution,
+            'wisp_contribution' => (float) $this->resource->wisp_contribution,
             'salary_range' => $this->resource->salary_range,
         ];
     }

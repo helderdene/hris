@@ -33,6 +33,7 @@ interface SssBracket {
     employer_contribution: number;
     total_contribution: number;
     ec_contribution: number;
+    wisp_contribution: number;
     salary_range: string;
 }
 

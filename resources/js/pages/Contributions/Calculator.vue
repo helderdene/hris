@@ -32,6 +32,7 @@ interface ContributionResult {
     error: string | null;
     monthly_salary_credit?: number;
     ec_contribution?: number;
+    wisp_contribution?: number;
     basis_salary?: number;
 }
 
@@ -249,7 +250,7 @@ function getCsrfToken(): string {
                             <div v-if="result.contributions.sss.error" class="mt-2 text-sm text-red-500">
                                 {{ result.contributions.sss.error }}
                             </div>
-                            <div v-else class="mt-2 grid grid-cols-3 gap-4 text-sm">
+                            <div v-else class="mt-2 grid grid-cols-3 gap-4 text-sm sm:grid-cols-5">
                                 <div>
                                     <div class="text-slate-500 dark:text-slate-400">Employee</div>
                                     <div class="font-medium text-slate-900 dark:text-slate-100">
@@ -260,6 +261,18 @@ function getCsrfToken(): string {
                                     <div class="text-slate-500 dark:text-slate-400">Employer</div>
                                     <div class="font-medium text-slate-900 dark:text-slate-100">
                                         {{ formatCurrency(result.contributions.sss.employer_share) }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-slate-500 dark:text-slate-400">EC</div>
+                                    <div class="font-medium text-slate-900 dark:text-slate-100">
+                                        {{ formatCurrency(result.contributions.sss.ec_contribution ?? 0) }}
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-slate-500 dark:text-slate-400">WISP</div>
+                                    <div class="font-medium text-slate-900 dark:text-slate-100">
+                                        {{ formatCurrency(result.contributions.sss.wisp_contribution ?? 0) }}
                                     </div>
                                 </div>
                                 <div>

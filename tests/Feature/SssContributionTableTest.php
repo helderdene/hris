@@ -117,8 +117,9 @@ describe('SSS Contribution Table API', function () {
                     'monthly_salary_credit' => 4000,
                     'employee_contribution' => 180,
                     'employer_contribution' => 380,
-                    'total_contribution' => 560,
+                    'total_contribution' => 590,
                     'ec_contribution' => 10,
+                    'wisp_contribution' => 20,
                 ],
                 [
                     'min_salary' => 4250,
@@ -141,6 +142,15 @@ describe('SSS Contribution Table API', function () {
         $data = json_decode($response->getContent(), true);
         expect($data['description'])->toBe('Test SSS Table');
         expect($data['brackets'])->toHaveCount(2);
+        expect($data['brackets'][0]['wisp_contribution'])->toBe(20);
+        expect($data['brackets'][0]['total_contribution'])->toBe(590);
+        expect($data['brackets'][1]['wisp_contribution'])->toBe(0);
+
+        $this->assertDatabaseHas('sss_contribution_brackets', [
+            'monthly_salary_credit' => 4000,
+            'wisp_contribution' => 20,
+            'total_contribution' => 590,
+        ]);
 
         // Verify database records
         $this->assertDatabaseHas('sss_contribution_tables', [

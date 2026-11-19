@@ -35,6 +35,7 @@ class StoreSssContributionTableRequest extends FormRequest
             'brackets.*.employer_contribution' => ['required', 'numeric', 'min:0'],
             'brackets.*.total_contribution' => ['required', 'numeric', 'min:0'],
             'brackets.*.ec_contribution' => ['nullable', 'numeric', 'min:0'],
+            'brackets.*.wisp_contribution' => ['sometimes', 'numeric', 'min:0'],
         ];
     }
 

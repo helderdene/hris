@@ -21,6 +21,7 @@ interface SssBracket {
     employer_contribution: number;
     total_contribution: number;
     ec_contribution: number;
+    wisp_contribution: number;
 }
 
 interface SssTable {
@@ -49,8 +50,8 @@ const errors = ref<Record<string, string[]>>({});
 const form = ref({
     effective_from: '',
     description: '',
-    employee_rate: 0.045,
-    employer_rate: 0.095,
+    employee_rate: 0.05,
+    employer_rate: 0.1,
     is_active: true,
     brackets: [] as SssBracket[],
 });
@@ -92,8 +93,8 @@ function resetForm() {
     form.value = {
         effective_from: new Date().toISOString().split('T')[0],
         description: '',
-        employee_rate: 0.045,
-        employer_rate: 0.095,
+        employee_rate: 0.05,
+        employer_rate: 0.1,
         is_active: true,
         brackets: [],
     };
@@ -111,6 +112,7 @@ function addBracket() {
         employer_contribution: 0,
         total_contribution: 0,
         ec_contribution: 10,
+        wisp_contribution: 0,
     });
 }
 
@@ -118,15 +120,42 @@ function removeBracket(index: number) {
     form.value.brackets.splice(index, 1);
 }
 
+function roundMoney(value: number): number {
+    return Math.round(value * 100) / 100;
+}
+
 function updateTotalContribution(index: number) {
     const bracket = form.value.brackets[index];
-    bracket.total_contribution =
-        bracket.employee_contribution + bracket.employer_contribution;
+    // Number() guards against '' from a cleared v-model.number input.
+    bracket.total_contribution = roundMoney(
+        (Number(bracket.employee_contribution) || 0) +
+            (Number(bracket.employer_contribution) || 0) +
+            (Number(bracket.ec_contribution) || 0) +
+            (Number(bracket.wisp_contribution) || 0),
+    );
+}
+
+function updateSharesFromSalaryCredit(index: number) {
+    const bracket = form.value.brackets[index];
+    const salaryCredit = Number(bracket.monthly_salary_credit) || 0;
+    bracket.employee_contribution = roundMoney(
+        salaryCredit * (Number(form.value.employee_rate) || 0),
+    );
+    bracket.employer_contribution = roundMoney(
+        salaryCredit * (Number(form.value.employer_rate) || 0),
+    );
+    updateTotalContribution(index);
 }
 
 async function handleSubmit() {
     isSubmitting.value = true;
     errors.value = {};
+    form.value.brackets.forEach((bracket, index) => {
+        // A cleared number input yields '', which the API rejects.
+        bracket.ec_contribution = Number(bracket.ec_contribution) || 0;
+        bracket.wisp_contribution = Number(bracket.wisp_contribution) || 0;
+        updateTotalContribution(index);
+    });
 
     const url = isEditing.value
         ? `/api/organization/contributions/sss/${props.sssTable!.id}`
@@ -310,16 +339,7 @@ function getCsrfToken(): string {
                                         type="number"
                                         step="0.01"
                                         min="0"
-                                    />
-                                </div>
-                                <div class="space-y-1">
-                                    <Label :for="`ec_${index}`" class="text-xs">EC Contribution</Label>
-                                    <Input
-                                        :id="`ec_${index}`"
-                                        v-model.number="bracket.ec_contribution"
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
+                                        @input="updateSharesFromSalaryCredit(index)"
                                     />
                                 </div>
                                 <div class="space-y-1">
@@ -344,7 +364,29 @@ function getCsrfToken(): string {
                                         @input="updateTotalContribution(index)"
                                     />
                                 </div>
-                                <div class="space-y-1 sm:col-span-2">
+                                <div class="space-y-1">
+                                    <Label :for="`ec_${index}`" class="text-xs">EC Contribution</Label>
+                                    <Input
+                                        :id="`ec_${index}`"
+                                        v-model.number="bracket.ec_contribution"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        @input="updateTotalContribution(index)"
+                                    />
+                                </div>
+                                <div class="space-y-1">
+                                    <Label :for="`wisp_${index}`" class="text-xs">WISP</Label>
+                                    <Input
+                                        :id="`wisp_${index}`"
+                                        v-model.number="bracket.wisp_contribution"
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        @input="updateTotalContribution(index)"
+                                    />
+                                </div>
+                                <div class="space-y-1">
                                     <Label :for="`total_${index}`" class="text-xs">Total Contribution</Label>
                                     <Input
                                         :id="`total_${index}`"

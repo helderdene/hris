@@ -365,6 +365,7 @@ describe('Contribution Calculation Accuracy', function () {
         expect($result['employer_share'])->toBe(950.00);
         expect($result['total'])->toBe(1400.00);
         expect($result['ec_contribution'])->toBe(10.00);
+        expect($result['wisp_contribution'])->toBe(0.00);
     });
 
     it('matches official 2025 SSS contribution for ₱30,000 salary (max MSC)', function () {

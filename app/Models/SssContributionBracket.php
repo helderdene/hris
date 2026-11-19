@@ -35,6 +35,7 @@ class SssContributionBracket extends TenantModel
         'employer_contribution',
         'total_contribution',
         'ec_contribution',
+        'wisp_contribution',
     ];
 
     /**
@@ -52,6 +53,7 @@ class SssContributionBracket extends TenantModel
             'employer_contribution' => 'decimal:2',
             'total_contribution' => 'decimal:2',
             'ec_contribution' => 'decimal:2',
+            'wisp_contribution' => 'decimal:2',
         ];
     }
 
