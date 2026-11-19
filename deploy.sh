@@ -22,6 +22,10 @@ composer install --no-dev --optimize-autoloader --no-interaction
 echo "📦 Installing Node dependencies..."
 npm ci
 
+# Wayfinder generates route helpers from the app's routes during the build;
+# with the previous release's route cache still in place, new routes are missing.
+php artisan route:clear
+
 # Build frontend assets
 echo "🔨 Building frontend assets..."
 npm run build
