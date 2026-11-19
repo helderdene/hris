@@ -92,7 +92,7 @@ class AttendanceLogProcessor
     private function findAllDevicesWithTenant(string $deviceIdentifier): array
     {
         $results = [];
-        $tenants = Tenant::all();
+        $tenants = Tenant::provisioned()->get();
 
         foreach ($tenants as $tenant) {
             try {

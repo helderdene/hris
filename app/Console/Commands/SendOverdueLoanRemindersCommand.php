@@ -28,7 +28,7 @@ class SendOverdueLoanRemindersCommand extends Command
 
         $tenants = $tenantSlug
             ? Tenant::where('slug', $tenantSlug)->get()
-            : Tenant::all();
+            : Tenant::provisioned()->get();
 
         if ($tenants->isEmpty()) {
             $this->warn('No tenants found.');

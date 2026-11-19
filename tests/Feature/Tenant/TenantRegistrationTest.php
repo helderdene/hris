@@ -61,7 +61,7 @@ it('provisions schema automatically on registration', function () {
 
     // Mock the TenantDatabaseManager to verify it gets called
     $mockManager = Mockery::mock(TenantDatabaseManager::class);
-    $mockManager->shouldReceive('createSchema')->once();
+    $mockManager->shouldReceive('createSchema')->atLeast()->once();
     $mockManager->shouldReceive('migrateSchema')->once();
 
     $this->app->instance(TenantDatabaseManager::class, $mockManager);
@@ -133,11 +133,14 @@ it('redirects to subdomain after successful registration', function () {
         ],
     ]);
 
-    $response->assertRedirect();
+    $response->assertRedirect(route('tenant.register', ['provisioning' => 'redirect-test']));
 
-    $location = $response->headers->get('Location');
-    expect($location)->toContain('redirect-test.kasamahr.test')
-        ->and($location)->toContain('token=');
+    $redirectUrl = $this->actingAs($user)
+        ->get(route('tenant.register', ['provisioning' => 'redirect-test']))
+        ->viewData('page')['props']['provisionedRedirectUrl'];
+
+    expect($redirectUrl)->toContain('redirect-test.kasamahr.test')
+        ->and($redirectUrl)->toContain('token=');
 
     // Verify redirect token was created
     $tenant = Tenant::where('slug', 'redirect-test')->first();

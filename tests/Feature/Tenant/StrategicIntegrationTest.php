@@ -67,9 +67,11 @@ it('completes full tenant registration and first access flow end-to-end', functi
         ],
     ]);
 
-    // Should redirect to tenant subdomain
-    $response->assertRedirect();
-    $location = $response->headers->get('Location');
+    // Registration hands off to the provisioning page, which yields the subdomain URL
+    $response->assertRedirect(route('tenant.register', ['provisioning' => 'complete-flow']));
+    $location = $this->actingAs($user)
+        ->get(route('tenant.register', ['provisioning' => 'complete-flow']))
+        ->viewData('page')['props']['provisionedRedirectUrl'];
     expect($location)->toContain('complete-flow.kasamahr.test');
 
     // Extract the token from the redirect URL

@@ -44,7 +44,7 @@ class YearEndLeaveProcessingJob implements ShouldQueue
         TenantDatabaseManager $databaseManager,
         LeaveBalanceService $leaveBalanceService
     ): void {
-        $tenants = Tenant::all();
+        $tenants = Tenant::provisioned()->get();
 
         Log::info('YearEndLeaveProcessingJob starting', [
             'tenant_count' => $tenants->count(),

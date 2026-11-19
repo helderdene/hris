@@ -99,7 +99,7 @@ class CalculateDailyDtrCommand extends Command
         $tenant = $this->option('tenant');
 
         if ($tenant === null) {
-            return Tenant::all();
+            return Tenant::provisioned()->get();
         }
 
         return Tenant::where('id', $tenant)

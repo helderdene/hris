@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TenantProvisioningStatus;
 use App\Http\Requests\TenantRegistrationRequest;
 use App\Jobs\ProvisionTenantJob;
 use App\Models\Plan;
 use App\Models\Tenant;
 use App\Models\TenantRedirectToken;
+use App\Services\Tenant\TenantDatabaseManager;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -18,18 +20,27 @@ class TenantRegistrationController extends Controller
     /**
      * Display the tenant registration form.
      *
-     * While an organization is being provisioned the page polls this action,
-     * and receives the subdomain redirect URL once the user has been attached.
+     * While the user has an organization being provisioned the page shows a
+     * loading screen and polls this action; it receives the subdomain redirect
+     * URL once the user has been attached, or the failed flag to offer a retry.
+     * The slug is kept in the URL so polling still knows it after provisioning ends.
      */
-    public function create(Request $request): Response
+    public function create(Request $request): Response|RedirectResponse
     {
-        $provisioningSlug = $request->query('provisioning');
+        $unfinishedTenant = $this->unfinishedTenantFor($request);
+
+        if ($unfinishedTenant !== null && $request->query('provisioning') !== $unfinishedTenant->slug) {
+            return to_route('tenant.register', ['provisioning' => $unfinishedTenant->slug]);
+        }
+
+        $provisioningSlug = $unfinishedTenant?->slug ?? $request->query('provisioning');
         $provisioningSlug = is_string($provisioningSlug) ? $provisioningSlug : null;
 
         return Inertia::render('TenantRegistration', [
             'mainDomain' => config('app.main_domain', 'kasamahr.test'),
             'provisioningSlug' => $provisioningSlug,
-            'provisionedRedirectUrl' => $provisioningSlug === null
+            'provisioningFailed' => $unfinishedTenant?->provisioning_status === TenantProvisioningStatus::Failed,
+            'provisionedRedirectUrl' => $provisioningSlug === null || $unfinishedTenant !== null
                 ? null
                 : $this->provisionedRedirectUrl($request, $provisioningSlug),
         ]);
@@ -37,8 +48,12 @@ class TenantRegistrationController extends Controller
 
     /**
      * Register the tenant and provision its schema in the background.
+     *
+     * The empty database is created here so a tenant row never exists without
+     * one; commands that loop over every tenant, such as tenant:migrate during
+     * a deploy, fail on a missing database.
      */
-    public function store(TenantRegistrationRequest $request): RedirectResponse
+    public function store(TenantRegistrationRequest $request, TenantDatabaseManager $databaseManager): RedirectResponse
     {
         $validated = $request->validated();
         $trialPlan = Plan::where('slug', config('billing.trial_plan', 'professional'))->first();
@@ -48,7 +63,11 @@ class TenantRegistrationController extends Controller
             'slug' => $validated['slug'],
             'business_info' => $validated['business_info'],
             'timezone' => 'Asia/Manila',
+            'provisioning_status' => TenantProvisioningStatus::Pending,
+            'provisioning_user_id' => $request->user()->id,
         ]);
+
+        $databaseManager->createSchema($tenant);
 
         if ($trialPlan) {
             $tenant->update([
@@ -60,6 +79,34 @@ class TenantRegistrationController extends Controller
         ProvisionTenantJob::dispatch($tenant->id, $request->user()->id);
 
         return to_route('tenant.register', ['provisioning' => $tenant->slug]);
+    }
+
+    /**
+     * Queue another provisioning attempt for the user's failed organization.
+     */
+    public function retry(Request $request): RedirectResponse
+    {
+        $tenant = $this->unfinishedTenantFor($request);
+
+        if ($tenant?->provisioning_status === TenantProvisioningStatus::Failed) {
+            $tenant->update(['provisioning_status' => TenantProvisioningStatus::Pending]);
+
+            ProvisionTenantJob::dispatch($tenant->id, $request->user()->id);
+        }
+
+        return to_route('tenant.register');
+    }
+
+    /**
+     * Get the organization this user registered that has not finished provisioning.
+     */
+    protected function unfinishedTenantFor(Request $request): ?Tenant
+    {
+        return Tenant::query()
+            ->where('provisioning_user_id', $request->user()->id)
+            ->whereNotNull('provisioning_status')
+            ->latest('id')
+            ->first();
     }
 
     /**

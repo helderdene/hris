@@ -31,7 +31,7 @@ class MigrateTenants extends Command
 
             $tenants = collect([$tenant]);
         } else {
-            $tenants = Tenant::all();
+            $tenants = Tenant::provisioned()->get();
 
             if ($tenants->isEmpty()) {
                 $this->warn('No tenants found.');

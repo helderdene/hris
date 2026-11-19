@@ -34,7 +34,7 @@ class MonthlyLeaveAccrualJob implements ShouldQueue
         TenantDatabaseManager $databaseManager,
         LeaveBalanceService $leaveBalanceService
     ): void {
-        $tenants = Tenant::all();
+        $tenants = Tenant::provisioned()->get();
 
         Log::info('MonthlyLeaveAccrualJob starting', [
             'tenant_count' => $tenants->count(),

@@ -25,7 +25,7 @@ class SeedSssReportData extends Command
      */
     public function handle(): int
     {
-        $tenants = Tenant::all();
+        $tenants = Tenant::provisioned()->get();
 
         if ($tenants->isEmpty()) {
             $this->error('No tenants found. Please create a tenant first.');

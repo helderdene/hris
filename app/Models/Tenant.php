@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\AddonType;
 use App\Enums\Module;
+use App\Enums\TenantProvisioningStatus;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +29,8 @@ class Tenant extends Model
         'logo_path',
         'primary_color',
         'timezone',
+        'provisioning_status',
+        'provisioning_user_id',
         'business_info',
         'payroll_settings',
         'leave_defaults',
@@ -47,6 +51,7 @@ class Tenant extends Model
     protected function casts(): array
     {
         return [
+            'provisioning_status' => TenantProvisioningStatus::class,
             'business_info' => 'array',
             'payroll_settings' => 'array',
             'leave_defaults' => 'array',
@@ -82,6 +87,16 @@ class Tenant extends Model
         }
 
         return 'platform';
+    }
+
+    /**
+     * Scope to tenants whose schema is fully provisioned.
+     *
+     * @param  Builder<Tenant>  $query
+     */
+    public function scopeProvisioned(Builder $query): void
+    {
+        $query->whereNull('provisioning_status');
     }
 
     /**

@@ -37,7 +37,7 @@ class MarkExpiredCertificationsCommand extends Command
 
         $tenants = $tenantId
             ? Tenant::where('id', $tenantId)->get()
-            : Tenant::all();
+            : Tenant::provisioned()->get();
 
         if ($tenants->isEmpty()) {
             $this->warn('No tenants found to process.');

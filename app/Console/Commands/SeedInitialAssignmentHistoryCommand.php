@@ -110,7 +110,7 @@ class SeedInitialAssignmentHistoryCommand extends Command
             return $tenant ? collect([$tenant]) : collect();
         }
 
-        return Tenant::all();
+        return Tenant::provisioned()->get();
     }
 
     /**

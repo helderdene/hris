@@ -46,6 +46,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('/register-organization', [TenantRegistrationController::class, 'store'])
         ->name('tenant.register.store');
+
+    Route::post('/register-organization/retry', [TenantRegistrationController::class, 'retry'])
+        ->name('tenant.register.retry');
 });
 
 // User Invitation Routes

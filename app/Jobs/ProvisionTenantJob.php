@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\TenantProvisioningStatus;
 use App\Models\Tenant;
 use App\Services\Billing\PayMongoCustomerService;
 use App\Services\Tenant\TenantDatabaseManager;
@@ -15,12 +16,13 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Job to provision a newly registered tenant's schema and seed data.
  *
- * Attaching the admin user is the last step, so membership is the signal
- * that the organization is ready to use.
+ * The admin user is attached and the provisioning status cleared only at
+ * the end, so until then the tenant is skipped by per-tenant scheduled work.
  */
 class ProvisionTenantJob implements ShouldQueue
 {
@@ -72,7 +74,7 @@ class ProvisionTenantJob implements ShouldQueue
 
         try {
             app(PayMongoCustomerService::class)->createOrGet($tenant);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Log::warning('Failed to create PayMongo customer during registration', [
                 'tenant_id' => $tenant->id,
                 'error' => $e->getMessage(),
@@ -81,6 +83,23 @@ class ProvisionTenantJob implements ShouldQueue
 
         $tenant->users()->syncWithoutDetaching([
             $this->adminUserId => ['role' => 'admin'],
+        ]);
+
+        $tenant->update(['provisioning_status' => null]);
+    }
+
+    /**
+     * Mark the tenant as failed so its owner can retry from the registration page.
+     */
+    public function failed(?Throwable $exception): void
+    {
+        Tenant::whereKey($this->tenantId)
+            ->where('provisioning_status', TenantProvisioningStatus::Pending)
+            ->update(['provisioning_status' => TenantProvisioningStatus::Failed]);
+
+        Log::error('ProvisionTenantJob failed', [
+            'tenant_id' => $this->tenantId,
+            'error' => $exception?->getMessage(),
         ]);
     }
 }

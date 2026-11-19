@@ -36,7 +36,7 @@ class MarkOfflineDevicesJob implements ShouldQueue
      */
     public function handle(TenantDatabaseManager $databaseManager): void
     {
-        $tenants = Tenant::all();
+        $tenants = Tenant::provisioned()->get();
 
         foreach ($tenants as $tenant) {
             $this->processTenanDevices($tenant, $databaseManager);

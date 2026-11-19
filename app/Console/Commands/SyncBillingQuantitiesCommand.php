@@ -34,7 +34,7 @@ class SyncBillingQuantitiesCommand extends Command
         if ($tenantId) {
             $tenants = Tenant::where('id', $tenantId)->get();
         } else {
-            $tenants = Tenant::where(function ($query) {
+            $tenants = Tenant::provisioned()->where(function ($query) {
                 $query->whereHas('subscriptions', fn ($q) => $q->where('paymongo_status', SubscriptionStatus::Active->value))
                     ->orWhereNotNull('trial_ends_at');
             })->get();

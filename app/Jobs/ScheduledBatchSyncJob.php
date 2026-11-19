@@ -40,7 +40,7 @@ class ScheduledBatchSyncJob implements ShouldQueue
         TenantDatabaseManager $databaseManager,
         EmployeeSyncService $syncService
     ): void {
-        $tenants = Tenant::all();
+        $tenants = Tenant::provisioned()->get();
 
         Log::info('ScheduledBatchSyncJob starting', [
             'tenant_count' => $tenants->count(),
