@@ -271,6 +271,7 @@ it('org chart reflects the new department head', function () {
         'first_name' => 'John',
         'last_name' => 'Doe',
         'middle_name' => null,
+        'suffix' => null,
     ]);
     $department = Department::factory()->create();
 

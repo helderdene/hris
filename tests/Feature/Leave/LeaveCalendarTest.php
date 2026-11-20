@@ -375,6 +375,7 @@ describe('Leave Calendar Entry Resource', function () {
             'department_id' => $department->id,
             'first_name' => 'John',
             'last_name' => 'Doe',
+            'suffix' => 'Jr.',
         ]);
         $leaveType = LeaveType::factory()->create();
 

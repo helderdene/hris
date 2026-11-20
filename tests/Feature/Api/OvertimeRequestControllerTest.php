@@ -4,6 +4,7 @@ use App\Enums\EmploymentStatus;
 use App\Enums\OvertimeRequestStatus;
 use App\Enums\TenantUserRole;
 use App\Http\Requests\StoreOvertimeRequestRequest;
+use App\Models\Department;
 use App\Models\Employee;
 use App\Models\OvertimeRequest;
 use App\Models\Tenant;
@@ -191,7 +192,7 @@ describe('OvertimeRequest Workflow via Service', function () {
             'user_id' => $approverUser->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
-        $employee->update(['supervisor_id' => $approver->id]);
+        $employee->update(['department_id' => Department::factory()->create(['department_head_id' => $approver->id])->id]);
 
         $request = OvertimeRequest::factory()->draft()->create([
             'employee_id' => $employee->id,
@@ -226,7 +227,7 @@ describe('OvertimeRequest Workflow via Service', function () {
             'user_id' => $approverUser->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
-        $employee->update(['supervisor_id' => $approver->id]);
+        $employee->update(['department_id' => Department::factory()->create(['department_head_id' => $approver->id])->id]);
 
         $request = OvertimeRequest::factory()->draft()->create([
             'employee_id' => $employee->id,
@@ -258,7 +259,7 @@ describe('OvertimeRequest Workflow via Service', function () {
             'user_id' => $approverUser->id,
             'employment_status' => EmploymentStatus::Active,
         ]);
-        $employee->update(['supervisor_id' => $approver->id]);
+        $employee->update(['department_id' => Department::factory()->create(['department_head_id' => $approver->id])->id]);
 
         // 1. Create draft
         $request = OvertimeRequest::factory()->draft()->create([

@@ -47,6 +47,10 @@ function getSummaryInertiaProps(\Inertia\Response $response): array
 
 function resolveSummaryDeferredProp(mixed $prop): mixed
 {
+    if ($prop instanceof Closure) {
+        return $prop();
+    }
+
     $reflection = new ReflectionClass($prop);
     $callbackProp = $reflection->getProperty('callback');
     $callbackProp->setAccessible(true);
@@ -279,6 +283,8 @@ it('returns performance growth data ordered by cycle date', function () {
     $instance1 = PerformanceCycleInstance::factory()->closed()->create([
         'performance_cycle_id' => $cycle->id,
         'name' => 'H1 2025',
+        'year' => 2025,
+        'instance_number' => 1,
         'start_date' => '2025-01-01',
         'end_date' => '2025-06-30',
     ]);
@@ -294,6 +300,8 @@ it('returns performance growth data ordered by cycle date', function () {
     $instance2 = PerformanceCycleInstance::factory()->active()->create([
         'performance_cycle_id' => $cycle->id,
         'name' => 'H2 2025',
+        'year' => 2025,
+        'instance_number' => 2,
         'start_date' => '2025-07-01',
         'end_date' => '2025-12-31',
     ]);

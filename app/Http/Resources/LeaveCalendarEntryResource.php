@@ -24,7 +24,7 @@ class LeaveCalendarEntryResource extends JsonResource
             'employee' => [
                 'id' => $this->employee->id,
                 'full_name' => $this->employee->full_name,
-                'initials' => $this->getEmployeeInitials(),
+                'initials' => $this->employee->initials,
                 'department_id' => $this->employee->department_id,
                 'department' => $this->employee->department?->name,
             ],
@@ -44,23 +44,5 @@ class LeaveCalendarEntryResource extends JsonResource
             'reason' => $this->reason,
             'reference_number' => $this->reference_number,
         ];
-    }
-
-    /**
-     * Get initials from employee's full name.
-     */
-    protected function getEmployeeInitials(): string
-    {
-        $name = $this->employee->full_name;
-        $parts = preg_split('/\s+/', trim($name));
-
-        if (count($parts) === 1) {
-            return strtoupper(substr($parts[0], 0, 2));
-        }
-
-        $first = $parts[0][0] ?? '';
-        $last = $parts[count($parts) - 1][0] ?? '';
-
-        return strtoupper($first.$last);
     }
 }

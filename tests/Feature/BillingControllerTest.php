@@ -40,6 +40,11 @@ function billingUrl(string $path, Tenant $tenant): string
 beforeEach(function () {
     config(['app.main_domain' => 'kasamahr.test']);
     $this->withoutVite();
+
+    \Illuminate\Support\Facades\Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
 });
 
 // --- Index page ---

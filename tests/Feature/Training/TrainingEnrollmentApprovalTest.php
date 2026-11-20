@@ -2,6 +2,7 @@
 
 use App\Enums\EnrollmentStatus;
 use App\Enums\WaitlistStatus;
+use App\Models\Department;
 use App\Models\Employee;
 use App\Models\Tenant;
 use App\Models\TrainingEnrollment;
@@ -45,7 +46,7 @@ describe('Enrollment Request Service - Submit Request', function () {
 
         $supervisor = Employee::factory()->withUser()->active()->create();
         $employee = Employee::factory()->withUser()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         $service = app(TrainingEnrollmentRequestService::class);
         $enrollment = $service->submit($session, $employee, 'Career development');
@@ -78,7 +79,7 @@ describe('Enrollment Request Service - Submit Request', function () {
         $supervisor = Employee::factory()->active()->create();
 
         $employees = Employee::factory()->count(3)->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         $service = app(TrainingEnrollmentRequestService::class);
         $references = [];
@@ -113,7 +114,7 @@ describe('Enrollment Request Service - Submit Request', function () {
         $session = TrainingSession::factory()->scheduled()->create();
         $supervisor = Employee::factory()->active()->create();
         $employee = Employee::factory()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         $service = app(TrainingEnrollmentRequestService::class);
         $service->submit($session, $employee);
@@ -129,7 +130,7 @@ describe('Enrollment Request Service - Submit Request', function () {
         $session = TrainingSession::factory()->scheduled()->create();
         $supervisor = Employee::factory()->active()->create();
         $employee = Employee::factory()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         TrainingEnrollment::factory()
             ->forSession($session)
@@ -150,7 +151,7 @@ describe('Enrollment Request Service - Submit Request', function () {
         $session = TrainingSession::factory()->draft()->create();
         $supervisor = Employee::factory()->active()->create();
         $employee = Employee::factory()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         $service = app(TrainingEnrollmentRequestService::class);
 
@@ -173,7 +174,7 @@ describe('Enrollment Request Service - Approve Request', function () {
 
         $supervisor = Employee::factory()->withUser()->active()->create();
         $employee = Employee::factory()->withUser()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         $service = app(TrainingEnrollmentRequestService::class);
         $enrollment = $service->submit($session, $employee);
@@ -209,7 +210,7 @@ describe('Enrollment Request Service - Approve Request', function () {
 
         $supervisor = Employee::factory()->withUser()->active()->create();
         $employee = Employee::factory()->withUser()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         $service = app(TrainingEnrollmentRequestService::class);
 
@@ -249,7 +250,7 @@ describe('Enrollment Request Service - Approve Request', function () {
         $session = TrainingSession::factory()->scheduled()->create();
         $supervisor = Employee::factory()->active()->create();
         $employee = Employee::factory()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
         $otherEmployee = Employee::factory()->active()->create();
 
         $service = app(TrainingEnrollmentRequestService::class);
@@ -270,7 +271,7 @@ describe('Enrollment Request Service - Reject Request', function () {
         $session = TrainingSession::factory()->scheduled()->create();
         $supervisor = Employee::factory()->withUser()->active()->create();
         $employee = Employee::factory()->withUser()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         $service = app(TrainingEnrollmentRequestService::class);
         $enrollment = $service->submit($session, $employee);
@@ -295,7 +296,7 @@ describe('Enrollment Request Service - Reject Request', function () {
         $session = TrainingSession::factory()->scheduled()->create();
         $supervisor = Employee::factory()->active()->create();
         $employee = Employee::factory()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
         $otherEmployee = Employee::factory()->active()->create();
 
         $service = app(TrainingEnrollmentRequestService::class);
@@ -316,7 +317,7 @@ describe('Enrollment Request Service - Cancel Request', function () {
         $session = TrainingSession::factory()->scheduled()->create();
         $supervisor = Employee::factory()->active()->create();
         $employee = Employee::factory()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
 
         $service = app(TrainingEnrollmentRequestService::class);
         $enrollment = $service->submit($session, $employee);
@@ -337,7 +338,7 @@ describe('Enrollment Request Service - Cancel Request', function () {
         $session = TrainingSession::factory()->scheduled()->create();
         $supervisor = Employee::factory()->active()->create();
         $employee = Employee::factory()->active()
-            ->create(['supervisor_id' => $supervisor->id]);
+            ->create(['department_id' => Department::factory()->create(['department_head_id' => $supervisor->id])->id]);
         $otherEmployee = Employee::factory()->active()->create();
 
         $service = app(TrainingEnrollmentRequestService::class);

@@ -138,6 +138,7 @@ it('renders create employee page with required dropdown data', function () {
         'first_name' => 'Jane',
         'middle_name' => null, // Explicitly set to null to avoid factory middle name
         'last_name' => 'Manager',
+        'suffix' => null,
         'employee_number' => 'EMP-001',
     ]);
 

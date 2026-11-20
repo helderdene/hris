@@ -908,7 +908,7 @@ it('renders dashboard with quick actions section included in the component', fun
 
 it('dashboard component exists and includes quick actions as a section', function () {
     // Verify the Vue component file exists with QuickActionsSection import
-    $dashboardPath = resource_path('js/Pages/Employees/Dashboard.vue');
+    $dashboardPath = resource_path('js/pages/Employees/Dashboard.vue');
     expect(file_exists($dashboardPath))->toBeTrue();
 
     $dashboardContent = file_get_contents($dashboardPath);
@@ -920,7 +920,7 @@ it('dashboard component exists and includes quick actions as a section', functio
 
 it('quick action cards render with correct navigation hrefs', function () {
     // Verify the QuickActionsSection component contains correct hrefs
-    $quickActionsSectionPath = resource_path('js/Components/dashboard/QuickActionsSection.vue');
+    $quickActionsSectionPath = resource_path('js/components/dashboard/QuickActionsSection.vue');
     expect(file_exists($quickActionsSectionPath))->toBeTrue();
 
     $content = file_get_contents($quickActionsSectionPath);

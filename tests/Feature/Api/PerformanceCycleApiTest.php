@@ -124,7 +124,7 @@ describe('PerformanceCycle API', function () {
             'status' => 'active',
         ]);
 
-        PerformanceCycle::factory()->create([
+        PerformanceCycle::factory()->quarterly()->create([
             'name' => 'Inactive Cycle',
             'code' => 'INA-001',
             'status' => 'inactive',

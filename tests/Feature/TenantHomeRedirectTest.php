@@ -10,6 +10,11 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     config(['app.main_domain' => 'kasamahr.test']);
 
+    \Illuminate\Support\Facades\Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
+
     $this->tenant = Tenant::factory()->create(['slug' => 'demo']);
     app()->instance('tenant', $this->tenant);
 });

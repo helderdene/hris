@@ -10,6 +10,11 @@ uses(RefreshDatabase::class);
 
 beforeEach(function () {
     Storage::fake('public');
+
+    \Illuminate\Support\Facades\Artisan::call('migrate', [
+        '--path' => 'database/migrations/tenant',
+        '--realpath' => false,
+    ]);
 });
 
 it('uploads logo to tenant-specific path', function () {

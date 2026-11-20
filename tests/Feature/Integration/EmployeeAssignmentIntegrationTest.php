@@ -88,6 +88,7 @@ describe('Employee Assignment Management Full Integration Flow', function () {
             'first_name' => 'Super',
             'middle_name' => null, // Explicitly null to avoid factory middle name
             'last_name' => 'Visor',
+            'suffix' => null,
         ]);
 
         $employee = Employee::factory()->create([
