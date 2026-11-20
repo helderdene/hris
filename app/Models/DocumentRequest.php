@@ -51,6 +51,14 @@ class DocumentRequest extends TenantModel
     }
 
     /**
+     * Keep an offboarding's COE status in step with its COE request.
+     */
+    protected static function booted(): void
+    {
+        static::saved(fn (DocumentRequest $request) => EmployeeOffboarding::syncCoeRequest($request));
+    }
+
+    /**
      * Get the employee that owns this document request.
      */
     public function employee(): BelongsTo

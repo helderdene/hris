@@ -13,11 +13,17 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { router } from '@inertiajs/vue3';
-import { ref, watch } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps<{
     employeeId: number;
     employeeName: string;
+    offboarding?: {
+        separation_type: string;
+        last_working_date: string;
+        reason: string | null;
+        clearance_items: { cleared_at: string | null }[];
+    } | null;
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
@@ -36,6 +42,12 @@ const form = ref({
     remarks: '',
 });
 
+const pendingClearanceCount = computed(
+    () =>
+        props.offboarding?.clearance_items.filter((item) => !item.cleared_at)
+            .length ?? 0,
+);
+
 const errors = ref<Record<string, string>>({});
 const isSubmitting = ref(false);
 
@@ -52,23 +64,27 @@ function handleSubmit(): void {
     isSubmitting.value = true;
     errors.value = {};
 
-    router.post(`/employees/${props.employeeId}/separate`, {
-        employment_status: form.value.employment_status,
-        termination_date: form.value.termination_date,
-        remarks: form.value.remarks || null,
-    }, {
-        preserveScroll: true,
-        onSuccess: () => {
-            open.value = false;
-            resetForm();
+    router.post(
+        `/employees/${props.employeeId}/separate`,
+        {
+            employment_status: form.value.employment_status,
+            termination_date: form.value.termination_date,
+            remarks: form.value.remarks || null,
         },
-        onError: (validationErrors) => {
-            errors.value = validationErrors;
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                open.value = false;
+                resetForm();
+            },
+            onError: (validationErrors) => {
+                errors.value = validationErrors;
+            },
+            onFinish: () => {
+                isSubmitting.value = false;
+            },
         },
-        onFinish: () => {
-            isSubmitting.value = false;
-        },
-    });
+    );
 }
 
 function handleOpenChange(isOpen: boolean): void {
@@ -80,7 +96,11 @@ function handleOpenChange(isOpen: boolean): void {
 
 watch(open, (isOpen) => {
     if (isOpen) {
-        form.value.termination_date = new Date().toISOString().split('T')[0];
+        form.value.employment_status = props.offboarding?.separation_type ?? '';
+        form.value.termination_date =
+            props.offboarding?.last_working_date ??
+            new Date().toISOString().split('T')[0];
+        form.value.remarks = (props.offboarding?.reason ?? '').slice(0, 500);
     } else {
         resetForm();
     }
@@ -105,6 +125,17 @@ watch(open, (isOpen) => {
                 </DialogHeader>
 
                 <div class="space-y-3 sm:space-y-4">
+                    <div
+                        v-if="pendingClearanceCount > 0"
+                        class="rounded-md border border-red-200 bg-red-50 p-2.5 text-sm text-red-800 sm:p-3 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+                        role="alert"
+                        data-test="clearance-blocked"
+                    >
+                        Clearance is incomplete:
+                        {{ pendingClearanceCount }} item(s) are still pending.
+                        Clear them in the Offboarding tab before separating.
+                    </div>
+
                     <!-- Warning -->
                     <div
                         class="rounded-md border border-amber-200 bg-amber-50 p-2.5 text-sm text-amber-800 sm:p-3 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-300"
@@ -141,7 +172,7 @@ watch(open, (isOpen) => {
                         <select
                             id="employment-status"
                             v-model="form.employment_status"
-                            class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                            class="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:focus-visible:ring-slate-300"
                             :class="{
                                 'border-red-500': errors.employment_status,
                             }"
@@ -215,6 +246,7 @@ watch(open, (isOpen) => {
                         :disabled="
                             !form.employment_status ||
                             !form.termination_date ||
+                            pendingClearanceCount > 0 ||
                             isSubmitting
                         "
                         data-test="confirm-separation-button"

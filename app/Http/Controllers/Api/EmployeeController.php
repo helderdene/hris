@@ -95,6 +95,7 @@ class EmployeeController extends Controller
     {
         Gate::authorize('can-manage-employees');
 
+        $employee->separateIfLeaving($request->validated());
         $employee->update($request->validated());
 
         $employee->load(['department', 'position', 'workLocation', 'supervisor']);

@@ -7,6 +7,7 @@ use App\Http\Controllers\My\MyDtrController;
 use App\Http\Controllers\My\MyLoanApplicationController;
 use App\Http\Controllers\My\MyLoanController;
 use App\Http\Controllers\My\MyProfileController;
+use App\Http\Controllers\My\MyResignationController;
 use App\Http\Controllers\My\MyScheduleController;
 use App\Http\Controllers\My\PayslipPageController;
 use App\Http\Controllers\My\SelfServiceDashboardController;
@@ -56,6 +57,12 @@ Route::prefix('my')->group(function () {
     // Document Requests
     Route::get('/document-requests', [DocumentRequestPageController::class, 'index'])
         ->name('my.document-requests.index');
+
+    // Resignation / Offboarding Status
+    Route::get('/resignation', [MyResignationController::class, 'index'])
+        ->name('my.resignation.index');
+    Route::post('/resignation', [MyResignationController::class, 'store'])
+        ->name('my.resignation.store');
 
     // Announcements
     Route::get('/announcements', \App\Http\Controllers\My\AnnouncementController::class)

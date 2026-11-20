@@ -26,6 +26,7 @@ import ContactTab from './Tabs/ContactTab.vue';
 import DocumentsTab from './Tabs/DocumentsTab.vue';
 import EmploymentTab from './Tabs/EmploymentTab.vue';
 import GovernmentIdsTab from './Tabs/GovernmentIdsTab.vue';
+import OffboardingTab from './Tabs/OffboardingTab.vue';
 import PersonalInfoTab from './Tabs/PersonalInfoTab.vue';
 import ScheduleHistoryTab from './Tabs/ScheduleHistoryTab.vue';
 import SummaryTab from './Tabs/SummaryTab.vue';
@@ -125,6 +126,7 @@ interface Employee {
 
 const props = defineProps<{
     employee: Employee;
+    offboarding?: InstanceType<typeof OffboardingTab>['$props']['offboarding'];
     departments?: DepartmentOption[];
     positions?: PositionOption[];
     workLocations?: WorkLocationOption[];
@@ -199,9 +201,15 @@ type TabId =
     | 'contact'
     | 'documents'
     | 'schedule-history'
-    | 'assignment-history';
+    | 'assignment-history'
+    | 'offboarding';
 
-const activeTab = ref<TabId>('summary');
+const activeTab = ref<TabId>(
+    typeof window !== 'undefined' &&
+        new URLSearchParams(window.location.search).get('tab') === 'offboarding'
+        ? 'offboarding'
+        : 'summary',
+);
 
 const tabs = [
     { id: 'summary' as TabId, label: 'Summary', icon: 'chart-bar' },
@@ -221,6 +229,7 @@ const tabs = [
         label: 'Assignment History',
         icon: 'history',
     },
+    { id: 'offboarding' as TabId, label: 'Offboarding', icon: 'exit' },
 ];
 
 // Business card state
@@ -650,6 +659,22 @@ function handlePeriodChange(period: string) {
                                     d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"
                                 />
                             </svg>
+                            <!-- Exit icon -->
+                            <svg
+                                v-if="tab.icon === 'exit'"
+                                class="hidden h-4 w-4 sm:block"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke-width="2"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    stroke-linecap="round"
+                                    stroke-linejoin="round"
+                                    d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3 0 3-3m0 0-3-3m3 3H9"
+                                />
+                            </svg>
                             <span>{{ tab.label }}</span>
                         </button>
                     </nav>
@@ -688,6 +713,12 @@ function handlePeriodChange(period: string) {
                         v-if="activeTab === 'documents'"
                         :employee="employee"
                     />
+                    <OffboardingTab
+                        v-if="activeTab === 'offboarding'"
+                        :key="offboarding ? `record-${offboarding.separated_at}` : 'none'"
+                        :employee="employee"
+                        :offboarding="offboarding ?? null"
+                    />
                     <Deferred
                         v-if="activeTab === 'schedule-history'"
                         data="scheduleHistory"
@@ -719,6 +750,7 @@ function handlePeriodChange(period: string) {
             v-model:open="isSeparateModalOpen"
             :employee-id="employee.id"
             :employee-name="employee.full_name"
+            :offboarding="offboarding"
         />
 
         <!-- Assignment Change Modal -->

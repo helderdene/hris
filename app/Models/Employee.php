@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Collection as SupportCollection;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Employee model for digital 201 file management.
@@ -191,6 +192,80 @@ class Employee extends TenantModel
     public function statusHistory(): HasMany
     {
         return $this->hasMany(EmployeeStatusHistory::class);
+    }
+
+    /**
+     * Get the employee's offboarding records.
+     */
+    public function offboardings(): HasMany
+    {
+        return $this->hasMany(EmployeeOffboarding::class);
+    }
+
+    /**
+     * Get the offboarding for the current employment, ignoring one that was
+     * finalised before a rehire.
+     */
+    public function currentOffboarding(): ?EmployeeOffboarding
+    {
+        $offboarding = $this->offboardings()->latest('id')->first();
+
+        if ($offboarding?->separated_at && $this->employment_status === EmploymentStatus::Active) {
+            return null;
+        }
+
+        return $offboarding;
+    }
+
+    /**
+     * Separate the employee and finalise their offboarding. Refused while
+     * clearance items are pending, whichever screen the change comes from.
+     *
+     * @throws ValidationException
+     */
+    public function separate(EmploymentStatus $status, ?string $terminationDate = null, ?string $remarks = null): void
+    {
+        $offboarding = $this->currentOffboarding();
+        $pendingClearance = $offboarding?->clearanceItems()->whereNull('cleared_at')->count() ?? 0;
+
+        if ($pendingClearance > 0) {
+            throw ValidationException::withMessages([
+                'employment_status' => "Clearance is incomplete: {$pendingClearance} item(s) are still pending. Clear them in the Offboarding tab before separating.",
+            ]);
+        }
+
+        $terminationDate ??= now()->toDateString();
+
+        $this->update([
+            'employment_status' => $status,
+            'termination_date' => $terminationDate,
+        ]);
+
+        $attributes = array_filter([
+            'separation_type' => $status,
+            'last_working_date' => $terminationDate,
+            'reason' => $remarks,
+            'separated_at' => now(),
+        ]);
+
+        $offboarding
+            ? $offboarding->update($attributes)
+            : EmployeeOffboarding::startFor($this, $attributes);
+    }
+
+    /**
+     * Route a status change made through the edit form or API through separate(),
+     * so it cannot skip the clearance check.
+     *
+     * @param  array<string, mixed>  $attributes
+     */
+    public function separateIfLeaving(array $attributes): void
+    {
+        $status = EmploymentStatus::tryFrom((string) ($attributes['employment_status'] ?? ''));
+
+        if ($status && $status !== EmploymentStatus::Active && $this->employment_status === EmploymentStatus::Active) {
+            $this->separate($status, $attributes['termination_date'] ?? null);
+        }
     }
 
     /**

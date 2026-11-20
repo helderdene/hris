@@ -4,6 +4,7 @@ use App\Http\Controllers\AnnouncementPageController;
 use App\Http\Controllers\CompanyDocumentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeDashboardController;
+use App\Http\Controllers\EmployeeOffboardingController;
 use App\Http\Controllers\HRAnalyticsDashboardController;
 use App\Http\Controllers\PerformanceAnalyticsDashboardController;
 use Illuminate\Support\Facades\Route;
@@ -58,6 +59,20 @@ Route::put('/employees/{employee}', [EmployeeController::class, 'update'])
     ->name('employees.update');
 Route::post('/employees/{employee}/separate', [EmployeeController::class, 'separate'])
     ->name('employees.separate');
+
+Route::get('/offboarding', [EmployeeOffboardingController::class, 'index'])
+    ->name('offboarding.index');
+
+Route::prefix('/employees/{employee}/offboarding')->name('employees.offboarding.')->controller(EmployeeOffboardingController::class)->group(function () {
+    Route::post('/', 'start')->name('start');
+    Route::put('/', 'update')->name('update');
+    Route::delete('/', 'destroy')->name('destroy');
+    Route::post('/coe-request', 'requestCoe')->name('coe-request.store');
+    Route::put('/coe-request', 'updateCoeRequest')->name('coe-request.update');
+    Route::post('/clearance-items', 'storeClearanceItem')->name('clearance-items.store');
+    Route::put('/clearance-items/{item}', 'updateClearanceItem')->name('clearance-items.update');
+    Route::delete('/clearance-items/{item}', 'destroyClearanceItem')->name('clearance-items.destroy');
+});
 
 /*
 |--------------------------------------------------------------------------

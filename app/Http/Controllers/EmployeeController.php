@@ -165,6 +165,7 @@ class EmployeeController extends Controller
         // Load dropdown data for assignment change modal
         $props = [
             'employee' => new EmployeeResource($employee),
+            'offboarding' => $employee->currentOffboarding()?->load(['clearanceItems.clearedByUser:id,name', 'coeDocumentRequest:id,status']),
             'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
             'positions' => Position::query()->orderBy('title')->get(['id', 'title']),
             'workLocations' => WorkLocation::query()->orderBy('name')->get(['id', 'name']),
@@ -344,6 +345,7 @@ class EmployeeController extends Controller
             $employee = Employee::findOrFail($employee);
         }
 
+        $employee->separateIfLeaving($request->validated());
         $employee->update($request->validated());
 
         return redirect()
@@ -358,10 +360,11 @@ class EmployeeController extends Controller
     {
         Gate::authorize('can-manage-employees');
 
-        $employee->update([
-            'employment_status' => $request->validated('employment_status'),
-            'termination_date' => $request->validated('termination_date'),
-        ]);
+        $employee->separate(
+            EmploymentStatus::from($request->validated('employment_status')),
+            $request->validated('termination_date'),
+            $request->validated('remarks'),
+        );
 
         return redirect()
             ->back()

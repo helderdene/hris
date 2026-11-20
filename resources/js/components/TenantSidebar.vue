@@ -59,6 +59,7 @@ import {
     Network,
     PieChart,
     Scale,
+    LogOut,
     ScrollText,
     Settings,
     ShieldCheck,
@@ -127,6 +128,10 @@ const hrManagementItems = computed(() => {
     }
 
     items.push({ title: 'Employees', href: '/employees', icon: Users });
+
+    if (canManageEmployees.value) {
+        items.push({ title: 'Offboarding', href: '/offboarding', icon: LogOut });
+    }
 
     // Company Documents is accessible to all users
     items.push({
@@ -342,6 +347,11 @@ const selfServiceItems = computed(() => {
             title: 'Document Requests',
             href: '/my/document-requests',
             icon: ScrollText,
+        },
+        {
+            title: 'Resignation',
+            href: '/my/resignation',
+            icon: LogOut,
         },
         {
             title: 'My Goals',
