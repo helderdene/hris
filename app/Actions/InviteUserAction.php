@@ -59,6 +59,16 @@ class InviteUserAction
         $tenant = Tenant::findOrFail($tenantId);
         $inviter = User::findOrFail($inviterId);
 
+        // No employee picked: link the one unlinked employee with the invited email, if any
+        if ($employeeId === null && $user->ownsEmail() && $this->tenantHasEmployees() && ! Employee::where('user_id', $user->id)->exists()) {
+            $matches = Employee::query()
+                ->whereNull('user_id')
+                ->whereRaw('lower(email) = ?', [mb_strtolower($email)])
+                ->pluck('id');
+
+            $employeeId = $matches->count() === 1 ? $matches->first() : null;
+        }
+
         // Link employee to user if provided
         if ($employeeId !== null) {
             Employee::where('id', $employeeId)
@@ -70,5 +80,15 @@ class InviteUserAction
         $user->notify(new UserInvitation($tenant, $inviter, $token));
 
         return $user;
+    }
+
+    /**
+     * Whether the tenant's employee table exists yet (it does not while a tenant is still being provisioned).
+     */
+    private function tenantHasEmployees(): bool
+    {
+        $employee = new Employee;
+
+        return $employee->getConnection()->getSchemaBuilder()->hasTable($employee->getTable());
     }
 }

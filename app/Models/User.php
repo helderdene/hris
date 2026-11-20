@@ -108,6 +108,15 @@ class User extends Authenticatable
     }
 
     /**
+     * Whether the account's email can be trusted as the user's own: verified, or
+     * created by an invitation and never given a password.
+     */
+    public function ownsEmail(): bool
+    {
+        return $this->email_verified_at !== null || $this->password === null;
+    }
+
+    /**
      * Get the user's role in a specific tenant.
      */
     public function getRoleInTenant(Tenant $tenant): ?TenantUserRole
