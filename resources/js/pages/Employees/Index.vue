@@ -59,7 +59,12 @@ interface PaginationLink {
 
 interface PaginatedData<T> {
     data: T[];
-    links: { first: string | null; last: string | null; prev: string | null; next: string | null };
+    links: {
+        first: string | null;
+        last: string | null;
+        prev: string | null;
+        next: string | null;
+    };
     meta: {
         current_page: number;
         last_page: number;
@@ -169,6 +174,13 @@ watch([departmentFilter, statusFilter], () => {
 
 function viewEmployee(employee: Employee) {
     router.visit(`/employees/${employee.id}`);
+}
+
+/** Row click opens the profile, unless the user is selecting text to copy. */
+function openEmployeeRow(employee: Employee) {
+    if (!window.getSelection()?.toString()) {
+        viewEmployee(employee);
+    }
 }
 
 function editEmployee(employee: Employee) {
@@ -400,23 +412,28 @@ function goToPage(url: string | null) {
                             <tr
                                 v-for="employee in employees.data"
                                 :key="employee.id"
-                                class="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                                class="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
                                 :data-test="`employee-row-${employee.id}`"
+                                @click="openEmployeeRow(employee)"
                             >
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="flex items-center gap-3">
                                         <EmployeeAvatar
                                             :first-name="employee.first_name"
                                             :last-name="employee.last_name"
-                                            :photo-url="employee.profile_photo_url"
+                                            :photo-url="
+                                                employee.profile_photo_url
+                                            "
                                             size="md"
                                         />
                                         <div>
-                                            <div
-                                                class="font-medium text-slate-900 dark:text-slate-100"
+                                            <Link
+                                                :href="`/employees/${employee.id}`"
+                                                class="font-medium text-slate-900 hover:underline dark:text-slate-100"
+                                                @click.stop
                                             >
                                                 {{ employee.full_name }}
-                                            </div>
+                                            </Link>
                                             <div
                                                 class="text-sm text-blue-600 dark:text-blue-400"
                                             >
@@ -453,7 +470,10 @@ function goToPage(url: string | null) {
                                         "
                                     />
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td
+                                    class="cursor-default px-6 py-4 whitespace-nowrap"
+                                    @click.stop
+                                >
                                     <div
                                         class="flex items-center justify-end gap-2"
                                     >
@@ -571,11 +591,12 @@ function goToPage(url: string | null) {
                                     size="md"
                                 />
                                 <div>
-                                    <div
-                                        class="font-medium text-slate-900 dark:text-slate-100"
+                                    <Link
+                                        :href="`/employees/${employee.id}`"
+                                        class="block font-medium text-slate-900 hover:underline dark:text-slate-100"
                                     >
                                         {{ employee.full_name }}
-                                    </div>
+                                    </Link>
                                     <div
                                         class="text-sm text-blue-600 dark:text-blue-400"
                                     >
@@ -716,9 +737,7 @@ function goToPage(url: string | null) {
                     v-if="employees?.meta?.last_page > 1"
                     class="flex flex-col items-center gap-3 border-t border-slate-200 bg-white px-6 py-3 sm:flex-row sm:justify-between dark:border-slate-700 dark:bg-slate-900"
                 >
-                    <p
-                        class="text-sm text-slate-700 dark:text-slate-300"
-                    >
+                    <p class="text-sm text-slate-700 dark:text-slate-300">
                         Showing page
                         <span class="font-medium">{{
                             employees.meta.current_page
@@ -741,13 +760,12 @@ function goToPage(url: string | null) {
                             :class="[
                                 link.active
                                     ? 'z-10 bg-blue-600 text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                                    : 'text-slate-900 ring-1 ring-inset ring-slate-300 hover:bg-slate-50 dark:text-slate-300 dark:ring-slate-600 dark:hover:bg-slate-700',
+                                    : 'text-slate-900 ring-1 ring-slate-300 ring-inset hover:bg-slate-50 dark:text-slate-300 dark:ring-slate-600 dark:hover:bg-slate-700',
                                 !link.url
                                     ? 'cursor-not-allowed opacity-50'
                                     : 'cursor-pointer',
                                 index === 0 ? 'rounded-l-md' : '',
-                                index ===
-                                employees.meta.links.length - 1
+                                index === employees.meta.links.length - 1
                                     ? 'rounded-r-md'
                                     : '',
                             ]"
