@@ -12,19 +12,22 @@ use Illuminate\Support\Facades\Route;
 | pending approvals, and approval history.
 |
 */
-Route::prefix('recruitment')->group(function () {
+Route::prefix('recruitment')->middleware('can:can-view-recruitment')->group(function () {
     // Analytics Dashboard
     Route::get('/analytics', [\App\Http\Controllers\RecruitmentAnalyticsDashboardController::class, 'index'])
         ->name('recruitment.analytics');
 
     Route::get('/requisitions', [\App\Http\Controllers\Recruitment\JobRequisitionPageController::class, 'index'])
+        ->withoutMiddleware('can:can-view-recruitment')
         ->name('recruitment.requisitions.index');
     Route::get('/requisitions/create', [\App\Http\Controllers\Recruitment\JobRequisitionPageController::class, 'create'])
         ->middleware('ensure-role:admin,hr_manager,hr_staff,hr_consultant,supervisor')
         ->name('recruitment.requisitions.create');
     Route::get('/requisitions/{job_requisition}', [\App\Http\Controllers\Recruitment\JobRequisitionPageController::class, 'show'])
+        ->withoutMiddleware('can:can-view-recruitment')
         ->name('recruitment.requisitions.show');
     Route::get('/approvals', [\App\Http\Controllers\Recruitment\JobRequisitionApprovalPageController::class, 'index'])
+        ->withoutMiddleware('can:can-view-recruitment')
         ->name('recruitment.approvals.index');
 
     // Job Postings
@@ -59,6 +62,7 @@ Route::prefix('recruitment')->group(function () {
     Route::get('/applications/{jobApplication}/interviews', [\App\Http\Controllers\Recruitment\InterviewPageController::class, 'forApplication'])
         ->name('recruitment.interviews.for-application');
     Route::get('/interviews/{interview}', [\App\Http\Controllers\Recruitment\InterviewPageController::class, 'show'])
+        ->withoutMiddleware('can:can-view-recruitment')
         ->name('recruitment.interviews.show');
 
     // Offer Templates

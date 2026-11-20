@@ -131,7 +131,7 @@ class JobRequisition extends TenantModel
     }
 
     /**
-     * Get all approval records for this requisition.
+     * Get the approval steps for this requisition.
      */
     public function approvals(): HasMany
     {

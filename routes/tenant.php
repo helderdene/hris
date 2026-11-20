@@ -78,6 +78,12 @@ Route::get('/careers', [\App\Http\Controllers\CareersController::class, 'index']
 Route::get('/offers/{offer}/respond', [\App\Http\Controllers\Recruitment\OfferResponseController::class, 'show'])
     ->name('offers.respond')
     ->middleware('signed');
+Route::post('/offers/{offer}/respond/accept', [\App\Http\Controllers\Recruitment\OfferResponseController::class, 'accept'])
+    ->name('offers.respond.accept')
+    ->middleware('signed');
+Route::post('/offers/{offer}/respond/decline', [\App\Http\Controllers\Recruitment\OfferResponseController::class, 'decline'])
+    ->name('offers.respond.decline')
+    ->middleware('signed');
 Route::get('/careers/{slug}', [\App\Http\Controllers\CareersController::class, 'show'])
     ->name('careers.show');
 Route::post('/careers/{slug}/apply', [\App\Http\Controllers\Api\PublicApplicationController::class, 'store'])
@@ -190,7 +196,7 @@ Route::prefix('api')->middleware(['auth', 'subscribed'])->group(function () {
         require __DIR__.'/tenant/api-performance.php';
     });
 
-    Route::middleware(['module:recruitment,onboarding_preboarding'])->group(function () {
+    Route::middleware(['module:recruitment,onboarding_preboarding', 'recruitment'])->group(function () {
         require __DIR__.'/tenant/api-recruitment.php';
     });
 

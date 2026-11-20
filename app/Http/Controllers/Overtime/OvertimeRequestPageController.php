@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Overtime;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\EmploymentStatus;
 use App\Enums\OvertimeRequestStatus;
 use App\Enums\OvertimeType;
@@ -97,6 +98,8 @@ class OvertimeRequestPageController extends Controller
      */
     public function show(OvertimeRequest $overtimeRequest): Response
     {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $overtimeRequest, includeApprovers: true), 403);
+
         $overtimeRequest->load([
             'employee.department',
             'employee.position',

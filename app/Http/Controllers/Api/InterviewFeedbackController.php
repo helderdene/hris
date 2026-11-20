@@ -19,6 +19,8 @@ class InterviewFeedbackController extends Controller
      */
     public function index(Interview $interview): JsonResponse
     {
+        abort_unless($interview->isViewableBy(request()->user()), 403);
+
         $interview->load(['panelists.employee']);
 
         $feedback = $interview->panelists->map(fn ($panelist) => [

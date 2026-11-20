@@ -147,6 +147,16 @@ describe('overtime requests and loan applications', function () {
             ->and($record::query()->count())->toBe(1);
     })->with(['overtime-requests', 'loan-applications']);
 
+    it('guards the overtime request page the same way', function () {
+        $page = "{$this->base}/overtime/requests/{$this->records['overtime-requests']->id}";
+
+        ($this->as)($this->colleague);
+        $this->get($page)->assertForbidden();
+
+        ($this->as)($this->owner);
+        $this->get($page)->assertOk();
+    });
+
     it('lets the owner and HR read the record', function (string $resource) {
         $url = "{$this->base}/api/{$resource}/{$this->records[$resource]->id}";
 

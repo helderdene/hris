@@ -98,6 +98,8 @@ class InterviewPageController extends Controller
      */
     public function show(Interview $interview): Response
     {
+        abort_unless($interview->isViewableBy(request()->user()), 403);
+
         $interview->load([
             'jobApplication.candidate',
             'jobApplication.jobPosting',

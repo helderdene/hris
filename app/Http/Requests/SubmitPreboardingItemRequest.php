@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Employee;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Gate;
 
 class SubmitPreboardingItemRequest extends FormRequest
 {
@@ -11,7 +13,18 @@ class SubmitPreboardingItemRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        if (Gate::allows('can-manage-organization')) {
+            return true;
+        }
+
+        // Otherwise only the new hire the checklist belongs to, matched by the candidate's email.
+        $user = $this->user();
+        $candidateEmail = mb_strtolower((string) $this->route('item')?->checklist?->jobApplication?->candidate?->email);
+
+        return $candidateEmail !== '' && collect([$user?->ownsEmail() ? $user->email : null, Employee::query()->where('user_id', $user?->id)->value('email')])
+            ->filter()
+            ->map(fn (string $email) => mb_strtolower($email))
+            ->contains($candidateEmail);
     }
 
     /**

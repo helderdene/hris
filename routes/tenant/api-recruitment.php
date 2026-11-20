@@ -59,10 +59,13 @@ Route::post('/interviews/{interview}/cancel', [\App\Http\Controllers\Api\Intervi
 Route::post('/interviews/{interview}/send-invitations', [\App\Http\Controllers\Api\InterviewController::class, 'sendInvitations'])
     ->name('api.interviews.send-invitations');
 Route::get('/interviews/{interview}/calendar.ics', [\App\Http\Controllers\Api\InterviewCalendarController::class, 'download'])
+    ->withoutMiddleware('recruitment')
     ->name('api.interviews.calendar');
 Route::get('/interviews/{interview}/feedback', [\App\Http\Controllers\Api\InterviewFeedbackController::class, 'index'])
+    ->withoutMiddleware('recruitment')
     ->name('api.interviews.feedback.index');
 Route::post('/interviews/{interview}/feedback', [\App\Http\Controllers\Api\InterviewFeedbackController::class, 'store'])
+    ->withoutMiddleware('recruitment')
     ->name('api.interviews.feedback.store');
 
 /*

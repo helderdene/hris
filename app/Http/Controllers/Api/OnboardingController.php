@@ -12,6 +12,7 @@ use App\Services\OnboardingService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class OnboardingController extends Controller
 {
@@ -24,6 +25,8 @@ class OnboardingController extends Controller
      */
     public function completeItem(CompleteOnboardingItemRequest $request, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
     {
+        $this->authorizeItem($item);
+
         $data = $request->validated();
 
         $item = $this->onboardingService->completeItem(
@@ -57,6 +60,8 @@ class OnboardingController extends Controller
      */
     public function skipItem(SkipOnboardingItemRequest $request, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
     {
+        $this->authorizeItem($item);
+
         // Only non-required items can be skipped
         if ($item->is_required) {
             if ($request->inertia()) {
@@ -96,6 +101,8 @@ class OnboardingController extends Controller
      */
     public function assignItem(AssignOnboardingItemRequest $request, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
     {
+        Gate::authorize('can-manage-organization');
+
         $assignee = User::findOrFail($request->validated('assigned_to'));
 
         $item = $this->onboardingService->assignItem($item, $assignee);
@@ -121,6 +128,8 @@ class OnboardingController extends Controller
      */
     public function startItem(Request $request, OnboardingChecklistItem $item): JsonResponse|RedirectResponse
     {
+        $this->authorizeItem($item);
+
         $item = $this->onboardingService->startItem($item);
 
         if ($request->inertia()) {
@@ -136,5 +145,17 @@ class OnboardingController extends Controller
                 'status_color' => $item->status->color(),
             ],
         ]);
+    }
+
+    /**
+     * Allow HR, or the user the task is assigned to.
+     */
+    protected function authorizeItem(OnboardingChecklistItem $item): void
+    {
+        abort_unless(
+            Gate::allows('can-manage-organization') || $item->assigned_to === request()->user()->id,
+            403,
+            'This onboarding task is not assigned to you.'
+        );
     }
 }

@@ -244,6 +244,10 @@ class AppServiceProvider extends ServiceProvider
         $this->registerPermissionGate('can-view-training', Permission::TrainingView);
         $this->registerPermissionGate('can-manage-training', Permission::TrainingManage);
 
+        // Recruitment module gates
+        $this->registerPermissionGate('can-view-recruitment', Permission::RecruitmentView);
+        $this->registerPermissionGate('can-manage-recruitment', Permission::RecruitmentManage);
+
         // Compliance training gates (uses training permissions)
         $this->registerPermissionGate('can-view-compliance', Permission::TrainingView);
         $this->registerPermissionGate('can-manage-compliance', Permission::TrainingManage);

@@ -5,6 +5,7 @@ use App\Http\Middleware\AuthenticateFromMainDomain;
 use App\Http\Middleware\AuthenticateFromToken;
 use App\Http\Middleware\EnsureActiveSubscription;
 use App\Http\Middleware\EnsureModuleAccess;
+use App\Http\Middleware\EnsureRecruitmentAccess;
 use App\Http\Middleware\EnsureRole;
 use App\Http\Middleware\EnsureTenantMember;
 use App\Http\Middleware\HandleAppearance;
@@ -79,6 +80,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Usage in routes: ->middleware('ensure-role:admin,hr_manager')
         $middleware->alias([
             'ensure-role' => EnsureRole::class,
+            'recruitment' => EnsureRecruitmentAccess::class,
             'subscribed' => EnsureActiveSubscription::class,
             'module' => EnsureModuleAccess::class,
             'tenant.password.confirm' => RequirePasswordConfirmation::class,

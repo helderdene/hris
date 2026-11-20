@@ -29,6 +29,8 @@ interface OfferData {
     candidate_name: string;
     candidate_email: string;
     company_name: string;
+    accept_url: string;
+    decline_url: string;
 }
 
 const props = defineProps<{
@@ -52,7 +54,7 @@ function acceptOffer(): void {
     processing.value = true;
     errors.value = {};
 
-    router.post(`/api/offers/${props.offer.id}/accept`, {
+    router.post(props.offer.accept_url, {
         signer_name: signerName.value,
         signer_email: signerEmail.value,
         signature_data: signatureData.value,
@@ -68,7 +70,7 @@ function acceptOffer(): void {
 
 function declineOffer(): void {
     processing.value = true;
-    router.post(`/api/offers/${props.offer.id}/decline`, {
+    router.post(props.offer.decline_url, {
         reason: declineReason.value || null,
     }, {
         onFinish: () => {

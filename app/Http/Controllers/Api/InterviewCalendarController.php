@@ -18,6 +18,8 @@ class InterviewCalendarController extends Controller
      */
     public function download(Interview $interview): Response
     {
+        abort_unless($interview->isViewableBy(request()->user()), 403);
+
         $ics = $this->calendarService->generateIcs($interview);
         $filename = 'interview-'.$interview->id.'.ics';
 

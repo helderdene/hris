@@ -7,6 +7,7 @@ use App\Enums\InterviewType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * An interview scheduled for a job application.
@@ -61,7 +62,16 @@ class Interview extends TenantModel
     }
 
     /**
-     * Get the panelists for this interview.
+     * Whether the user may see this interview: recruitment staff, or a member of its panel.
+     */
+    public function isViewableBy(User $user): bool
+    {
+        return Gate::forUser($user)->allows('can-view-recruitment')
+            || $this->panelists()->whereHas('employee', fn ($query) => $query->where('user_id', $user->id))->exists();
+    }
+
+    /**
+     * Get the interview panelists.
      */
     public function panelists(): HasMany
     {
