@@ -580,3 +580,16 @@ it('lets an HR manager use the list and COE flow and receive resignation notices
     expect($offboarding->refresh()->coe_status)->toBe(OffboardingStepStatus::Completed)
         ->and(OffboardingNotification::hrRecipients()->modelKeys())->toBe([$manager->id]);
 });
+
+it('shares the success message with the page so it can be shown as a toast', function () {
+    actAsOffboardingUser(TenantUserRole::Admin);
+    $employee = Employee::factory()->create(['employment_status' => EmploymentStatus::Active]);
+    $base = offboardingUrl("/employees/{$employee->id}");
+
+    $this->from($base)
+        ->followingRedirects()
+        ->post("{$base}/offboarding", ['separation_type' => 'resigned', 'last_working_date' => '2026-12-01'])
+        ->assertInertia(fn ($page) => $page->where('flash.success', 'Offboarding started.'));
+
+    $this->get($base)->assertInertia(fn ($page) => $page->where('flash.success', null));
+});
