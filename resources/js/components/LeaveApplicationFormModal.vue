@@ -62,7 +62,14 @@ interface LeaveApplication {
     is_half_day_start: boolean;
     is_half_day_end: boolean;
     reason: string;
+    status?: string;
     attachment?: Attachment | null;
+}
+
+interface LeaveFormResult {
+    submitted: boolean;
+    /** Set when the leave was saved as a draft but could not be submitted. */
+    submitError?: string;
 }
 
 const props = defineProps<{
@@ -73,7 +80,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-    success: [];
+    success: [result: LeaveFormResult];
 }>();
 
 const open = defineModel<boolean>('open', { default: false });
@@ -144,7 +151,9 @@ const minDate = computed(() => {
     return new Date().toISOString().split('T')[0];
 });
 
-const existingAttachment = computed(() => props.application?.attachment ?? null);
+const existingAttachment = computed(
+    () => props.application?.attachment ?? null,
+);
 
 const showExistingAttachment = computed(
     () =>
@@ -222,7 +231,50 @@ function formatBytes(bytes: number): string {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-async function handleSubmit() {
+/** A draft (new or existing) can be sent for approval straight from the form. */
+const canSubmitForApproval = computed(
+    () => !isEditing.value || props.application?.status === 'draft',
+);
+
+async function submitForApproval(
+    applicationId: number | undefined,
+): Promise<string | null> {
+    const fallback = 'The leave could not be submitted.';
+
+    if (!applicationId) {
+        return fallback;
+    }
+
+    try {
+        const response = await fetch(
+            `/api/leave-applications/${applicationId}/submit`,
+            {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': getCsrfToken(),
+                },
+                credentials: 'same-origin',
+            },
+        );
+
+        if (response.ok) {
+            return null;
+        }
+
+        const data = await response.json().catch(() => ({}));
+
+        return (
+            Object.values<string[]>(data.errors ?? {})[0]?.[0] ??
+            data.message ??
+            fallback
+        );
+    } catch {
+        return fallback;
+    }
+}
+
+async function handleSubmit(sendForApproval: boolean) {
     if (!props.employee) {
         return;
     }
@@ -268,7 +320,16 @@ async function handleSubmit() {
         const data = await response.json();
 
         if (response.ok) {
-            emit('success');
+            const submitError = sendForApproval
+                ? await submitForApproval(
+                      data.data?.id ?? data.id ?? props.application?.id,
+                  )
+                : null;
+
+            emit('success', {
+                submitted: sendForApproval && submitError === null,
+                ...(submitError ? { submitError } : {}),
+            });
         } else if (response.status === 422) {
             errors.value = data.errors || {};
         } else {
@@ -288,10 +349,14 @@ async function handleSubmit() {
 
 <template>
     <Dialog v-model:open="open">
-        <DialogContent class="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent class="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
             <DialogHeader>
                 <DialogTitle>
-                    {{ isEditing ? 'Edit Leave Application' : 'New Leave Application' }}
+                    {{
+                        isEditing
+                            ? 'Edit Leave Application'
+                            : 'New Leave Application'
+                    }}
                 </DialogTitle>
                 <DialogDescription>
                     {{
@@ -302,7 +367,10 @@ async function handleSubmit() {
                 </DialogDescription>
             </DialogHeader>
 
-            <form @submit.prevent="handleSubmit" class="space-y-6">
+            <form
+                @submit.prevent="handleSubmit(canSubmitForApproval)"
+                class="space-y-6"
+            >
                 <div
                     v-if="errors.general"
                     class="rounded-md bg-red-50 p-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400"
@@ -313,60 +381,90 @@ async function handleSubmit() {
                 <!-- I. Employee Information -->
                 <section class="space-y-3">
                     <header class="flex items-center justify-between">
-                        <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                        <h3
+                            class="text-sm font-semibold text-slate-900 dark:text-slate-100"
+                        >
                             I. Employee Information
                         </h3>
-                        <span class="text-xs text-slate-500 dark:text-slate-400">
+                        <span
+                            class="text-xs text-slate-500 dark:text-slate-400"
+                        >
                             Inherited from your employee record
                         </span>
                     </header>
 
-                    <dl class="grid gap-x-4 gap-y-3 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-2 dark:border-slate-700 dark:bg-slate-800/40">
+                    <dl
+                        class="grid gap-x-4 gap-y-3 rounded-md border border-slate-200 bg-slate-50 p-4 text-sm sm:grid-cols-2 dark:border-slate-700 dark:bg-slate-800/40"
+                    >
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <dt
+                                class="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
+                            >
                                 Date Filed
                             </dt>
-                            <dd class="mt-0.5 text-slate-900 dark:text-slate-100">
+                            <dd
+                                class="mt-0.5 text-slate-900 dark:text-slate-100"
+                            >
                                 {{ dateFiled }}
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <dt
+                                class="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
+                            >
                                 Employee ID
                             </dt>
-                            <dd class="mt-0.5 text-slate-900 dark:text-slate-100">
+                            <dd
+                                class="mt-0.5 text-slate-900 dark:text-slate-100"
+                            >
                                 {{ employee?.employee_number ?? '—' }}
                             </dd>
                         </div>
                         <div class="sm:col-span-2">
-                            <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <dt
+                                class="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
+                            >
                                 Employee Name
                             </dt>
-                            <dd class="mt-0.5 text-slate-900 dark:text-slate-100">
+                            <dd
+                                class="mt-0.5 text-slate-900 dark:text-slate-100"
+                            >
                                 {{ employee?.full_name ?? '—' }}
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <dt
+                                class="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
+                            >
                                 Department
                             </dt>
-                            <dd class="mt-0.5 text-slate-900 dark:text-slate-100">
+                            <dd
+                                class="mt-0.5 text-slate-900 dark:text-slate-100"
+                            >
                                 {{ employee?.department ?? '—' }}
                             </dd>
                         </div>
                         <div>
-                            <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <dt
+                                class="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
+                            >
                                 Position
                             </dt>
-                            <dd class="mt-0.5 text-slate-900 dark:text-slate-100">
+                            <dd
+                                class="mt-0.5 text-slate-900 dark:text-slate-100"
+                            >
                                 {{ employee?.position ?? '—' }}
                             </dd>
                         </div>
                         <div class="sm:col-span-2">
-                            <dt class="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                            <dt
+                                class="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400"
+                            >
                                 Employment Status
                             </dt>
-                            <dd class="mt-0.5 text-slate-900 dark:text-slate-100">
+                            <dd
+                                class="mt-0.5 text-slate-900 dark:text-slate-100"
+                            >
                                 {{ employee?.employment_type_label ?? '—' }}
                             </dd>
                         </div>
@@ -375,12 +473,17 @@ async function handleSubmit() {
 
                 <!-- II. Leave Details -->
                 <section class="space-y-4">
-                    <h3 class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                    <h3
+                        class="text-sm font-semibold text-slate-900 dark:text-slate-100"
+                    >
                         II. Leave Details
                     </h3>
 
                     <div class="space-y-2">
-                        <Label for="leave_type">Type of Leave <span class="text-red-500">*</span></Label>
+                        <Label for="leave_type"
+                            >Type of Leave
+                            <span class="text-red-500">*</span></Label
+                        >
                         <Select v-model="leaveTypeId">
                             <SelectTrigger id="leave_type">
                                 <SelectValue placeholder="Select leave type" />
@@ -395,27 +498,37 @@ async function handleSubmit() {
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                        <p v-if="errors.leave_type_id" class="text-sm text-red-500">
+                        <p
+                            v-if="errors.leave_type_id"
+                            class="text-sm text-red-500"
+                        >
                             {{ errors.leave_type_id[0] }}
                         </p>
                         <p
                             v-if="selectedBalance"
                             class="text-sm text-slate-500 dark:text-slate-400"
                         >
-                            Available balance: {{ selectedBalance.available }} days
+                            Available balance:
+                            {{ selectedBalance.available }} days
                         </p>
                     </div>
 
                     <div class="grid gap-4 sm:grid-cols-2">
                         <div class="space-y-2">
-                            <Label for="start_date">Leave Start Date <span class="text-red-500">*</span></Label>
+                            <Label for="start_date"
+                                >Leave Start Date
+                                <span class="text-red-500">*</span></Label
+                            >
                             <Input
                                 id="start_date"
                                 type="date"
                                 v-model="startDate"
                                 :min="minDate"
                             />
-                            <p v-if="errors.start_date" class="text-sm text-red-500">
+                            <p
+                                v-if="errors.start_date"
+                                class="text-sm text-red-500"
+                            >
                                 {{ errors.start_date[0] }}
                             </p>
                             <div class="flex items-center gap-2">
@@ -425,21 +538,30 @@ async function handleSubmit() {
                                     v-model="isHalfDayStart"
                                     class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800"
                                 />
-                                <Label for="half_day_start" class="text-sm font-normal">
+                                <Label
+                                    for="half_day_start"
+                                    class="text-sm font-normal"
+                                >
                                     Half day
                                 </Label>
                             </div>
                         </div>
 
                         <div class="space-y-2">
-                            <Label for="end_date">Leave End Date <span class="text-red-500">*</span></Label>
+                            <Label for="end_date"
+                                >Leave End Date
+                                <span class="text-red-500">*</span></Label
+                            >
                             <Input
                                 id="end_date"
                                 type="date"
                                 v-model="endDate"
                                 :min="startDate || minDate"
                             />
-                            <p v-if="errors.end_date" class="text-sm text-red-500">
+                            <p
+                                v-if="errors.end_date"
+                                class="text-sm text-red-500"
+                            >
                                 {{ errors.end_date[0] }}
                             </p>
                             <div class="flex items-center gap-2">
@@ -449,7 +571,10 @@ async function handleSubmit() {
                                     v-model="isHalfDayEnd"
                                     class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 dark:border-slate-600 dark:bg-slate-800"
                                 />
-                                <Label for="half_day_end" class="text-sm font-normal">
+                                <Label
+                                    for="half_day_end"
+                                    class="text-sm font-normal"
+                                >
                                     Half day
                                 </Label>
                             </div>
@@ -459,15 +584,24 @@ async function handleSubmit() {
                     <div class="rounded-md bg-slate-50 p-3 dark:bg-slate-800">
                         <p class="text-sm text-slate-600 dark:text-slate-300">
                             <span class="font-medium">Total No. of Days:</span>
-                            {{ startDate && endDate ? `${calculatedDays} day(s)` : 'Auto-calculated from leave dates' }}
+                            {{
+                                startDate && endDate
+                                    ? `${calculatedDays} day(s)`
+                                    : 'Auto-calculated from leave dates'
+                            }}
                         </p>
-                        <p v-if="errors.total_days" class="mt-1 text-sm text-red-500">
+                        <p
+                            v-if="errors.total_days"
+                            class="mt-1 text-sm text-red-500"
+                        >
                             {{ errors.total_days[0] }}
                         </p>
                     </div>
 
                     <div class="space-y-2">
-                        <Label for="reason">Reason <span class="text-red-500">*</span></Label>
+                        <Label for="reason"
+                            >Reason <span class="text-red-500">*</span></Label
+                        >
                         <Textarea
                             id="reason"
                             v-model="reason"
@@ -514,7 +648,9 @@ async function handleSubmit() {
                             v-if="attachmentFile"
                             class="flex items-center justify-between rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-800/50"
                         >
-                            <span class="flex items-center gap-2 text-slate-700 dark:text-slate-200">
+                            <span
+                                class="flex items-center gap-2 text-slate-700 dark:text-slate-200"
+                            >
                                 <Paperclip class="h-4 w-4" />
                                 {{ attachmentFile.name }}
                                 <span class="text-xs text-slate-500">
@@ -538,7 +674,10 @@ async function handleSubmit() {
                             accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
                             @change="handleFileChange"
                         />
-                        <p v-if="errors.attachment" class="text-sm text-red-500">
+                        <p
+                            v-if="errors.attachment"
+                            class="text-sm text-red-500"
+                        >
                             {{ errors.attachment[0] }}
                         </p>
                     </div>
@@ -552,10 +691,15 @@ async function handleSubmit() {
                 </div>
 
                 <div
-                    v-if="selectedLeaveType?.min_days_advance_notice && selectedLeaveType.min_days_advance_notice > 0"
+                    v-if="
+                        selectedLeaveType?.min_days_advance_notice &&
+                        selectedLeaveType.min_days_advance_notice > 0
+                    "
                     class="rounded-md bg-amber-50 p-3 text-sm text-amber-700 dark:bg-amber-900/20 dark:text-amber-400"
                 >
-                    This leave type requires {{ selectedLeaveType.min_days_advance_notice }} days advance notice.
+                    This leave type requires
+                    {{ selectedLeaveType.min_days_advance_notice }} days advance
+                    notice.
                 </div>
 
                 <DialogFooter>
@@ -567,13 +711,27 @@ async function handleSubmit() {
                     >
                         Cancel
                     </Button>
-                    <Button type="submit" :disabled="isSubmitting">
+                    <Button
+                        v-if="canSubmitForApproval"
+                        type="button"
+                        variant="outline"
+                        :disabled="isSubmitting"
+                        data-test="leave-save-draft"
+                        @click="handleSubmit(false)"
+                    >
+                        Save as Draft
+                    </Button>
+                    <Button
+                        type="submit"
+                        :disabled="isSubmitting"
+                        data-test="leave-submit"
+                    >
                         {{
                             isSubmitting
                                 ? 'Saving...'
-                                : isEditing
-                                  ? 'Update'
-                                  : 'Create Draft'
+                                : canSubmitForApproval
+                                  ? 'Submit Leave'
+                                  : 'Update'
                         }}
                     </Button>
                 </DialogFooter>

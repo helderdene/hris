@@ -1,18 +1,14 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
 import LeaveApplicationFormModal from '@/components/LeaveApplicationFormModal.vue';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Calendar, FileText, Plus } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
+import { toast } from 'vue-sonner';
 
 interface LeaveType {
     id: number;
@@ -134,38 +130,86 @@ function getCsrfToken(): string {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
-async function submitApplication(applicationId: number): Promise<void> {
-    await fetch(`/api/leave-applications/${applicationId}/submit`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'X-XSRF-TOKEN': getCsrfToken(),
-        },
-        credentials: 'same-origin',
-    });
-    window.location.reload();
+/** POST a leave action, then refresh the list and say what happened. */
+async function leaveAction(
+    applicationId: number,
+    action: 'submit' | 'cancel',
+    successMessage: string,
+): Promise<void> {
+    try {
+        const response = await fetch(
+            `/api/leave-applications/${applicationId}/${action}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Accept: 'application/json',
+                    'X-XSRF-TOKEN': getCsrfToken(),
+                },
+                credentials: 'same-origin',
+            },
+        );
+
+        if (response.ok) {
+            toast.success(successMessage);
+        } else {
+            const data = await response.json().catch(() => ({}));
+            toast.error(
+                Object.values<string[]>(data.errors ?? {})[0]?.[0] ??
+                    data.message ??
+                    `The leave could not be ${action === 'submit' ? 'submitted' : 'cancelled'}.`,
+                { duration: 10000 },
+            );
+        }
+    } catch {
+        toast.error('Something went wrong. Please try again.', {
+            duration: 10000,
+        });
+    }
+
+    router.reload();
+}
+
+function submitApplication(applicationId: number): Promise<void> {
+    return leaveAction(
+        applicationId,
+        'submit',
+        'Leave submitted for approval.',
+    );
 }
 
 async function cancelApplication(applicationId: number): Promise<void> {
-    if (!confirm('Are you sure you want to cancel this leave application?')) {
-        return;
+    if (confirm('Are you sure you want to cancel this leave application?')) {
+        await leaveAction(
+            applicationId,
+            'cancel',
+            'Leave application cancelled.',
+        );
     }
-    await fetch(`/api/leave-applications/${applicationId}/cancel`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-            'X-XSRF-TOKEN': getCsrfToken(),
-        },
-        credentials: 'same-origin',
-    });
-    window.location.reload();
 }
 
-function handleFormSuccess(): void {
+function handleFormSuccess(result: {
+    submitted: boolean;
+    submitError?: string;
+}): void {
     showFormModal.value = false;
-    window.location.reload();
+
+    if (result.submitError) {
+        toast.error(
+            `Saved as a draft, but not submitted: ${result.submitError}`,
+            {
+                duration: 10000,
+            },
+        );
+    } else {
+        toast.success(
+            result.submitted
+                ? 'Leave submitted for approval.'
+                : 'Leave saved as a draft. Submit it when you are ready.',
+        );
+    }
+
+    router.reload();
 }
 </script>
 
@@ -237,7 +281,9 @@ function handleFormSuccess(): void {
                                 <span
                                     class="text-2xl font-bold text-slate-900 dark:text-slate-100"
                                 >
-                                    {{ parseFloat(balance.available.toFixed(2)) }}
+                                    {{
+                                        parseFloat(balance.available.toFixed(2))
+                                    }}
                                 </span>
                                 <span
                                     class="text-sm text-slate-500 dark:text-slate-400"
@@ -297,9 +343,7 @@ function handleFormSuccess(): void {
                     >
                         No applications
                     </h3>
-                    <p
-                        class="mt-1 text-sm text-slate-500 dark:text-slate-400"
-                    >
+                    <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
                         No leave applications found for the selected filter.
                     </p>
                 </div>
@@ -373,9 +417,7 @@ function handleFormSuccess(): void {
                                 <td class="px-6 py-4 text-center">
                                     <span
                                         class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
-                                        :class="
-                                            badgeClasses(app.status_color)
-                                        "
+                                        :class="badgeClasses(app.status_color)"
                                     >
                                         {{ app.status_label }}
                                     </span>
@@ -393,9 +435,7 @@ function handleFormSuccess(): void {
                                         <Button
                                             v-if="app.status === 'draft'"
                                             size="sm"
-                                            @click="
-                                                submitApplication(app.id)
-                                            "
+                                            @click="submitApplication(app.id)"
                                         >
                                             Submit
                                         </Button>
@@ -404,9 +444,7 @@ function handleFormSuccess(): void {
                                             variant="outline"
                                             size="sm"
                                             class="text-red-600 hover:text-red-700"
-                                            @click="
-                                                cancelApplication(app.id)
-                                            "
+                                            @click="cancelApplication(app.id)"
                                         >
                                             Cancel
                                         </Button>
