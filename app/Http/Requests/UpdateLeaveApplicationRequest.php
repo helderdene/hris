@@ -19,7 +19,9 @@ class UpdateLeaveApplicationRequest extends FormRequest
         $application = $this->route('leave_application');
 
         // Can only update draft applications
-        return $application && $application->status === LeaveApplicationStatus::Draft;
+        return $application
+            && $application->status === LeaveApplicationStatus::Draft
+            && $application->isAccessibleBy($this->user());
     }
 
     /**

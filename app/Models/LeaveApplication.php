@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\LeaveApplicationStatus;
 use App\Enums\LeaveApprovalDecision;
 use Illuminate\Database\Eloquent\Builder;
@@ -120,7 +121,16 @@ class LeaveApplication extends TenantModel
     }
 
     /**
-     * Get all approval records for this application.
+     * Whether the user may act on this application: HR, or the employee it belongs to.
+     * Approvers assigned to it may also read it when $includeApprovers is set.
+     */
+    public function isAccessibleBy(User $user, bool $includeApprovers = false): bool
+    {
+        return EmployeeRecordAccess::canAccess($user, $this, $includeApprovers);
+    }
+
+    /**
+     * Get the approval steps for this application.
      */
     public function approvals(): HasMany
     {

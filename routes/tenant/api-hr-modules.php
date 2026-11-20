@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::prefix('time-attendance')->group(function () {
+Route::prefix('time-attendance')->middleware('can:can-manage-employees')->group(function () {
     // DTR List and Filtered Views
     Route::get('/dtr', [DailyTimeRecordController::class, 'index'])
         ->name('api.dtr.index');
@@ -117,6 +117,7 @@ Route::get('/employees/{employee}/adjustments', [\App\Http\Controllers\Api\Emplo
 
 // Employee leave balances endpoint
 Route::get('/employees/{employee}/leave-balances', [LeaveBalanceController::class, 'employeeBalances'])
+    ->middleware('can:can-manage-organization')
     ->name('api.employees.leave-balances');
 
 // Period adjustments endpoint

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\LoanApplicationStatus;
 use App\Enums\LoanDeductionSchedule;
 use App\Enums\LoanType;
@@ -17,7 +18,9 @@ class UpdateLoanApplicationRequest extends FormRequest
     {
         $application = $this->route('loan_application');
 
-        return $application && $application->status === LoanApplicationStatus::Draft;
+        return $application
+            && $application->status === LoanApplicationStatus::Draft
+            && EmployeeRecordAccess::canAccess($this->user(), $application);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\OvertimeRequestStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOvertimeRequestRequest;
@@ -108,6 +109,8 @@ class OvertimeRequestController extends Controller
      */
     public function show(OvertimeRequest $overtimeRequest): OvertimeRequestResource
     {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $overtimeRequest, includeApprovers: true), 403, 'You do not have access to this record.');
+
         $overtimeRequest->load([
             'employee.department',
             'employee.position',
@@ -139,6 +142,8 @@ class OvertimeRequestController extends Controller
         Request $request,
         OvertimeRequest $overtimeRequest
     ): OvertimeRequestResource {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $overtimeRequest), 403, 'You do not have access to this record.');
+
         $result = $this->overtimeRequestService->submit($overtimeRequest);
 
         return new OvertimeRequestResource($result);
@@ -151,6 +156,8 @@ class OvertimeRequestController extends Controller
         Request $request,
         OvertimeRequest $overtimeRequest
     ): OvertimeRequestResource {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $overtimeRequest), 403, 'You do not have access to this record.');
+
         $reason = $request->input('reason');
 
         $result = $this->overtimeRequestService->cancel($overtimeRequest, $reason);
@@ -163,6 +170,8 @@ class OvertimeRequestController extends Controller
      */
     public function destroy(OvertimeRequest $overtimeRequest): JsonResponse
     {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $overtimeRequest), 403, 'You do not have access to this record.');
+
         if ($overtimeRequest->status !== OvertimeRequestStatus::Draft) {
             return response()->json([
                 'message' => 'Only draft requests can be deleted.',

@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources;
 
+use App\Authorization\EmployeeRecordAccess;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -41,7 +42,8 @@ class LeaveCalendarEntryResource extends JsonResource
             'is_half_day_end' => $this->is_half_day_end,
             'status' => $this->status->value,
             'status_label' => $this->status->label(),
-            'reason' => $this->reason,
+            // The reason is private: only HR and the employee on leave see it.
+            'reason' => EmployeeRecordAccess::canAccess($request->user(), $this->resource) ? $this->reason : null,
             'reference_number' => $this->reference_number,
         ];
     }

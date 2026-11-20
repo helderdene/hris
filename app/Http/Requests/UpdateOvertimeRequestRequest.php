@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\OvertimeRequestStatus;
 use App\Enums\OvertimeType;
 use App\Models\OvertimeRequest;
@@ -17,7 +18,9 @@ class UpdateOvertimeRequestRequest extends FormRequest
     {
         $request = $this->route('overtime_request');
 
-        return $request && $request->status === OvertimeRequestStatus::Draft;
+        return $request
+            && $request->status === OvertimeRequestStatus::Draft
+            && EmployeeRecordAccess::canAccess($this->user(), $request);
     }
 
     /**

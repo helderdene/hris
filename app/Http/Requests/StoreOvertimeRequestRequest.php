@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\OvertimeType;
 use App\Models\OvertimeRequest;
 use Illuminate\Foundation\Http\FormRequest;
@@ -14,7 +15,7 @@ class StoreOvertimeRequestRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return EmployeeRecordAccess::canFileFor($this->user(), $this->input('employee_id'));
     }
 
     /**

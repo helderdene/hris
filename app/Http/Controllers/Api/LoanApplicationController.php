@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreLoanApplicationRequest;
 use App\Http\Requests\UpdateLoanApplicationRequest;
@@ -114,6 +115,8 @@ class LoanApplicationController extends Controller
      */
     public function show(LoanApplication $loanApplication): LoanApplicationResource
     {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $loanApplication, includeApprovers: true), 403, 'You do not have access to this record.');
+
         $loanApplication->load(['employee.department', 'employee.position', 'reviewer', 'employeeLoan']);
 
         return new LoanApplicationResource($loanApplication);
@@ -152,6 +155,8 @@ class LoanApplicationController extends Controller
      */
     public function destroy(LoanApplication $loanApplication): JsonResponse
     {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $loanApplication), 403, 'You do not have access to this record.');
+
         if (! $loanApplication->status->canBeEdited()) {
             return response()->json(['message' => 'Only draft applications can be deleted.'], 422);
         }
@@ -175,6 +180,8 @@ class LoanApplicationController extends Controller
      */
     public function submit(LoanApplication $loanApplication): LoanApplicationResource
     {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $loanApplication), 403, 'You do not have access to this record.');
+
         $application = $this->loanApplicationService->submit($loanApplication);
 
         return new LoanApplicationResource($application);
@@ -185,6 +192,8 @@ class LoanApplicationController extends Controller
      */
     public function cancel(Request $request, LoanApplication $loanApplication): LoanApplicationResource
     {
+        abort_unless(EmployeeRecordAccess::canAccess(request()->user(), $loanApplication), 403, 'You do not have access to this record.');
+
         $application = $this->loanApplicationService->cancel(
             $loanApplication,
             $request->input('reason')

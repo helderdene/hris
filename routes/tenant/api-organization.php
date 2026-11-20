@@ -268,27 +268,29 @@ Route::prefix('organization')->group(function () {
     |
     */
 
-    // Leave Balance helper endpoints (must be before resource routes)
-    Route::get('/leave-balances/years', [LeaveBalanceController::class, 'availableYears'])
-        ->name('api.organization.leave-balances.years');
-    Route::get('/leave-balances/leave-types', [LeaveBalanceController::class, 'leaveTypes'])
-        ->name('api.organization.leave-balances.leave-types');
-    Route::get('/leave-balances/summary', [LeaveBalanceController::class, 'summary'])
-        ->name('api.organization.leave-balances.summary');
+    Route::middleware('can:can-manage-organization')->group(function () {
+        // Leave Balance helper endpoints (must be before resource routes)
+        Route::get('/leave-balances/years', [LeaveBalanceController::class, 'availableYears'])
+            ->name('api.organization.leave-balances.years');
+        Route::get('/leave-balances/leave-types', [LeaveBalanceController::class, 'leaveTypes'])
+            ->name('api.organization.leave-balances.leave-types');
+        Route::get('/leave-balances/summary', [LeaveBalanceController::class, 'summary'])
+            ->name('api.organization.leave-balances.summary');
 
-    // Leave Balance bulk operations
-    Route::post('/leave-balances/initialize', [LeaveBalanceController::class, 'initialize'])
-        ->name('api.organization.leave-balances.initialize');
-    Route::post('/leave-balances/process-year-end', [LeaveBalanceController::class, 'processYearEnd'])
-        ->name('api.organization.leave-balances.process-year-end');
+        // Leave Balance bulk operations
+        Route::post('/leave-balances/initialize', [LeaveBalanceController::class, 'initialize'])
+            ->name('api.organization.leave-balances.initialize');
+        Route::post('/leave-balances/process-year-end', [LeaveBalanceController::class, 'processYearEnd'])
+            ->name('api.organization.leave-balances.process-year-end');
 
-    // Leave Balance Management
-    Route::get('/leave-balances', [LeaveBalanceController::class, 'index'])
-        ->name('api.organization.leave-balances.index');
-    Route::get('/leave-balances/{balance}', [LeaveBalanceController::class, 'show'])
-        ->name('api.organization.leave-balances.show');
-    Route::post('/leave-balances/{balance}/adjust', [LeaveBalanceController::class, 'adjust'])
-        ->name('api.organization.leave-balances.adjust');
+        // Leave Balance Management
+        Route::get('/leave-balances', [LeaveBalanceController::class, 'index'])
+            ->name('api.organization.leave-balances.index');
+        Route::get('/leave-balances/{balance}', [LeaveBalanceController::class, 'show'])
+            ->name('api.organization.leave-balances.show');
+        Route::post('/leave-balances/{balance}/adjust', [LeaveBalanceController::class, 'adjust'])
+            ->name('api.organization.leave-balances.adjust');
+    });
 
     /*
     |--------------------------------------------------------------------------

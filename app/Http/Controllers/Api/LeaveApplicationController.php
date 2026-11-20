@@ -113,6 +113,8 @@ class LeaveApplicationController extends Controller
      */
     public function show(LeaveApplication $leaveApplication): LeaveApplicationResource
     {
+        $this->authorizeAccess($leaveApplication, allowApprovers: true);
+
         $leaveApplication->load([
             'employee.department',
             'employee.position',
@@ -188,6 +190,8 @@ class LeaveApplicationController extends Controller
      */
     public function downloadAttachment(LeaveApplication $leaveApplication): mixed
     {
+        $this->authorizeAccess($leaveApplication, allowApprovers: true);
+
         if (! $leaveApplication->attachment_path
             || ! Storage::disk('local')->exists($leaveApplication->attachment_path)) {
             abort(404);
@@ -206,6 +210,8 @@ class LeaveApplicationController extends Controller
         Request $request,
         LeaveApplication $leaveApplication
     ): LeaveApplicationResource {
+        $this->authorizeAccess($leaveApplication);
+
         $application = $this->leaveApplicationService->submit($leaveApplication);
 
         return new LeaveApplicationResource($application);
@@ -218,6 +224,8 @@ class LeaveApplicationController extends Controller
         Request $request,
         LeaveApplication $leaveApplication
     ): LeaveApplicationResource {
+        $this->authorizeAccess($leaveApplication);
+
         $reason = $request->input('reason');
 
         $application = $this->leaveApplicationService->cancel($leaveApplication, $reason);
@@ -230,6 +238,8 @@ class LeaveApplicationController extends Controller
      */
     public function destroy(LeaveApplication $leaveApplication): JsonResponse
     {
+        $this->authorizeAccess($leaveApplication);
+
         if ($leaveApplication->status !== LeaveApplicationStatus::Draft) {
             return response()->json([
                 'message' => 'Only draft applications can be deleted.',
@@ -241,6 +251,18 @@ class LeaveApplicationController extends Controller
         return response()->json([
             'message' => 'Leave application deleted successfully.',
         ]);
+    }
+
+    /**
+     * Refuse users who may not act on the application.
+     */
+    protected function authorizeAccess(LeaveApplication $leaveApplication, bool $allowApprovers = false): void
+    {
+        abort_unless(
+            $leaveApplication->isAccessibleBy(request()->user(), $allowApprovers),
+            403,
+            'You do not have access to this leave application.'
+        );
     }
 
     /**

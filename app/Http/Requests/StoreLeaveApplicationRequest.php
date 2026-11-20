@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveBalance;
@@ -16,7 +17,7 @@ class StoreLeaveApplicationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return EmployeeRecordAccess::canFileFor($this->user(), $this->input('employee_id'));
     }
 
     /**

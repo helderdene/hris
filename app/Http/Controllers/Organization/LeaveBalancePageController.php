@@ -8,6 +8,7 @@ use App\Models\Department;
 use App\Models\LeaveBalance;
 use App\Models\LeaveType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,6 +22,8 @@ class LeaveBalancePageController extends Controller
      */
     public function index(Request $request): Response
     {
+        Gate::authorize('can-manage-organization');
+
         $year = $request->input('year', now()->year);
 
         // Get available years

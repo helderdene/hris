@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCompetencyEvaluationRequest;
 use App\Http\Requests\UpdateCompetencyEvaluationRequest;
@@ -152,7 +153,14 @@ class CompetencyEvaluationController extends Controller
         Request $request,
         CompetencyEvaluation $competencyEvaluation
     ): CompetencyEvaluationResource {
-        // Allow the employee to submit their own self-rating
+        // The employee being evaluated submits their own self-rating; HR may record it for them.
+        abort_unless(
+            EmployeeRecordAccess::isHr($request->user())
+                || $competencyEvaluation->performanceCycleParticipant?->employee?->user_id === $request->user()->id,
+            403,
+            'You can only submit your own self-rating.'
+        );
+
         $request->validate([
             'self_rating' => ['required', 'integer', 'min:1', 'max:5'],
             'self_comments' => ['nullable', 'string'],

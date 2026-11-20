@@ -108,8 +108,10 @@ class LeaveApplicationPageController extends Controller
     /**
      * Display a specific leave application.
      */
-    public function show(LeaveApplication $leaveApplication): Response
+    public function show(Request $request, LeaveApplication $leaveApplication): Response
     {
+        abort_unless($leaveApplication->isAccessibleBy($request->user(), includeApprovers: true), 403);
+
         $leaveApplication->load([
             'employee.department',
             'employee.position',

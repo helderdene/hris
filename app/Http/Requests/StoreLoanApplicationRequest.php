@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\LoanDeductionSchedule;
 use App\Enums\LoanType;
 use App\Models\Employee;
@@ -15,7 +16,7 @@ class StoreLoanApplicationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return EmployeeRecordAccess::canFileFor($this->user(), $this->input('employee_id'));
     }
 
     /**
