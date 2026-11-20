@@ -8,7 +8,7 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, nextTick, ref, watch } from 'vue';
 
 interface Department {
     id: number;
@@ -53,19 +53,21 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Add Employee', href: '/employees/create' },
 ];
 
-type SectionId = 'personal' | 'employment' | 'government-ids' | 'contact';
+type SectionId =
+    | 'essentials'
+    | 'personal'
+    | 'employment'
+    | 'government-ids'
+    | 'contact';
 
-const activeSection = ref<SectionId>('personal');
+const activeSection = ref<SectionId>('essentials');
 
-const sections = [
-    { id: 'personal' as SectionId, label: 'Personal Info', icon: 'user' },
-    { id: 'employment' as SectionId, label: 'Employment', icon: 'briefcase' },
-    {
-        id: 'government-ids' as SectionId,
-        label: 'Government IDs',
-        icon: 'card',
-    },
-    { id: 'contact' as SectionId, label: 'Contact', icon: 'location' },
+const steps: { id: SectionId; label: string }[] = [
+    { id: 'essentials', label: 'Essentials' },
+    { id: 'personal', label: 'Personal Info' },
+    { id: 'employment', label: 'Employment' },
+    { id: 'government-ids', label: 'Government IDs' },
+    { id: 'contact', label: 'Contact' },
 ];
 
 const form = useForm({
@@ -191,35 +193,153 @@ const supervisorOptions = computed<EnumOption[]>(() => {
     }));
 });
 
-function handleSubmit() {
-    // Transform data before submission
-    const transformedData = {
-        ...form.data(),
-        department_id: form.department_id
-            ? parseInt(form.department_id as string)
-            : null,
-        position_id: form.position_id
-            ? parseInt(form.position_id as string)
-            : null,
-        work_location_id: form.work_location_id
-            ? parseInt(form.work_location_id as string)
-            : null,
-        supervisor_id: form.supervisor_id
-            ? parseInt(form.supervisor_id as string)
-            : null,
-        basic_salary: form.basic_salary
-            ? parseFloat(form.basic_salary as string)
-            : null,
-    };
+const essentialFields = {
+    first_name: 'first name',
+    last_name: 'last name',
+    employee_number: 'employee number',
+    hire_date: 'hire date',
+    email: 'email address',
+} as const;
 
-    router.post('/employees', transformedData, {
+type EssentialField = keyof typeof essentialFields;
+
+/** Which step owns each field, so a server error can open the right step. */
+const stepFields: Record<SectionId, string[]> = {
+    essentials: Object.keys(essentialFields),
+    personal: [
+        'middle_name',
+        'suffix',
+        'date_of_birth',
+        'gender',
+        'civil_status',
+        'nationality',
+        'fathers_name',
+        'mothers_name',
+    ],
+    employment: [
+        'department_id',
+        'position_id',
+        'work_location_id',
+        'supervisor_id',
+        'employment_type',
+        'employment_status',
+        'regularization_date',
+        'basic_salary',
+        'pay_frequency',
+    ],
+    'government-ids': [
+        'tin',
+        'sss_number',
+        'philhealth_number',
+        'pagibig_number',
+        'umid',
+        'passport_number',
+        'drivers_license',
+        'nbi_clearance',
+        'police_clearance',
+        'prc_license',
+    ],
+    contact: ['phone', 'address', 'emergency_contact'],
+};
+
+function stepForField(field: string): SectionId | undefined {
+    const root = field.split('.')[0];
+
+    return steps.find((step) => stepFields[step.id].includes(root))?.id;
+}
+
+const stepIndex = computed(() =>
+    steps.findIndex((step) => step.id === activeSection.value),
+);
+const isLastStep = computed(() => stepIndex.value === steps.length - 1);
+
+/** Errors that belong to no step (e.g. the plan's employee limit). */
+const generalErrors = computed(() =>
+    Object.entries(form.errors as Record<string, string>)
+        .filter(([field]) => !stepForField(field))
+        .map(([, message]) => message),
+);
+
+const stepHeading = ref<HTMLElement | null>(null);
+const generalErrorBanner = ref<HTMLElement | null>(null);
+
+function showStep(id: SectionId): void {
+    activeSection.value = id;
+    nextTick(() => stepHeading.value?.focus());
+}
+
+function requiredMessage(field: EssentialField): string {
+    return `The ${essentialFields[field]} is required.`;
+}
+
+function validateEssentials(): boolean {
+    let valid = true;
+
+    for (const field of Object.keys(essentialFields) as EssentialField[]) {
+        if (!form[field].trim()) {
+            form.setError(field, requiredMessage(field));
+            valid = false;
+        } else if (form.errors[field] === requiredMessage(field)) {
+            form.clearErrors(field);
+        }
+    }
+
+    if (!valid) {
+        activeSection.value = 'essentials';
+        nextTick(() =>
+            document
+                .querySelector<HTMLElement>('[aria-invalid="true"]')
+                ?.focus(),
+        );
+    }
+
+    return valid;
+}
+
+function goToStep(id: SectionId): void {
+    if (id === 'essentials' || validateEssentials()) {
+        showStep(id);
+    }
+}
+
+function handleSubmit(): void {
+    if (!validateEssentials()) {
+        return;
+    }
+
+    form.transform((data) => ({
+        ...data,
+        department_id: data.department_id ? parseInt(data.department_id) : null,
+        position_id: data.position_id ? parseInt(data.position_id) : null,
+        work_location_id: data.work_location_id
+            ? parseInt(data.work_location_id)
+            : null,
+        supervisor_id: data.supervisor_id ? parseInt(data.supervisor_id) : null,
+        basic_salary: data.basic_salary ? parseFloat(data.basic_salary) : null,
+    })).post('/employees', {
         preserveScroll: true,
         onError: (errors) => {
-            Object.keys(errors).forEach((key) => {
-                form.setError(key as keyof typeof form.errors, errors[key]);
-            });
+            const owners = Object.keys(errors).map(stepForField);
+            const step = steps.find((candidate) =>
+                owners.includes(candidate.id),
+            );
+
+            if (step) {
+                showStep(step.id);
+            } else {
+                nextTick(() => generalErrorBanner.value?.focus());
+            }
         },
     });
+}
+
+/** Enter in a field moves to the next step; only the last step submits. */
+function handleEnter(): void {
+    if (isLastStep.value) {
+        handleSubmit();
+    } else {
+        goToStep(steps[stepIndex.value + 1].id);
+    }
 }
 
 function handleCancel() {
@@ -250,110 +370,85 @@ function handleCancel() {
             <div
                 class="rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900"
             >
-                <!-- Section Navigation -->
-                <div class="border-b border-slate-200 dark:border-slate-700">
-                    <nav
-                        class="-mb-px flex overflow-x-auto px-6"
-                        aria-label="Form Sections"
-                    >
-                        <button
-                            v-for="section in sections"
-                            :key="section.id"
-                            type="button"
-                            @click="activeSection = section.id"
-                            :class="[
-                                'flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-medium whitespace-nowrap transition-colors',
-                                activeSection === section.id
-                                    ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400'
-                                    : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300',
-                            ]"
-                        >
-                            <!-- User icon -->
-                            <svg
-                                v-if="section.icon === 'user'"
-                                class="h-4 w-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
+                <!-- Steps -->
+                <nav
+                    class="border-b border-slate-200 px-6 py-4 dark:border-slate-700"
+                    aria-label="Steps"
+                >
+                    <ol class="flex gap-2 overflow-x-auto">
+                        <li v-for="(step, index) in steps" :key="step.id">
+                            <button
+                                type="button"
+                                :aria-current="
+                                    activeSection === step.id
+                                        ? 'step'
+                                        : undefined
+                                "
+                                :data-test="`step-${step.id}`"
+                                :class="[
+                                    'flex items-center gap-2 rounded-full px-3 py-1.5 text-sm font-medium whitespace-nowrap transition-colors',
+                                    activeSection === step.id
+                                        ? 'bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'
+                                        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-700 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-300',
+                                ]"
+                                @click="goToStep(step.id)"
                             >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"
-                                />
-                            </svg>
-                            <!-- Briefcase icon -->
-                            <svg
-                                v-if="section.icon === 'briefcase'"
-                                class="h-4 w-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M20.25 14.15v4.25c0 1.094-.787 2.036-1.872 2.18-2.087.277-4.216.42-6.378.42s-4.291-.143-6.378-.42c-1.085-.144-1.872-1.086-1.872-2.18v-4.25m16.5 0a2.18 2.18 0 0 0 .75-1.661V8.706c0-1.081-.768-2.015-1.837-2.175a48.114 48.114 0 0 0-3.413-.387m4.5 8.006c-.194.165-.42.295-.673.38A23.978 23.978 0 0 1 12 15.75c-2.648 0-5.195-.429-7.577-1.22a2.016 2.016 0 0 1-.673-.38m0 0A2.18 2.18 0 0 1 3 12.489V8.706c0-1.081.768-2.015 1.837-2.175a48.111 48.111 0 0 1 3.413-.387m7.5 0V5.25A2.25 2.25 0 0 0 13.5 3h-3a2.25 2.25 0 0 0-2.25 2.25v.894m7.5 0a48.667 48.667 0 0 0-7.5 0M12 12.75h.008v.008H12v-.008Z"
-                                />
-                            </svg>
-                            <!-- Card icon -->
-                            <svg
-                                v-if="section.icon === 'card'"
-                                class="h-4 w-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Zm6-10.125a1.875 1.875 0 1 1-3.75 0 1.875 1.875 0 0 1 3.75 0Zm1.294 6.336a6.721 6.721 0 0 1-3.17.789 6.721 6.721 0 0 1-3.168-.789 3.376 3.376 0 0 1 6.338 0Z"
-                                />
-                            </svg>
-                            <!-- Location icon -->
-                            <svg
-                                v-if="section.icon === 'location'"
-                                class="h-4 w-4"
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke-width="2"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                                />
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"
-                                />
-                            </svg>
-                            {{ section.label }}
-                        </button>
-                    </nav>
-                </div>
+                                <span
+                                    :class="[
+                                        'flex h-6 w-6 items-center justify-center rounded-full text-xs',
+                                        index <= stepIndex
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+                                    ]"
+                                >
+                                    {{ index + 1 }}
+                                </span>
+                                {{ step.label }}
+                            </button>
+                        </li>
+                    </ol>
+                </nav>
 
                 <!-- Form Content -->
-                <form @submit.prevent="handleSubmit" class="p-6">
-                    <!-- Personal Info Section -->
+                <form novalidate @submit.prevent="handleEnter" class="p-6">
                     <div
-                        v-show="activeSection === 'personal'"
+                        v-if="generalErrors.length"
+                        class="mb-6 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-800 dark:bg-red-900/20 dark:text-red-300"
+                        ref="generalErrorBanner"
+                        tabindex="-1"
+                        role="alert"
+                        data-test="general-errors"
+                    >
+                        <p v-for="message in generalErrors" :key="message">
+                            {{ message }}
+                        </p>
+                    </div>
+
+                    <p
+                        ref="stepHeading"
+                        tabindex="-1"
+                        class="mb-4 text-sm text-slate-500 outline-none dark:text-slate-400"
+                    >
+                        Step {{ stepIndex + 1 }} of {{ steps.length }}
+                        <template v-if="activeSection !== 'essentials'">
+                            &middot; Optional, you can fill this in later
+                        </template>
+                    </p>
+
+                    <!-- Essentials Section -->
+                    <div
+                        v-show="activeSection === 'essentials'"
                         class="space-y-6"
                     >
                         <h3
                             class="text-lg font-medium text-slate-900 dark:text-slate-100"
                         >
-                            Personal Information
+                            Essentials
                         </h3>
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            These five fields are all that is needed to create
+                            the employee. Everything else is optional.
+                        </p>
 
                         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             <div class="space-y-2">
@@ -372,19 +467,6 @@ function handleCancel() {
                             </div>
 
                             <div class="space-y-2">
-                                <Label for="middle_name">Middle Name</Label>
-                                <Input
-                                    id="middle_name"
-                                    v-model="form.middle_name"
-                                    type="text"
-                                    placeholder="Enter middle name"
-                                />
-                                <InputError
-                                    :message="form.errors.middle_name"
-                                />
-                            </div>
-
-                            <div class="space-y-2">
                                 <Label for="last_name"
                                     >Last Name
                                     <span class="text-red-500">*</span></Label
@@ -397,6 +479,81 @@ function handleCancel() {
                                     :aria-invalid="!!form.errors.last_name"
                                 />
                                 <InputError :message="form.errors.last_name" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="employee_number"
+                                    >Employee Number
+                                    <span class="text-red-500">*</span></Label
+                                >
+                                <Input
+                                    id="employee_number"
+                                    v-model="form.employee_number"
+                                    type="text"
+                                    placeholder="e.g., EMP-2026-001"
+                                    :aria-invalid="
+                                        !!form.errors.employee_number
+                                    "
+                                />
+                                <InputError
+                                    :message="form.errors.employee_number"
+                                />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="hire_date"
+                                    >Hire Date
+                                    <span class="text-red-500">*</span></Label
+                                >
+                                <Input
+                                    id="hire_date"
+                                    v-model="form.hire_date"
+                                    type="date"
+                                    :aria-invalid="!!form.errors.hire_date"
+                                />
+                                <InputError :message="form.errors.hire_date" />
+                            </div>
+
+                            <div class="space-y-2">
+                                <Label for="email"
+                                    >Email Address
+                                    <span class="text-red-500">*</span></Label
+                                >
+                                <Input
+                                    id="email"
+                                    v-model="form.email"
+                                    type="email"
+                                    placeholder="employee@company.com"
+                                    :aria-invalid="!!form.errors.email"
+                                />
+                                <InputError :message="form.errors.email" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Personal Info Section -->
+                    <div
+                        v-show="activeSection === 'personal'"
+                        class="space-y-6"
+                    >
+                        <h3
+                            class="text-lg font-medium text-slate-900 dark:text-slate-100"
+                        >
+                            Personal Information
+                        </h3>
+
+                        <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            <div class="space-y-2">
+                                <Label for="middle_name">Middle Name</Label>
+                                <Input
+                                    id="middle_name"
+                                    v-model="form.middle_name"
+                                    type="text"
+                                    placeholder="Enter middle name"
+                                />
+                                <InputError
+                                    :message="form.errors.middle_name"
+                                />
                             </div>
 
                             <div class="space-y-2">
@@ -515,25 +672,6 @@ function handleCancel() {
 
                         <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                             <div class="space-y-2">
-                                <Label for="employee_number"
-                                    >Employee Number
-                                    <span class="text-red-500">*</span></Label
-                                >
-                                <Input
-                                    id="employee_number"
-                                    v-model="form.employee_number"
-                                    type="text"
-                                    placeholder="e.g., EMP-2026-001"
-                                    :aria-invalid="
-                                        !!form.errors.employee_number
-                                    "
-                                />
-                                <InputError
-                                    :message="form.errors.employee_number"
-                                />
-                            </div>
-
-                            <div class="space-y-2">
                                 <Label for="department_id">Department</Label>
                                 <EnumSelect
                                     id="department_id"
@@ -615,20 +753,6 @@ function handleCancel() {
                                 <InputError
                                     :message="form.errors.employment_status"
                                 />
-                            </div>
-
-                            <div class="space-y-2">
-                                <Label for="hire_date"
-                                    >Hire Date
-                                    <span class="text-red-500">*</span></Label
-                                >
-                                <Input
-                                    id="hire_date"
-                                    v-model="form.hire_date"
-                                    type="date"
-                                    :aria-invalid="!!form.errors.hire_date"
-                                />
-                                <InputError :message="form.errors.hire_date" />
                             </div>
 
                             <div class="space-y-2">
@@ -719,9 +843,7 @@ function handleCancel() {
                                     type="text"
                                     placeholder="123-456-789-000"
                                 />
-                                <p
-                                    class="text-sm text-muted-foreground"
-                                >
+                                <p class="text-sm text-muted-foreground">
                                     Just type numbers, dashes added
                                     automatically
                                 </p>
@@ -875,21 +997,6 @@ function handleCancel() {
                         </h3>
 
                         <div class="grid gap-6 sm:grid-cols-2">
-                            <div class="space-y-2">
-                                <Label for="email"
-                                    >Email Address
-                                    <span class="text-red-500">*</span></Label
-                                >
-                                <Input
-                                    id="email"
-                                    v-model="form.email"
-                                    type="email"
-                                    placeholder="employee@company.com"
-                                    :aria-invalid="!!form.errors.email"
-                                />
-                                <InputError :message="form.errors.email" />
-                            </div>
-
                             <div class="space-y-2">
                                 <Label for="phone">Phone Number</Label>
                                 <Input
@@ -1078,9 +1185,30 @@ function handleCancel() {
                             Cancel
                         </Button>
                         <Button
+                            v-if="stepIndex > 0"
+                            type="button"
+                            variant="outline"
+                            :disabled="form.processing"
+                            data-test="step-back"
+                            @click="showStep(steps[stepIndex - 1].id)"
+                        >
+                            Back
+                        </Button>
+                        <Button
+                            v-if="!isLastStep"
                             type="submit"
+                            variant="outline"
+                            :disabled="form.processing"
+                            data-test="step-next"
+                        >
+                            Next
+                        </Button>
+                        <Button
+                            :type="isLastStep ? 'submit' : 'button'"
                             :style="{ backgroundColor: primaryColor }"
                             :disabled="form.processing"
+                            data-test="create-employee"
+                            @click="isLastStep || handleSubmit()"
                         >
                             <svg
                                 v-if="form.processing"
