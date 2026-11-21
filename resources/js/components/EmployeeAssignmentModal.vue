@@ -187,7 +187,7 @@ async function handleSubmit() {
         } else {
             errors.value = { general: data.message || 'An error occurred' };
         }
-    } catch (error) {
+    } catch {
         errors.value = {
             general: 'An error occurred while assigning the employee',
         };
@@ -220,7 +220,7 @@ async function handleRemoveAssignment(assignment: Assignment) {
             const data = await response.json();
             alert(data.message || 'Failed to remove assignment');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while removing the assignment');
     }
 }

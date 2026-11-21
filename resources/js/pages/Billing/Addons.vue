@@ -24,7 +24,7 @@ import type {
     BreadcrumbItem,
     TenantAddonData,
 } from '@/types';
-import { Head, router, usePage } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
 const props = defineProps<{
@@ -37,8 +37,6 @@ const props = defineProps<{
 const { primaryColor, tenantName } = useTenant();
 const tenant = useTenant();
 const isAdmin = computed(() => tenant.userRole.value === 'admin');
-const page = usePage();
-
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Billing', href: '/billing' },

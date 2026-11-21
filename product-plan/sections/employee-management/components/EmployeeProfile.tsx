@@ -6,7 +6,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Calendar,
   Building2,
   Briefcase,
   FileText,
@@ -17,7 +16,7 @@ import {
   User,
   CreditCard,
 } from 'lucide-react'
-import type { EmployeeProfileProps, Document } from '../types'
+import type { EmployeeProfileProps } from '../types'
 
 const tabs = [
   { id: 'personal', label: 'Personal Info', icon: User },

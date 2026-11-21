@@ -43,7 +43,7 @@ interface Filters {
     search?: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     courses: Course[];
     categories: Category[];
     filters: Filters;

@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { HelpCategory } from '@/types/help';
 import { Link, router } from '@inertiajs/vue3';

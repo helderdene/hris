@@ -19,7 +19,7 @@ interface ParentGoal {
     owner_name: string;
 }
 
-const props = defineProps<{
+defineProps<{
     availableParentGoals: ParentGoal[];
     goalTypes: EnumOption[];
     priorities: EnumOption[];

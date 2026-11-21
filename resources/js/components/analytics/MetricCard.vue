@@ -12,7 +12,7 @@ interface Props {
     isHighlighted?: boolean;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
     backgroundColor: undefined,
     isHighlighted: false,
 });

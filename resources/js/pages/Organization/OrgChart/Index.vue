@@ -19,7 +19,7 @@ interface Department {
     children_count?: number;
 }
 
-const props = defineProps<{
+defineProps<{
     departments: Department[];
 }>();
 

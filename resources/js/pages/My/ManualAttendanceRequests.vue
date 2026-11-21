@@ -407,7 +407,7 @@ function punchSummary(req: ManualAttendanceRequest): string {
                     </div>
 
                     <div
-                        v-else-if="requests.length > 0"
+                        v-if="requests.length > 0"
                         class="divide-y divide-slate-200 md:hidden dark:divide-slate-700"
                     >
                         <div v-for="req in requests" :key="req.id" class="space-y-2 p-4">

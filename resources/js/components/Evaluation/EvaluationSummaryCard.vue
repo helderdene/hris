@@ -13,7 +13,7 @@ interface Summary {
     final_rating: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     summary: Summary | null;
     compact?: boolean;
 }>();

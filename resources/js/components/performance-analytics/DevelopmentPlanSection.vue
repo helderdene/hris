@@ -23,7 +23,7 @@ interface Props {
     };
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 function getStatusColor(status: string): string {
     const colors: Record<string, string> = {

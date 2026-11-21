@@ -14,7 +14,7 @@ import {
 } from 'lucide-vue-next';
 import { ref } from 'vue';
 
-const props = defineProps<{
+defineProps<{
     pending: VisitorVisitData[];
     history: VisitorVisitData[];
     pendingCount: number;

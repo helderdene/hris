@@ -2,7 +2,6 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import GoalProgressBar from '@/components/Goals/GoalProgressBar.vue';
-import { computed } from 'vue';
 
 interface KeyResult {
     id: number;
@@ -19,7 +18,7 @@ interface KeyResult {
     status_label?: string;
 }
 
-const props = withDefaults(
+withDefaults(
     defineProps<{
         keyResults: KeyResult[];
         showActions?: boolean;

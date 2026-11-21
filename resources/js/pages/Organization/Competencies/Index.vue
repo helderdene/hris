@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import CompetencyFormModal from '@/components/CompetencyFormModal.vue';
-import ProficiencyLevelBadge from '@/components/ProficiencyLevelBadge.vue';
 import EnumSelect from '@/components/EnumSelect.vue';
 import { Button } from '@/components/ui/button';
 import {
@@ -160,7 +159,7 @@ async function handleDeleteCompetency(competency: Competency) {
             const data = await response.json();
             alert(data.message || 'Failed to delete competency');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the competency');
     } finally {
         deletingCompetencyId.value = null;

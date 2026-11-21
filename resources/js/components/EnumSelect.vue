@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 
 interface EnumOption {
     value: string;
@@ -14,7 +13,7 @@ interface Props {
     id?: string;
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
     placeholder: 'Select an option',
     disabled: false,
     id: undefined,
@@ -23,12 +22,6 @@ const props = withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
     (e: 'update:modelValue', value: string): void;
 }>();
-
-const currentLabel = computed(() => {
-    if (!props.modelValue) return '';
-    const option = (props.options ?? []).find((opt) => opt.value === props.modelValue);
-    return option?.label ?? props.modelValue;
-});
 
 function handleChange(event: Event) {
     const target = event.target as HTMLSelectElement;

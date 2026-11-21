@@ -4,7 +4,7 @@
  *
  * Displays KPI achievement distribution and metrics.
  */
-import { useBarChartOptions, useDarkMode, chartColors } from '@/composables/useCharts';
+import { useBarChartOptions, useDarkMode } from '@/composables/useCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bar } from 'vue-chartjs';
 import { BarChart3, TrendingUp, Award, Target } from 'lucide-vue-next';

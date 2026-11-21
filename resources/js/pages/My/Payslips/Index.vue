@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Banknote } from 'lucide-vue-next';
 
 interface Payslip {
@@ -27,7 +27,7 @@ interface PaginatedData<T> {
     total: number;
 }
 
-const props = defineProps<{
+defineProps<{
     hasEmployeeProfile: boolean;
     payslips: PaginatedData<Payslip> | null;
 }>();
@@ -206,8 +206,9 @@ function handlePageChange(url: string | null): void {
                     :disabled="!link.url || link.active"
                     :class="{ 'bg-blue-500 text-white': link.active }"
                     @click="handlePageChange(link.url)"
-                    v-html="link.label"
-                />
+                >
+                    <span v-html="link.label" />
+                </Button>
             </div>
         </div>
     </TenantLayout>

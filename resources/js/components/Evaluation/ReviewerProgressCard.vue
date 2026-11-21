@@ -18,7 +18,7 @@ interface Reviewer {
     submitted_at: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     reviewer: Reviewer;
     showEmployee?: boolean;
 }>();

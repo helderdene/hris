@@ -38,7 +38,7 @@ interface Props {
     byDepartment?: DepartmentItem[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 function getDaysColor(days: number | null): string {
     if (days === null) return 'text-slate-500';

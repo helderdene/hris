@@ -207,7 +207,7 @@ async function handleSubmit() {
                 alert(data.message || 'An error occurred');
             }
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while saving the withholding tax table');
     } finally {
         isSubmitting.value = false;

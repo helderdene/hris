@@ -8,8 +8,7 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { ClipboardList, Plus, Star, Check, X } from 'lucide-vue-next';
-import { ref } from 'vue';
+import { ClipboardList, Plus, Star } from 'lucide-vue-next';
 
 interface Template {
     id: number;
@@ -21,13 +20,11 @@ interface Template {
     created_at: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     templates: Template[];
 }>();
 
 const { tenantName } = useTenant();
-const processing = ref(false);
-
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
     { title: 'Pre-boarding', href: '/preboarding' },

@@ -102,11 +102,6 @@ function handleEditCourse(course: Course) {
     isFormModalOpen.value = true;
 }
 
-function handleDeleteCourse(course: Course) {
-    deletingCourse.value = course;
-    isDeleteModalOpen.value = true;
-}
-
 async function confirmDelete() {
     if (!deletingCourse.value) return;
 

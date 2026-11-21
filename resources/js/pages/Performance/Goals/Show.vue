@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useTenant } from '@/composables/useTenant';
@@ -155,7 +153,7 @@ const props = defineProps<{
     priorities: EnumOption[];
 }>();
 
-const { primaryColor, tenantName } = useTenant();
+const { tenantName } = useTenant();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },

@@ -443,7 +443,7 @@ function formatDate(dateString: string): string {
                     </div>
 
                     <!-- Mobile View -->
-                    <div v-else-if="requests.length > 0" class="divide-y divide-slate-200 md:hidden dark:divide-slate-700">
+                    <div v-if="requests.length > 0" class="divide-y divide-slate-200 md:hidden dark:divide-slate-700">
                         <div
                             v-for="req in requests"
                             :key="req.id"

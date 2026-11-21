@@ -63,7 +63,7 @@ interface CalculationResult {
     };
 }
 
-const props = defineProps<{
+defineProps<{
     hasAllTables: boolean;
     tableStatus: {
         sss: boolean;
@@ -124,7 +124,7 @@ async function handleCalculate() {
         } else {
             error.value = data.message || 'Failed to calculate contributions';
         }
-    } catch (e) {
+    } catch {
         error.value = 'An error occurred while calculating contributions';
     } finally {
         isCalculating.value = false;

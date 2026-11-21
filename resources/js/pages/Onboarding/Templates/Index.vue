@@ -21,7 +21,7 @@ interface Template {
     created_at: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     templates: Template[];
 }>();
 

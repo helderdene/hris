@@ -168,8 +168,9 @@ function formatDateTime(dateStr: string): string {
                             :href="link.url ?? ''"
                             class="rounded px-3 py-1 text-sm"
                             :class="link.active ? 'bg-blue-600 text-white' : link.url ? 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800' : 'text-slate-300 dark:text-slate-600'"
-                            v-html="link.label"
-                        />
+                        >
+                            <span v-html="link.label" />
+                        </Link>
                     </div>
                 </div>
             </div>

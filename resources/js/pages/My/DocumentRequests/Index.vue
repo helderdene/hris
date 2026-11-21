@@ -59,7 +59,7 @@ interface DocumentType {
     label: string;
 }
 
-const props = defineProps<{
+defineProps<{
     hasEmployeeProfile: boolean;
     documentRequests: DocumentRequest[];
     documentTypes: DocumentType[];
@@ -142,7 +142,7 @@ async function submitRequest() {
         selectedType.value = '';
         notes.value = '';
         router.reload();
-    } catch (error) {
+    } catch {
     } finally {
         submitting.value = false;
     }

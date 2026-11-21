@@ -12,7 +12,7 @@ interface Goal {
     progress_percentage: number;
 }
 
-const props = defineProps<{
+defineProps<{
     parentGoal?: Goal | null;
     currentGoal: Goal;
     childGoals?: Goal[];

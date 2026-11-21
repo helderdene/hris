@@ -12,7 +12,7 @@ import {
   Check,
   X,
 } from 'lucide-react'
-import type { WorkScheduleListProps, WorkSchedule, ScheduleDetail } from '../../../../product/sections/time-and-attendance/types'
+import type { WorkScheduleListProps, WorkSchedule } from '../../../../product/sections/time-and-attendance/types'
 
 // Schedule type display configuration
 const scheduleTypeConfig: Record<WorkSchedule['scheduleType'], { label: string; color: string }> = {
@@ -50,8 +50,6 @@ function ScheduleCard({
 
   // Get work days summary
   const workDays = schedule.details.filter(d => !d.isRestDay)
-  const restDays = schedule.details.filter(d => d.isRestDay)
-
   // Get typical time (from first work day)
   const typicalDay = workDays[0]
 

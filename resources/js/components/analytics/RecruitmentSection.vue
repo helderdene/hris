@@ -6,7 +6,7 @@
  */
 import RecruitmentFunnelChart from './RecruitmentFunnelChart.vue';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Briefcase, Clock, ThumbsUp, UserCheck, UserPlus, Users } from 'lucide-vue-next';
+import { Briefcase, Clock, ThumbsUp, UserCheck, Users } from 'lucide-vue-next';
 
 interface RecruitmentMetrics {
     openPositions: number;
@@ -28,7 +28,7 @@ interface Props {
     pipeline?: PipelineItem[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <template>

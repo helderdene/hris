@@ -90,24 +90,6 @@ const sizeClasses = computed(() => {
     }
 });
 
-/**
- * Get the background highlight color for the calendar cell
- */
-const highlightClasses = computed(() => {
-    switch (props.holiday.holiday_type) {
-        case 'regular':
-            return 'bg-red-50 dark:bg-red-950/30';
-        case 'special_non_working':
-            return 'bg-orange-50 dark:bg-orange-950/30';
-        case 'special_working':
-            return 'bg-blue-50 dark:bg-blue-950/30';
-        case 'double':
-            return 'bg-purple-50 dark:bg-purple-950/30';
-        default:
-            return 'bg-slate-50 dark:bg-slate-950/30';
-    }
-});
-
 const tooltipContent = computed(() => {
     const parts = [props.holiday.name];
     if (props.holiday.holiday_type_label) {

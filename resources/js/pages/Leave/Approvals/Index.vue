@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -10,7 +9,6 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
@@ -71,7 +69,7 @@ const props = defineProps<{
     filters: Filters;
 }>();
 
-const { primaryColor, tenantName } = useTenant();
+const { tenantName } = useTenant();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -168,7 +166,7 @@ async function handleAction() {
             showActionDialog.value = false;
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {

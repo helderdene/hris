@@ -20,7 +20,7 @@ interface Category {
     is_active: boolean;
 }
 
-const props = defineProps<{
+defineProps<{
     categories: Category[];
 }>();
 

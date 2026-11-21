@@ -13,8 +13,6 @@ import axios from 'axios';
 import {
     CheckCircle,
     Clock,
-    Download,
-    Filter,
     Loader2,
     LogIn,
     LogOut,

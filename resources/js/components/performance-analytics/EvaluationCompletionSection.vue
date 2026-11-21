@@ -5,7 +5,7 @@
  * Displays evaluation completion metrics by status and cycle.
  */
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ClipboardCheck, CheckCircle, Clock, AlertTriangle } from 'lucide-vue-next';
+import { ClipboardCheck, CheckCircle } from 'lucide-vue-next';
 
 interface StatusItem {
     status: string;
@@ -28,7 +28,7 @@ interface Props {
     };
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 function getStatusColor(status: string): string {
     const colors: Record<string, string> = {

@@ -7,7 +7,6 @@ import {
     CollapsibleContent,
     CollapsibleTrigger,
 } from '@/components/ui/collapsible';
-import { useTenant } from '@/composables/useTenant';
 import type { ProficiencyLevel } from '@/types/competency';
 import { computed, ref } from 'vue';
 
@@ -50,8 +49,6 @@ const props = defineProps<{
 const emit = defineEmits<{
     updated: [];
 }>();
-
-const { tenant } = useTenant();
 
 const isExpanded = ref(false);
 const editMode = ref<'self' | 'manager' | null>(null);

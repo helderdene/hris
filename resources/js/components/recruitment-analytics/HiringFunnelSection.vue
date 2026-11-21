@@ -30,7 +30,7 @@ interface Props {
     dropoutAnalysis?: DropoutItem[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <template>

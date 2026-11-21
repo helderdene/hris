@@ -11,7 +11,7 @@ import {
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { AlertCircle, Calculator, Loader2 } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 interface PayrollPeriod {
     id: number;
@@ -75,7 +75,7 @@ async function handleCompute() {
         } else {
             error.value = data.message || 'Failed to compute payroll';
         }
-    } catch (e) {
+    } catch {
         error.value = 'An error occurred while computing payroll';
     } finally {
         isComputing.value = false;

@@ -36,7 +36,7 @@ interface SalaryGrade {
     updated_at: string;
 }
 
-const props = defineProps<{
+defineProps<{
     salaryGrades: SalaryGrade[];
 }>();
 
@@ -117,7 +117,7 @@ async function handleDeleteGrade(grade: SalaryGrade) {
             const data = await response.json();
             alert(data.message || 'Failed to delete salary grade');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the salary grade');
     } finally {
         deletingGradeId.value = null;

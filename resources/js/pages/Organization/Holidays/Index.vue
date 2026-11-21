@@ -55,7 +55,7 @@ interface EnumOption {
     label: string;
 }
 
-const props = defineProps<{
+defineProps<{
     holidays: Holiday[];
     holidayTypes: EnumOption[];
     workLocations: WorkLocation[];
@@ -143,7 +143,7 @@ async function handleDeleteHoliday(holiday: Holiday) {
             const data = await response.json();
             alert(data.message || 'Failed to delete holiday');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the holiday');
     } finally {
         deletingHolidayId.value = null;
@@ -195,7 +195,7 @@ async function handleCopyToNextYear() {
             alert(data.message || 'Failed to copy holidays');
             isCopyDialogOpen.value = false;
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while copying holidays');
         isCopyDialogOpen.value = false;
     } finally {

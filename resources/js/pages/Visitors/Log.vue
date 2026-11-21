@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import EnumSelect from '@/components/EnumSelect.vue';
 import VisitorStatusBadge from '@/components/VisitorStatusBadge.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,7 +26,7 @@ interface PaginationLink {
     active: boolean;
 }
 
-const props = defineProps<{
+defineProps<{
     locations: LocationOption[];
     statuses: EnumOption[];
 }>();

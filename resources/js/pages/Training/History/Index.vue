@@ -152,7 +152,7 @@ const totalCount = computed(() => props.enrollments?.meta?.total || recordCount.
 // Watch filter changes with debounce
 watch(
     () => localFilters.value,
-    (newFilters) => {
+    () => {
         if (debounceTimer) {
             clearTimeout(debounceTimer);
         }

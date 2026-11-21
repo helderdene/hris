@@ -11,7 +11,7 @@ interface EducationLevelOption {
     label: string;
 }
 
-const props = defineProps<{
+defineProps<{
     educationLevels: EducationLevelOption[];
 }>();
 

@@ -14,7 +14,7 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 
 interface Goal {
     id: number;
@@ -43,7 +43,7 @@ interface Goal {
     submitted_at?: string;
 }
 
-const props = defineProps<{
+defineProps<{
     pendingGoals: Goal[];
 }>();
 

@@ -199,7 +199,7 @@ function getBadgeClasses(entry: CompensationHistory): string {
 
             <!-- Timeline entries -->
             <div
-                v-for="(entry, index) in history"
+                v-for="entry in history"
                 :key="entry.id"
                 class="relative pb-4 last:pb-0 sm:pb-6"
                 data-test="timeline-entry"

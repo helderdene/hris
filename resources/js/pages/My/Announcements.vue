@@ -109,8 +109,9 @@ function handlePageChange(url: string | null) {
                     :disabled="!link.url || link.active"
                     :class="{ 'bg-blue-500 text-white': link.active }"
                     @click="handlePageChange(link.url)"
-                    v-html="link.label"
-                />
+                >
+                    <span v-html="link.label" />
+                </Button>
             </div>
         </div>
     </TenantLayout>

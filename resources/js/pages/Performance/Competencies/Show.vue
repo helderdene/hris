@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import CompetencyRatingCard from '@/components/CompetencyRatingCard.vue';
-import ProficiencyLevelBadge from '@/components/ProficiencyLevelBadge.vue';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { useTenant } from '@/composables/useTenant';

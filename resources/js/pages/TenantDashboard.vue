@@ -65,7 +65,7 @@ const props = defineProps<{
     pendingRequisitionDetails?: RequisitionApprovalDetail[];
 }>();
 
-const { tenantName, primaryColor, isAdmin, userRole } = useTenant();
+const { tenantName, primaryColor, userRole } = useTenant();
 const showSuccessBanner = ref(props.justCreated ?? false);
 
 const breadcrumbs: BreadcrumbItem[] = [

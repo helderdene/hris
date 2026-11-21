@@ -134,7 +134,7 @@ const props = defineProps<{
     statusOptions: StatusOption[];
 }>();
 
-const { primaryColor, tenantName } = useTenant();
+const { tenantName } = useTenant();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },

@@ -56,7 +56,7 @@ const props = defineProps<{
     filters: { tab: string };
 }>();
 
-const { primaryColor, tenantName } = useTenant();
+const { tenantName } = useTenant();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -130,7 +130,7 @@ async function executeApprove() {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -166,7 +166,7 @@ async function executeReject() {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {

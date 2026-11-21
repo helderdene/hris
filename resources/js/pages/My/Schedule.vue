@@ -16,7 +16,7 @@ interface ScheduleAssignment {
     is_upcoming: boolean;
 }
 
-const props = defineProps<{
+defineProps<{
     scheduleHistory: ScheduleAssignment[];
     currentSchedule: ScheduleAssignment | null;
     hasEmployeeProfile: boolean;

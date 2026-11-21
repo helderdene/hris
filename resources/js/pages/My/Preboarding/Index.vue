@@ -15,7 +15,7 @@ import type { PreboardingChecklist, StatusOption } from '@/types/preboarding';
 import { Head } from '@inertiajs/vue3';
 import { ClipboardCheck } from 'lucide-vue-next';
 
-const props = defineProps<{
+defineProps<{
     checklist: PreboardingChecklist | null;
     itemStatuses: StatusOption[];
 }>();

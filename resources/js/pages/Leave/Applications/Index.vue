@@ -215,7 +215,7 @@ async function executeSubmit(application: LeaveApplication) {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -251,7 +251,7 @@ async function executeCancelApplication() {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -287,7 +287,7 @@ async function executeDelete(application: LeaveApplication) {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -318,13 +318,6 @@ function handleFormSuccess(result: {
     reloadPage();
 }
 
-function formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
 </script>
 
 <template>
@@ -636,7 +629,7 @@ function formatDate(dateString: string): string {
 
                 <!-- Mobile View -->
                 <div
-                    v-else-if="props.applications.length > 0"
+                    v-if="props.applications.length > 0"
                     class="divide-y divide-slate-200 md:hidden dark:divide-slate-700"
                 >
                     <div

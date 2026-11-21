@@ -184,7 +184,7 @@ async function handleDeletePosition(position: Position) {
             const data = await response.json();
             alert(data.message || 'Failed to delete position');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the position');
     } finally {
         deletingPositionId.value = null;

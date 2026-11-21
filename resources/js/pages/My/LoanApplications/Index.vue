@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -124,14 +123,6 @@ function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(amount);
 }
 
-function formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('en-PH', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-    });
-}
-
 // Confirmation dialog state
 const showConfirmDialog = ref(false);
 const confirmDialogTitle = ref('');
@@ -177,7 +168,7 @@ async function executeSubmit(application: LoanApplication) {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -210,7 +201,7 @@ async function executeCancelApplication() {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -243,7 +234,7 @@ async function executeDelete(application: LoanApplication) {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {

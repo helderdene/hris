@@ -14,7 +14,7 @@ import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
 import { Users, UserPlus, UserMinus, Activity } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { ref, watch } from 'vue';
 
 /**
  * TypeScript interfaces for analytics data
@@ -185,21 +185,6 @@ watch([selectedStartDate, selectedEndDate, selectedDepartmentIds], () => {
     applyFilters();
 }, { deep: true });
 
-// Format currency
-function formatCurrency(value: number): string {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0,
-    }).format(value);
-}
-
-// Computed for formatted payroll expense
-const formattedPayrollExpense = computed(() => {
-    if (!props.compensation) return '...';
-    return formatCurrency(props.compensation.totalExpense);
-});
 </script>
 
 <template>

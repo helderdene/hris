@@ -190,7 +190,7 @@ async function handleSubmit() {
                 errors.value = { general: data.message };
             }
         }
-    } catch (error) {
+    } catch {
         errors.value = { general: 'An error occurred. Please try again.' };
     } finally {
         isSubmitting.value = false;

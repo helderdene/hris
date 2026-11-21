@@ -44,7 +44,7 @@ async function fetchSettings() {
         } else {
             error.value = 'Failed to load settings';
         }
-    } catch (err) {
+    } catch {
         error.value = 'An error occurred while loading settings';
     } finally {
         isLoading.value = false;
@@ -117,7 +117,7 @@ async function saveSettings() {
                 error.value = errorData.message || 'Failed to update settings';
             }
         }
-    } catch (err) {
+    } catch {
         error.value = 'An error occurred while saving settings';
     } finally {
         isSaving.value = false;

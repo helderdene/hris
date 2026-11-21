@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head } from '@inertiajs/vue3';
 import { CheckCircle2, Circle, Clock } from 'lucide-vue-next';
 import { computed } from 'vue';
 
@@ -46,7 +45,7 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const { primaryColor, tenantName } = useTenant();
+const { tenantName } = useTenant();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'My Dashboard', href: '/my/dashboard' },

@@ -35,7 +35,7 @@ interface Props {
     payrollTrend?: PayrollTrendItem[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 function formatCurrency(value: number): string {
     if (value >= 1000000) {

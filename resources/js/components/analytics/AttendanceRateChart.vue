@@ -6,7 +6,7 @@
  */
 import { chartColors, useLineChartOptions, useDarkMode } from '@/composables/useCharts';
 import { Line } from 'vue-chartjs';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 interface TrendItem {
     date: string;

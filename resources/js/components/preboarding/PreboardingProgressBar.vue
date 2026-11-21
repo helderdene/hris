@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const props = defineProps<{
+defineProps<{
     percentage: number;
     approvedCount?: number;
     totalCount?: number;

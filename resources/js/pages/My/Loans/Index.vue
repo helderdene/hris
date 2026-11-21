@@ -2,7 +2,7 @@
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { Landmark, ArrowRight } from 'lucide-vue-next';
 import { computed } from 'vue';
 

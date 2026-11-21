@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import { Calendar, ChevronDown } from 'lucide-vue-next';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 const startDate = defineModel<string>('startDate', { default: '' });
 const endDate = defineModel<string>('endDate', { default: '' });

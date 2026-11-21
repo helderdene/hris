@@ -113,7 +113,7 @@ async function handleSubmit() {
             const data = await response.json();
             alert(data.message || 'An error occurred');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while saving');
     } finally {
         isSubmitting.value = false;

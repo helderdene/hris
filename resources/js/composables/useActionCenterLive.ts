@@ -61,7 +61,7 @@ export function useActionCenterLive(options: ActionCenterLiveOptions = {}) {
 
     let channel: ReturnType<typeof window.Echo.private> | null = null;
     let pollingTimer: ReturnType<typeof setInterval> | null = null;
-    let isPolling = ref(false);
+    const isPolling = ref(false);
 
     /**
      * Subscribe to the action center channel for the current tenant.

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Check, Clock, Eye, Mail, Send, X, AlertTriangle, Ban } from 'lucide-vue-next';
+import { Check, Clock, Eye, Send, X, AlertTriangle, Ban } from 'lucide-vue-next';
 import { computed, type Component } from 'vue';
 
 interface TimelineEvent {

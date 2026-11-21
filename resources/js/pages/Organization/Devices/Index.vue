@@ -133,17 +133,6 @@ function getStatusBadgeClasses(status: string): string {
     }
 }
 
-function getStatusIconClasses(status: string): string {
-    switch (status) {
-        case 'online':
-            return 'text-green-500';
-        case 'offline':
-            return 'text-red-500';
-        default:
-            return 'text-slate-400';
-    }
-}
-
 function applyFilters() {
     const params: Record<string, string> = {};
     if (statusFilter.value) {
@@ -196,7 +185,7 @@ async function handleDeleteDevice(device: BiometricDevice) {
             const data = await response.json();
             alert(data.message || 'Failed to delete device');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the device');
     } finally {
         deletingDeviceId.value = null;
@@ -256,7 +245,7 @@ async function handleSyncAllToDevice(device: BiometricDevice) {
             const data = await response.json();
             alert(data.message || 'Failed to sync employees to device');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while syncing employees');
     } finally {
         syncingDeviceId.value = null;

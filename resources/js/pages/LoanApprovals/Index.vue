@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -11,20 +10,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, router } from '@inertiajs/vue3';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 
 interface Employee {
     id: number;
@@ -185,7 +177,7 @@ async function executeApprove() {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -215,7 +207,7 @@ async function executeReject() {
         if (response.ok) {
             reloadPage();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {

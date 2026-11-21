@@ -36,7 +36,6 @@ export function useNotifications() {
     const isLoading = ref(false);
     const error = ref<string | null>(null);
     let pollInterval: ReturnType<typeof setInterval> | null = null;
-    let echoChannel: any = null;
 
     /**
      * Fetch notifications from the API.
@@ -151,7 +150,7 @@ export function useNotifications() {
             return;
         }
 
-        echoChannel = window.Echo.private(`App.Models.User.${userId}`)
+        window.Echo.private(`App.Models.User.${userId}`)
             .notification((notification: BroadcastNotification) => {
                 // Add the new notification to the top of the list
                 const newNotification: Notification = {
@@ -185,7 +184,6 @@ export function useNotifications() {
         const userId = (page.props.auth as { user: { id: number } })?.user?.id;
         if (userId && window.Echo) {
             window.Echo.leave(`App.Models.User.${userId}`);
-            echoChannel = null;
         }
     }
 

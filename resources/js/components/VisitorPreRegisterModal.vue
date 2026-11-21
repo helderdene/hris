@@ -18,7 +18,7 @@ interface LocationOption {
     name: string;
 }
 
-const props = defineProps<{
+defineProps<{
     open: boolean;
     locations: LocationOption[];
 }>();

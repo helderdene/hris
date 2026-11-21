@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import {
-    Card,
-    CardContent,
-    CardHeader,
-} from '@/components/ui/card';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import HelpLayout from '@/layouts/help/Layout.vue';
 import type { BreadcrumbItem } from '@/types';
@@ -21,7 +16,7 @@ interface Props {
     featuredArticles: HelpArticle[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },

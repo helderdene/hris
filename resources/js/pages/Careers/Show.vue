@@ -18,7 +18,7 @@ interface JobPostingDetail {
     published_at: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     posting: JobPostingDetail;
 }>();
 
@@ -460,7 +460,7 @@ const applicationError = ref('');
                             :action="`/careers/${posting.slug}/apply`"
                             method="post"
                             enctype="multipart/form-data"
-                            #default="{ errors, processing, wasSuccessful }"
+                            #default="{ errors, processing }"
                             @success="applicationSubmitted = true"
                             class="space-y-4"
                         >

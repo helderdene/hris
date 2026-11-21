@@ -1,11 +1,8 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
     Card,
     CardContent,
-    CardHeader,
-    CardTitle,
 } from '@/components/ui/card';
 import PreboardingProgressBar from '@/components/preboarding/PreboardingProgressBar.vue';
 import { useTenant } from '@/composables/useTenant';

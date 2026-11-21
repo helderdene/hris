@@ -62,7 +62,7 @@ interface PreviewTotals {
     [key: string]: unknown;
 }
 
-const props = defineProps<{
+defineProps<{
     reportTypes: ReportType[];
     departments: Department[];
     years: number[];
@@ -89,10 +89,6 @@ const isGenerating = ref(false);
 const previewData = ref<PreviewRow[]>([]);
 const previewTotals = ref<PreviewTotals | null>(null);
 const errorMessage = ref<string | null>(null);
-
-const currentReportType = computed(() => {
-    return props.reportTypes.find((t) => t.value === selectedReportType.value);
-});
 
 const canPreview = computed(() => {
     return selectedReportType.value && selectedYear.value && selectedMonth.value;

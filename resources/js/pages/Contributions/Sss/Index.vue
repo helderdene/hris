@@ -51,7 +51,7 @@ interface SssTable {
     updated_at: string;
 }
 
-const props = defineProps<{
+defineProps<{
     sssTables: SssTable[];
 }>();
 
@@ -73,15 +73,6 @@ function getStatusBadgeClasses(isActive: boolean): string {
         return 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300';
     }
     return 'bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-300';
-}
-
-function formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('en-PH', {
-        style: 'currency',
-        currency: 'PHP',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    }).format(amount);
 }
 
 function formatPercent(rate: number): string {
@@ -128,7 +119,7 @@ async function handleDeleteTable(table: SssTable) {
             const data = await response.json();
             alert(data.message || 'Failed to delete SSS contribution table');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the SSS contribution table');
     } finally {
         deletingTableId.value = null;

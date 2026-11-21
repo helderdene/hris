@@ -4,7 +4,7 @@
  *
  * Displays goal achievement metrics and status breakdown.
  */
-import { useDoughnutChartOptions, useDarkMode, pieChartColors } from '@/composables/useCharts';
+import { useDoughnutChartOptions, useDarkMode } from '@/composables/useCharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Doughnut } from 'vue-chartjs';
 import { Target, CheckCircle, AlertTriangle, TrendingUp } from 'lucide-vue-next';

@@ -6,7 +6,6 @@ import BusinessCardQrCode from '@/components/BusinessCardQrCode.vue';
 import EmployeeAvatar from '@/components/EmployeeAvatar.vue';
 import EmployeeStatusBadge from '@/components/EmployeeStatusBadge.vue';
 import EmployeeSyncButton from '@/components/EmployeeSyncButton.vue';
-import SyncStatusBadge from '@/components/SyncStatusBadge.vue';
 import { Button } from '@/components/ui/button';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
@@ -18,7 +17,7 @@ import {
     type SupervisorOption,
     type WorkLocationOption,
 } from '@/types/assignment';
-import { type EmployeeDeviceSync, type SyncStatus } from '@/types/sync';
+import { type EmployeeDeviceSync } from '@/types/sync';
 import { Deferred, Head, Link, router } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 import CompensationTab from './Tabs/CompensationTab.vue';

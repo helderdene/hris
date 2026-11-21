@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -150,7 +149,7 @@ async function executeSubmit() {
         if (response.ok) {
             router.reload();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -181,7 +180,7 @@ async function executeCancelApplication() {
         if (response.ok) {
             router.reload();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {

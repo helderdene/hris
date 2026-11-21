@@ -1,15 +1,12 @@
 <script setup lang="ts">
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { PreboardingChecklistItem } from '@/types/preboarding';
 import { router } from '@inertiajs/vue3';
 import {
     CheckCircle,
-    Clock,
     FileUp,
     FormInput,
     HandMetal,
-    RotateCcw,
     XCircle,
 } from 'lucide-vue-next';
 import { ref } from 'vue';

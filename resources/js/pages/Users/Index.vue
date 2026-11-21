@@ -33,7 +33,7 @@ interface TenantUser {
     invitation_accepted_at: string | null;
 }
 
-const props = defineProps<{
+defineProps<{
     users: TenantUser[];
     roles: Role[];
 }>();

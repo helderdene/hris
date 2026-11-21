@@ -29,7 +29,7 @@ interface Props {
     typeBreakdown?: LeaveTypeItem[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <template>

@@ -22,7 +22,7 @@ interface Props {
     data?: DepartmentItem[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 function getRatingColor(rating: number | null): string {
     if (rating === null) return 'text-slate-400';

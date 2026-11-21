@@ -211,14 +211,6 @@ const paymentLoan = ref<Loan | null>(null);
 
 const loansData = computed(() => props.loans?.data ?? []);
 
-const flatLoanTypes = computed(() => {
-    const types: LoanTypeOption[] = [];
-    for (const category in props.loanTypes) {
-        types.push(...props.loanTypes[category]);
-    }
-    return types;
-});
-
 const employeeOptions = computed(() => [
     { value: 'all', label: 'All Employees' },
     ...props.employees.map((emp) => ({

@@ -66,7 +66,7 @@ interface Props {
     departmentHeadcounts: DepartmentHeadcount[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 const { tenantName, primaryColor } = useTenant();
 

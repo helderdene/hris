@@ -549,7 +549,7 @@ function TeamOverviewCard({ members, onViewMember }: TeamOverviewCardProps) {
   )
 }
 
-function ApprovalQueueCard({ approvals, onApprove, onReject, onViewDetails }: ApprovalQueueCardProps) {
+function ApprovalQueueCard({ approvals, onApprove, onReject }: ApprovalQueueCardProps) {
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
   const toggleSelection = (id: string) => {
@@ -686,7 +686,6 @@ export function Dashboard({
   leaveApplications,
   dailyTimeRecords,
   documentRequests,
-  overtimeRequests,
   loans,
   teamMembers,
   pendingApprovals,
@@ -697,7 +696,6 @@ export function Dashboard({
   onViewLeaveApplication,
   onCancelLeaveApplication,
   onViewDTR,
-  onRequestDTRCorrection,
   onFileOvertime,
   onRequestDocument,
   onViewLoan,

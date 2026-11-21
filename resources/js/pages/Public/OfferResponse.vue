@@ -5,7 +5,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import OfferPreview from '@/components/Recruitment/OfferPreview.vue';
-import OfferStatusBadge from '@/components/Recruitment/OfferStatusBadge.vue';
 import SignaturePad from '@/components/Recruitment/SignaturePad.vue';
 import { Head, router } from '@inertiajs/vue3';
 import { Check, X } from 'lucide-vue-next';

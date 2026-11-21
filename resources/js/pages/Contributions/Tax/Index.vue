@@ -48,7 +48,7 @@ interface TaxTable {
     updated_at: string;
 }
 
-const props = defineProps<{
+defineProps<{
     taxTables: TaxTable[];
 }>();
 
@@ -122,7 +122,7 @@ async function handleDeleteTable(table: TaxTable) {
             const data = await response.json();
             alert(data.message || 'Failed to delete withholding tax table');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the withholding tax table');
     } finally {
         deletingTableId.value = null;

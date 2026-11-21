@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
+import { Head, router } from '@inertiajs/vue3';
 import { AlertCircle, Clock } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 

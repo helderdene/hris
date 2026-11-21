@@ -48,7 +48,7 @@ interface PagibigTable {
     updated_at: string;
 }
 
-const props = defineProps<{
+defineProps<{
     pagibigTables: PagibigTable[];
 }>();
 
@@ -114,7 +114,7 @@ async function handleDeleteTable(table: PagibigTable) {
             const data = await response.json();
             alert(data.message || 'Failed to delete');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred');
     } finally {
         deletingTableId.value = null;

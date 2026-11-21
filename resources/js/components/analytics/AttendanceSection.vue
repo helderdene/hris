@@ -37,7 +37,7 @@ interface Props {
     byDepartment?: DepartmentItem[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 function getRateColor(rate: number): string {
     if (rate >= 95) return 'text-emerald-600';

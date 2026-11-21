@@ -38,7 +38,7 @@ interface Props {
     headcountVsHires?: HeadcountItem[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 
 function getVarianceColor(variance: number): string {
     if (variance >= 0) return 'text-emerald-600';

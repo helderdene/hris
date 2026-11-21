@@ -181,7 +181,7 @@ async function handleDeleteAssignment(assignment: PositionCompetency) {
             const data = await response.json();
             alert(data.message || 'Failed to delete assignment');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the assignment');
     } finally {
         deletingAssignmentId.value = null;

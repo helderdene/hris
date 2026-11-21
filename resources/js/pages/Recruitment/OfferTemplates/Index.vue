@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
@@ -15,7 +15,7 @@ interface TemplateItem {
     created_at: string;
 }
 
-const props = defineProps<{
+defineProps<{
     templates: { data: TemplateItem[]; links: any; meta: any };
 }>();
 

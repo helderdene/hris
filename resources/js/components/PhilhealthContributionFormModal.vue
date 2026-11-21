@@ -125,7 +125,7 @@ async function handleSubmit() {
                 alert(data.message || 'An error occurred');
             }
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while saving');
     } finally {
         isSubmitting.value = false;

@@ -97,10 +97,6 @@ const statusOptions: EnumOption[] = [
     { value: 'inactive', label: 'Inactive' },
 ];
 
-const scheduleTypeOptions = computed<EnumOption[]>(() => {
-    return [{ value: '', label: 'All Types' }, ...props.scheduleTypes];
-});
-
 const filteredSchedules = computed(() => {
     return props.schedules.filter((schedule) => {
         if (statusFilter.value && schedule.status !== statusFilter.value) {
@@ -235,29 +231,6 @@ function formatTime(time: string): string {
     return `${displayHour}:${minutes} ${ampm}`;
 }
 
-function getWorkDaysForDisplay(schedule: WorkSchedule): string[] {
-    const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-    const config = schedule.time_configuration;
-
-    if (config.work_days) {
-        return days.map((d) => {
-            const dayMap: Record<string, string> = {
-                monday: 'mon',
-                tuesday: 'tue',
-                wednesday: 'wed',
-                thursday: 'thu',
-                friday: 'fri',
-                saturday: 'sat',
-                sunday: 'sun',
-            };
-            const workDaysShort = config.work_days!.map((wd) => dayMap[wd]);
-            return workDaysShort.includes(d) ? d : '';
-        });
-    }
-
-    return days;
-}
-
 function isDayActive(schedule: WorkSchedule, dayShort: string): boolean {
     const config = schedule.time_configuration;
     const dayMap: Record<string, string> = {
@@ -322,7 +295,7 @@ async function handleDeleteSchedule(schedule: WorkSchedule) {
             const data = await response.json();
             alert(data.message || 'Failed to delete schedule');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the schedule');
     } finally {
         deletingScheduleId.value = null;

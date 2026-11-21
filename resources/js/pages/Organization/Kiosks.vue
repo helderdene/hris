@@ -2,7 +2,6 @@
 import { Button } from '@/components/ui/button';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
-import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/vue3';
 import axios from 'axios';
 import {
@@ -12,9 +11,8 @@ import {
     Plus,
     RefreshCw,
     Trash2,
-    X,
 } from 'lucide-vue-next';
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted } from 'vue';
 
 interface WorkLocationOption {
     id: number;
@@ -39,7 +37,7 @@ interface KioskData {
     created_at: string;
 }
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
     workLocations?: WorkLocationOption[];
 }>(), {
     workLocations: () => [],
@@ -48,11 +46,6 @@ const props = withDefaults(defineProps<{
 defineOptions({ layout: TenantLayout });
 
 const { tenantName } = useTenant();
-
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: 'Organization', href: '/organization/departments' },
-    { title: 'Kiosks', href: '/organization/kiosks' },
-];
 
 const kiosks = ref<KioskData[]>([]);
 const loading = ref(true);

@@ -195,7 +195,7 @@ function handleDownload(version: DocumentVersion) {
 
             <!-- Timeline entries -->
             <div
-                v-for="(version, index) in versions"
+                v-for="version in versions"
                 :key="version.id"
                 class="relative pb-4 last:pb-0 sm:pb-6"
                 data-test="version-entry"

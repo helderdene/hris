@@ -41,7 +41,7 @@ interface PhilhealthTable {
     updated_at: string;
 }
 
-const props = defineProps<{
+defineProps<{
     philhealthTables: PhilhealthTable[];
 }>();
 
@@ -114,7 +114,7 @@ async function handleDeleteTable(table: PhilhealthTable) {
             const data = await response.json();
             alert(data.message || 'Failed to delete PhilHealth contribution table');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the PhilHealth contribution table');
     } finally {
         deletingTableId.value = null;

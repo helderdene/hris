@@ -38,7 +38,7 @@ interface Props {
     schedulingMetrics?: SchedulingMetrics;
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <template>

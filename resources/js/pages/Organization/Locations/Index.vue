@@ -44,7 +44,7 @@ interface EnumOption {
     label: string;
 }
 
-const props = defineProps<{
+defineProps<{
     locations: WorkLocation[];
     locationTypes: EnumOption[];
 }>();
@@ -138,7 +138,7 @@ async function handleDeleteLocation(location: WorkLocation) {
             const data = await response.json();
             alert(data.message || 'Failed to delete location');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the location');
     } finally {
         deletingLocationId.value = null;

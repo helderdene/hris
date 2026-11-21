@@ -34,8 +34,6 @@ interface DepartmentOption {
 
 const departmentOptions = computed((): DepartmentOption[] => {
     const options: DepartmentOption[] = [];
-    const departmentMap = new Map(props.allDepartments.map((d) => [d.id, d]));
-
     // Build tree and flatten with depth
     function addDepartment(dept: Department, depth: number) {
         if (props.departments.some((d) => d.id === dept.id)) {

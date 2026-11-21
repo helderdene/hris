@@ -15,8 +15,8 @@ import { Input } from '@/components/ui/input';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { Calculator, Download, Eye, FileText, MoreHorizontal, RefreshCw } from 'lucide-vue-next';
+import { Head, router } from '@inertiajs/vue3';
+import { Calculator, Download, Eye, FileText, MoreHorizontal } from 'lucide-vue-next';
 import { computed, ref, watch } from 'vue';
 
 interface Department {
@@ -276,48 +276,6 @@ async function handleBulkDownload(format: 'pdf' | 'zip' = 'pdf') {
     }
 }
 
-async function handleBulkStatusUpdate(newStatus: string) {
-    const selectedEntries = props.entries.data.filter(
-        (e) => e.status !== 'approved' && e.status !== 'paid',
-    );
-
-    if (selectedEntries.length === 0) {
-        alert('No entries available for status update');
-        return;
-    }
-
-    if (!confirm(`Are you sure you want to mark ${selectedEntries.length} entries as ${newStatus}?`)) {
-        return;
-    }
-
-    try {
-        const response = await fetch(
-            `/api/organization/payroll-periods/${props.period.id}/entries/bulk-status`,
-            {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Accept: 'application/json',
-                    'X-XSRF-TOKEN': getCsrfToken(),
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    entry_ids: selectedEntries.map((e) => e.id),
-                    status: newStatus,
-                }),
-            },
-        );
-
-        if (response.ok) {
-            router.reload();
-        } else {
-            const data = await response.json();
-            alert(data.message || 'Failed to update status');
-        }
-    } catch {
-        alert('An error occurred while updating status');
-    }
-}
 </script>
 
 <template>

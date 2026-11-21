@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Form } from '@inertiajs/vue3';
 import { Head, usePage } from '@inertiajs/vue3';
-import { CheckCircle, Clock, Loader2, MapPin, Search, UserRoundCheck, XCircle } from 'lucide-vue-next';
+import { CheckCircle, Loader2, MapPin, Search, UserRoundCheck, XCircle } from 'lucide-vue-next';
 import { computed, onMounted, ref, watch } from 'vue';
 
 interface LocationOption {
@@ -16,7 +16,7 @@ interface EmployeeResult {
     name: string;
 }
 
-const props = defineProps<{
+defineProps<{
     locations: LocationOption[];
     companyName: string | null;
     companyLogo: string | null;

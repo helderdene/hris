@@ -227,7 +227,7 @@ async function handleDeleteLeaveType(leaveType: LeaveType) {
             const data = await response.json();
             alert(data.message || 'Failed to delete leave type');
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while deleting the leave type');
     } finally {
         deletingLeaveTypeId.value = null;
@@ -275,7 +275,7 @@ async function handleSeedStatutory() {
             alert(data.message || 'Failed to seed statutory leaves');
             isSeedDialogOpen.value = false;
         }
-    } catch (error) {
+    } catch {
         alert('An error occurred while seeding statutory leaves');
         isSeedDialogOpen.value = false;
     } finally {

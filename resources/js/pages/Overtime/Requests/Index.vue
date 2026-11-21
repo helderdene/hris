@@ -13,7 +13,7 @@ import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { Clock, FileText, X } from 'lucide-vue-next';
+import { FileText, X } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 
 interface Employee {
@@ -467,9 +467,10 @@ function formatDate(dateString: string): string {
                                     :href="link.url"
                                     class="rounded-md px-3 py-1 text-sm"
                                     :class="link.active ? 'bg-blue-500 text-white' : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'"
-                                    v-html="link.label"
                                     preserve-state
-                                />
+                                >
+                                    <span v-html="link.label" />
+                                </Link>
                                 <span v-else class="rounded-md px-3 py-1 text-sm text-slate-400" v-html="link.label" />
                             </template>
                         </div>

@@ -224,8 +224,9 @@ const statusClasses: Record<string, string> = {
                                 ? 'bg-indigo-600 text-white'
                                 : 'text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
                         "
-                        v-html="link.label"
-                    />
+                    >
+                        <span v-html="link.label" />
+                    </Link>
                     <span
                         v-else
                         class="rounded-lg px-3 py-2 text-sm text-slate-400 dark:text-slate-600"

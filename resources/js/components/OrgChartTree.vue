@@ -20,7 +20,7 @@ const props = defineProps<{
     translateY: number;
 }>();
 
-const emit = defineEmits<{
+defineEmits<{
     (e: 'nodeClick', department: Department): void;
 }>();
 

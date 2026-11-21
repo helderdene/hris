@@ -11,7 +11,6 @@ import {
     SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarGroupLabel,
     SidebarHeader,
     SidebarMenu,
     SidebarMenuButton,
@@ -66,7 +65,6 @@ import {
     SlidersHorizontal,
     Star,
     Target,
-    User,
     UserCheck,
     UserPlus,
     Users,
@@ -75,7 +73,7 @@ import {
     CalendarClock,
     Lock,
 } from 'lucide-vue-next';
-import { computed, ref, watch, type Component, onMounted } from 'vue';
+import { computed, ref, watch, type Component } from 'vue';
 
 interface NavItem {
     title: string;

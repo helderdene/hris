@@ -182,7 +182,7 @@ async function executeSubmit() {
         if (response.ok) {
             router.reload();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {
@@ -213,7 +213,7 @@ async function executeCancelApplication() {
         if (response.ok) {
             router.reload();
         } else {
-            const data = await response.json();
+            await response.json();
         }
     } catch {
     } finally {

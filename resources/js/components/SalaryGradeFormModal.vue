@@ -224,7 +224,7 @@ async function handleSubmit() {
         } else {
             errors.value = { general: data.message || 'An error occurred' };
         }
-    } catch (error) {
+    } catch {
         errors.value = {
             general: 'An error occurred while saving the salary grade',
         };

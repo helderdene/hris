@@ -66,12 +66,6 @@ const selectedCategoryId = ref<string>('');
 const currentPage = ref(1);
 
 /**
- * Sort state.
- */
-const sortColumn = ref<'name' | 'category' | 'uploaded_at'>('uploaded_at');
-const sortDirection = ref<'asc' | 'desc'>('desc');
-
-/**
  * Modal state.
  */
 const isUploadModalOpen = ref(false);

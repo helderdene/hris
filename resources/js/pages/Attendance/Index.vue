@@ -207,13 +207,6 @@ function goToPage(url: string | null) {
     }
 }
 
-function formatConfidence(confidence: number | null): string {
-    if (confidence === null) {
-        return '-';
-    }
-    return `${confidence}%`;
-}
-
 function formatVerificationMethod(log: AttendanceLog): string {
     if (log.verification_method === 'fingerprint') {
         return 'Fingerprint';

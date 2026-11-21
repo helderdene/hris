@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import OvertimeApprovalTimeline from '@/components/OvertimeApprovalTimeline.vue';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useTenant } from '@/composables/useTenant';
 import TenantLayout from '@/layouts/TenantLayout.vue';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
-import { ArrowLeft, Calendar, Clock, FileText, User } from 'lucide-vue-next';
+import { ArrowLeft, Calendar, Clock, User } from 'lucide-vue-next';
 
 interface Approval {
     id: number;

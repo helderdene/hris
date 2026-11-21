@@ -36,7 +36,7 @@ interface Props {
     declineReasons?: DeclineReason[];
 }
 
-const props = defineProps<Props>();
+defineProps<Props>();
 </script>
 
 <template>

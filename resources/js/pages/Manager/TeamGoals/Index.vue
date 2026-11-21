@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import GoalCard from '@/components/Goals/GoalCard.vue';
 import GoalFilters from '@/components/Goals/GoalFilters.vue';
-import { Button } from '@/components/ui/button';
 import {
     Select,
     SelectContent,

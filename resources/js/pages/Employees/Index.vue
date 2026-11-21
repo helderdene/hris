@@ -192,10 +192,6 @@ function handleExport() {
     console.log('Export functionality coming soon');
 }
 
-function handleAddEmployee() {
-    router.visit('/employees/create');
-}
-
 function goToPage(url: string | null) {
     if (url) {
         router.visit(url, {
