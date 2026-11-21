@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Performance;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\CompetencyEvaluationResource;
 use App\Http\Resources\ProficiencyLevelResource;
@@ -10,7 +11,6 @@ use App\Models\PerformanceCycleInstance;
 use App\Models\PerformanceCycleParticipant;
 use App\Models\ProficiencyLevel;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -21,7 +21,12 @@ class CompetencyEvaluationPageController extends Controller
      */
     public function index(Request $request): Response
     {
-        Gate::authorize('can-manage-organization');
+        $isHr = EmployeeRecordAccess::isHr($request->user());
+        $managed = fn ($participants) => $participants
+            ->whereColumn('manager_id', '!=', 'employee_id')
+            ->whereHas('manager', fn ($manager) => $manager->where('user_id', $request->user()->id));
+
+        abort_unless($isHr || PerformanceCycleParticipant::query()->tap($managed)->exists(), 403);
 
         // Get available instances for filtering
         $instances = PerformanceCycleInstance::query()
@@ -46,6 +51,7 @@ class CompetencyEvaluationPageController extends Controller
                 ->with(['employee', 'employee.position'])
                 ->where('performance_cycle_instance_id', $request->input('instance_id'))
                 ->where('is_excluded', false)
+                ->when(! $isHr, $managed)
                 ->get()
                 ->map(fn ($participant) => [
                     'id' => $participant->id,
@@ -58,6 +64,8 @@ class CompetencyEvaluationPageController extends Controller
 
             // Get evaluations if a participant is selected
             if ($request->filled('participant_id')) {
+                abort_unless(PerformanceCycleParticipant::findOrFail($request->input('participant_id'))->isRatableBy($request->user()), 403);
+
                 $evaluations = CompetencyEvaluation::query()
                     ->with([
                         'positionCompetency.competency',
@@ -86,9 +94,9 @@ class CompetencyEvaluationPageController extends Controller
     /**
      * Display a participant's competency evaluation form.
      */
-    public function show(PerformanceCycleParticipant $participant): Response
+    public function show(Request $request, PerformanceCycleParticipant $participant): Response
     {
-        Gate::authorize('can-manage-organization');
+        abort_unless($participant->isRatableBy($request->user()), 403);
 
         $participant->load([
             'employee.position.positionCompetencies.competency',
@@ -153,6 +161,7 @@ class CompetencyEvaluationPageController extends Controller
                 'cycle_name' => $participant->performanceCycleInstance?->performanceCycle?->name,
                 'year' => $participant->performanceCycleInstance?->year,
             ],
+            'canRateSelf' => EmployeeRecordAccess::isHr($request->user()),
             'evaluationData' => $evaluationData,
             'proficiencyLevels' => ProficiencyLevelResource::collection($proficiencyLevels),
             'summary' => [

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Models\CompetencyEvaluation;
 use App\Models\PerformanceCycleParticipant;
 use App\Models\PositionCompetency;
@@ -15,7 +16,11 @@ class StoreCompetencyEvaluationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $participant = PerformanceCycleParticipant::find($this->input('performance_cycle_participant_id'));
+
+        return $participant
+            ? $participant->isRatableBy($this->user())
+            : EmployeeRecordAccess::isHr($this->user());
     }
 
     /**

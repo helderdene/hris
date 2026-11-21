@@ -44,6 +44,7 @@ const props = defineProps<{
     evaluation: EvaluationItem;
     proficiencyLevels: ProficiencyLevel[];
     participantId: number;
+    canRateSelf?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -330,6 +331,7 @@ function handleFormCancel() {
                     </div>
                     <div v-else class="flex flex-wrap gap-2">
                         <Button
+                            v-if="canRateSelf !== false"
                             variant="outline"
                             size="sm"
                             @click="editMode = 'self'"

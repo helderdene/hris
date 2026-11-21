@@ -12,6 +12,7 @@ use App\Models\PerformanceCycleParticipant;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Gate;
 
 class CompetencyEvaluationController extends Controller
@@ -58,9 +59,14 @@ class CompetencyEvaluationController extends Controller
      */
     public function store(StoreCompetencyEvaluationRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        $data = $request->validated();
 
-        $evaluation = CompetencyEvaluation::create($request->validated());
+        // A manager records only their own rating; the self-rating and evidence stay with the employee and HR.
+        if (! EmployeeRecordAccess::isHr($request->user())) {
+            $data = Arr::except($data, ['self_rating', 'self_comments', 'evidence']);
+        }
+
+        $evaluation = CompetencyEvaluation::create($data);
 
         $evaluation->load([
             'positionCompetency.competency',
@@ -186,7 +192,7 @@ class CompetencyEvaluationController extends Controller
         Request $request,
         CompetencyEvaluation $competencyEvaluation
     ): CompetencyEvaluationResource {
-        Gate::authorize('can-manage-organization');
+        abort_unless((bool) $competencyEvaluation->performanceCycleParticipant?->isRatableBy($request->user()), 403);
 
         $request->validate([
             'manager_rating' => ['required', 'integer', 'min:1', 'max:5'],

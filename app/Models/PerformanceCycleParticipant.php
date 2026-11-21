@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\EvaluationStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -73,6 +74,21 @@ class PerformanceCycleParticipant extends TenantModel
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    /**
+     * HR, or the assigned manager when that is not the participant themselves.
+     */
+    public function isRatableBy(?User $user): bool
+    {
+        if (EmployeeRecordAccess::isHr($user)) {
+            return true;
+        }
+
+        return $user !== null
+            && $this->manager_id !== null
+            && $this->manager_id !== $this->employee_id
+            && $this->manager?->user_id === $user->id;
     }
 
     /**

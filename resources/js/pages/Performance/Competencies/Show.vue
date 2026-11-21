@@ -65,6 +65,7 @@ const props = defineProps<{
     evaluationData: EvaluationItem[];
     proficiencyLevels: ProficiencyLevel[];
     summary: Summary;
+    canRateSelf: boolean;
 }>();
 
 const { primaryColor, tenantName } = useTenant();
@@ -142,7 +143,7 @@ function getStatusBadgeClasses(status: string): string {
             <div class="flex items-start justify-between">
                 <div>
                     <div class="flex items-center gap-3">
-                        <Link :href="`//performance/competency-evaluations`">
+                        <Link :href="`/performance/competency-evaluations`">
                             <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
                                 <svg
                                     class="h-4 w-4"
@@ -384,6 +385,7 @@ function getStatusBadgeClasses(status: string): string {
                             :evaluation="evaluation"
                             :proficiency-levels="proficiencyLevels"
                             :participant-id="participant.id"
+                            :can-rate-self="canRateSelf"
                             @updated="handleEvaluationUpdated"
                         />
                     </div>
@@ -419,7 +421,7 @@ function getStatusBadgeClasses(status: string): string {
                     Please assign competencies to the position in the Competency Matrix.
                 </p>
                 <div class="mt-6">
-                    <Link :href="`//organization/competency-matrix`">
+                    <Link :href="`/organization/competency-matrix`">
                         <Button :style="{ backgroundColor: primaryColor }">
                             Go to Competency Matrix
                         </Button>
