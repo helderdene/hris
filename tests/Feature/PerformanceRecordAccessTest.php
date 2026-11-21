@@ -1,8 +1,10 @@
 <?php
 
 use App\Enums\TenantUserRole;
+use App\Models\CompetencyEvaluation;
 use App\Models\Employee;
 use App\Models\Goal;
+use App\Models\KpiAssignment;
 use App\Models\PerformanceCycleParticipant;
 use App\Models\Tenant;
 use App\Models\User;
@@ -32,14 +34,20 @@ beforeEach(function () {
 
     $this->goal = Goal::factory()->create();
     $this->participant = PerformanceCycleParticipant::factory()->create();
+    $this->kpi = KpiAssignment::factory()->create();
+    $this->competency = CompetencyEvaluation::factory()->create();
     $this->base = 'http://demo.kasamahr.test';
 });
 
-it('keeps another employee\'s goals and 360 evaluations away from an ordinary employee', function (string $method, string $path) {
-    $path = str_replace(['{goal}', '{participant}'], [$this->goal->id, $this->participant->id], $path);
+it('keeps another employee\'s goals, KPIs and evaluations away from an ordinary employee', function (string $method, string $path) {
+    $path = str_replace(
+        ['{goal}', '{participant}', '{kpi}', '{competency}'],
+        [$this->goal->id, $this->participant->id, $this->kpi->id, $this->competency->id],
+        $path,
+    );
 
     $this->actingAs($this->user)
-        ->json($method, $this->base.$path)
+        ->json($method, $this->base.$path, $method === 'POST' ? ['value' => 1] : [])
         ->assertForbidden();
 })->with([
     'goals page' => ['GET', '/performance/goals'],
@@ -54,4 +62,18 @@ it('keeps another employee\'s goals and 360 evaluations away from an ordinary em
     'evaluation summary' => ['GET', '/api/organization/participants/{participant}/summary'],
     'evaluation reviewers' => ['GET', '/api/organization/participants/{participant}/reviewers'],
     'own results page' => ['GET', '/my/evaluations/{participant}/results'],
+    'kpis page' => ['GET', '/performance/kpis'],
+    'kpi templates' => ['GET', '/api/performance/kpi-templates'],
+    'kpi assignment' => ['GET', '/api/performance/kpi-assignments/{kpi}'],
+    'kpi progress' => ['POST', '/api/performance/kpi-assignments/{kpi}/progress'],
+    'kpi complete' => ['POST', '/api/performance/kpi-assignments/{kpi}/complete'],
+    'participant kpis' => ['GET', '/api/performance/participants/{participant}/kpis'],
+    'competency evaluations page' => ['GET', '/performance/competency-evaluations'],
+    'competency evaluation page' => ['GET', '/performance/competency-evaluations/participants/{participant}'],
+    'competency evaluation' => ['GET', '/api/performance/competency-evaluations/{competency}'],
+    'competency self rating' => ['POST', '/api/performance/competency-evaluations/{competency}/self-rating'],
+    'competency manager rating' => ['POST', '/api/performance/competency-evaluations/{competency}/manager-rating'],
+    'participant competencies' => ['GET', '/api/performance/participants/{participant}/competency-evaluations'],
+    'competencies page' => ['GET', '/organization/competencies'],
+    'competency matrix page' => ['GET', '/organization/competency-matrix'],
 ]);
