@@ -30,7 +30,7 @@ class EvaluationReviewerController extends Controller
         Request $request,
         PerformanceCycleParticipant $participant
     ): AnonymousResourceCollection {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = $participant->evaluationReviewers()
             ->with(['reviewerEmployee.position', 'reviewerEmployee.department', 'evaluationResponse'])
@@ -66,7 +66,7 @@ class EvaluationReviewerController extends Controller
         Request $request,
         PerformanceCycleParticipant $participant
     ): JsonResponse {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $validated = $request->validate([
             'reviewer_employee_id' => [
@@ -124,7 +124,7 @@ class EvaluationReviewerController extends Controller
         PerformanceCycleParticipant $participant,
         EvaluationReviewer $reviewer
     ): EvaluationReviewerResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Validate reviewer belongs to participant
         if ($reviewer->performance_cycle_participant_id !== $participant->id) {
@@ -148,7 +148,7 @@ class EvaluationReviewerController extends Controller
         PerformanceCycleParticipant $participant,
         EvaluationReviewer $reviewer
     ): JsonResponse {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Validate reviewer belongs to participant
         if ($reviewer->performance_cycle_participant_id !== $participant->id) {

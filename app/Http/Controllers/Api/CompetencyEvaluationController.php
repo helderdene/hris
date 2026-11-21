@@ -24,7 +24,7 @@ class CompetencyEvaluationController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = CompetencyEvaluation::query()
             ->with([
@@ -62,7 +62,7 @@ class CompetencyEvaluationController extends Controller
         $data = $request->validated();
 
         // A manager records only their own rating; the self-rating and evidence stay with the employee and HR.
-        if (! EmployeeRecordAccess::isHr($request->user())) {
+        if (! EmployeeRecordAccess::managesPerformance($request->user())) {
             $data = Arr::except($data, ['self_rating', 'self_comments', 'evidence']);
         }
 
@@ -83,7 +83,7 @@ class CompetencyEvaluationController extends Controller
      */
     public function show(CompetencyEvaluation $competencyEvaluation): CompetencyEvaluationResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $competencyEvaluation->load([
             'positionCompetency.competency',
@@ -101,7 +101,7 @@ class CompetencyEvaluationController extends Controller
         UpdateCompetencyEvaluationRequest $request,
         CompetencyEvaluation $competencyEvaluation
     ): CompetencyEvaluationResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -125,7 +125,7 @@ class CompetencyEvaluationController extends Controller
      */
     public function destroy(CompetencyEvaluation $competencyEvaluation): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $competencyEvaluation->delete();
 
@@ -140,7 +140,7 @@ class CompetencyEvaluationController extends Controller
     public function participantEvaluations(
         PerformanceCycleParticipant $participant
     ): AnonymousResourceCollection {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $evaluations = $participant->competencyEvaluations()
             ->with([
@@ -161,7 +161,7 @@ class CompetencyEvaluationController extends Controller
     ): CompetencyEvaluationResource {
         // The employee being evaluated submits their own self-rating; HR may record it for them.
         abort_unless(
-            EmployeeRecordAccess::isHr($request->user())
+            EmployeeRecordAccess::managesPerformance($request->user())
                 || $competencyEvaluation->performanceCycleParticipant?->employee?->user_id === $request->user()->id,
             403,
             'You can only submit your own self-rating.'

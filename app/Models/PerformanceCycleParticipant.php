@@ -81,7 +81,7 @@ class PerformanceCycleParticipant extends TenantModel
      */
     public function isRatableBy(?User $user): bool
     {
-        if (EmployeeRecordAccess::isHr($user)) {
+        if (EmployeeRecordAccess::managesPerformance($user)) {
             return true;
         }
 

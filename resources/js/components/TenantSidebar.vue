@@ -98,6 +98,14 @@ const canManageOrganization = computed(
     () => page.props.tenant?.can_manage_organization ?? false,
 );
 
+// Admin and the HR roles run performance management; supervisors only review their own reports
+const canManagePerformance = computed(
+    () => page.props.tenant?.can_manage_performance ?? false,
+);
+const isSupervisorRole = computed(
+    () => page.props.tenant?.user_role === 'supervisor',
+);
+
 // Check if user can manage employees (Admin or HR Manager - for Employee Dashboard access)
 const canManageEmployees = computed(
     () => page.props.tenant?.can_manage_employees ?? false,
@@ -281,10 +289,15 @@ const complianceItems: NavItem[] = [
 const performanceItems = computed(() => {
     const items: NavItem[] = [];
 
-    // Analytics visible to Admin/HR Manager/Supervisor
-    if (canManageEmployees.value) {
-        items.push({ title: 'Analytics', href: '/performance/analytics', icon: PieChart });
+    if (!canManagePerformance.value) {
+        return [
+            { title: 'Analytics', href: '/performance/analytics', icon: PieChart },
+            { title: 'Competency Evaluations', href: '/performance/competency-evaluations', icon: ClipboardCheck },
+            { title: 'Development Plans', href: '/performance/development-plans', icon: BookOpen },
+        ];
     }
+
+    items.push({ title: 'Analytics', href: '/performance/analytics', icon: PieChart });
 
     items.push(
         { title: 'Performance Cycles', href: '/organization/performance-cycles', icon: BarChart3 },
@@ -1542,7 +1555,7 @@ watch([hrManagementOpen, timeAttendanceOpen, visitorManagementOpen, leaveManagem
 
             <!-- Performance Section (Admin/HR only, requires performance_management module) -->
             <Collapsible
-                v-if="canManageOrganization"
+                v-if="canManagePerformance || isSupervisorRole"
                 v-model:open="performanceOpen"
                 class="mt-4"
             >

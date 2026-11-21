@@ -245,6 +245,7 @@ class AppServiceProvider extends ServiceProvider
         $this->registerPermissionGate('can-manage-training', Permission::TrainingManage);
 
         // Recruitment module gates
+        $this->registerPermissionGate('can-manage-performance', Permission::PerformanceManage);
         $this->registerPermissionGate('can-view-recruitment', Permission::RecruitmentView);
         $this->registerPermissionGate('can-manage-recruitment', Permission::RecruitmentManage);
 
@@ -368,6 +369,7 @@ class AppServiceProvider extends ServiceProvider
                 TenantUserRole::Admin,
                 TenantUserRole::HrManager,
                 TenantUserRole::HrStaff,
+                TenantUserRole::HrConsultant,
                 TenantUserRole::Supervisor,
                 TenantUserRole::Employee,
             ], true);

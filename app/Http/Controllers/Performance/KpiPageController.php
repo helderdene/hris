@@ -22,7 +22,7 @@ class KpiPageController extends Controller
      */
     public function index(Request $request): Response
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Get all KPI templates with assignment counts
         $templates = KpiTemplate::query()

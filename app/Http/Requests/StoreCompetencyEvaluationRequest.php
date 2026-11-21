@@ -20,7 +20,7 @@ class StoreCompetencyEvaluationRequest extends FormRequest
 
         return $participant
             ? $participant->isRatableBy($this->user())
-            : EmployeeRecordAccess::isHr($this->user());
+            : EmployeeRecordAccess::managesPerformance($this->user());
     }
 
     /**

@@ -13,8 +13,8 @@ describe('Permission Enum', function () {
     it('has all module permissions', function () {
         $permissions = Permission::cases();
 
-        // Should have all 22 permissions defined
-        expect($permissions)->toHaveCount(22);
+        // Should have all 23 permissions defined
+        expect($permissions)->toHaveCount(23);
 
         // Employees module
         expect(Permission::EmployeesView->value())->toBe('employees.view');
@@ -69,7 +69,7 @@ describe('Role Permissions Mapping', function () {
         $permissions = RolePermissions::getPermissionsForRole(TenantUserRole::Admin);
 
         // Admin should have all permissions
-        expect($permissions)->toHaveCount(22);
+        expect($permissions)->toHaveCount(23);
         expect($permissions)->toContain(Permission::EmployeesView);
         expect($permissions)->toContain(Permission::SettingsManage);
         expect($permissions)->toContain(Permission::UsersManage);
@@ -79,7 +79,7 @@ describe('Role Permissions Mapping', function () {
         $permissions = RolePermissions::getPermissionsForRole(TenantUserRole::HrManager);
 
         // HR Manager should have all except SettingsManage, UsersManage, and AuditLogsView
-        expect($permissions)->toHaveCount(19);
+        expect($permissions)->toHaveCount(20);
         expect($permissions)->toContain(Permission::EmployeesView);
         expect($permissions)->toContain(Permission::ReportsView);
         expect($permissions)->not->toContain(Permission::SettingsManage);

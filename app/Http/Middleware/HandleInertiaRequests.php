@@ -89,6 +89,7 @@ class HandleInertiaRequests extends Middleware
         // Get the user's role and permissions in this tenant if authenticated
         $canManageUsers = false;
         $canManageOrganization = false;
+        $canManagePerformance = false;
         $canManageEmployees = false;
         $canViewAuditLogs = false;
 
@@ -113,6 +114,9 @@ class HandleInertiaRequests extends Middleware
                 $canManageOrganization = $user->is_super_admin
                     || ($roleEnum && RolePermissions::roleHasPermission($roleEnum, Permission::OrganizationManage));
 
+                $canManagePerformance = $user->is_super_admin
+                    || ($roleEnum && RolePermissions::roleHasPermission($roleEnum, Permission::PerformanceManage));
+
                 // Check if user can manage employees (requires all employee permissions)
                 // This matches the can-manage-employees gate: Admin and HR Manager
                 $canManageEmployees = $user->is_super_admin
@@ -133,6 +137,7 @@ class HandleInertiaRequests extends Middleware
             'user_role' => $userRole,
             'can_manage_users' => $canManageUsers,
             'can_manage_organization' => $canManageOrganization,
+            'can_manage_performance' => $canManagePerformance,
             'can_manage_employees' => $canManageEmployees,
             'can_view_audit_logs' => $canViewAuditLogs,
             'has_pending_overtime_approvals' => $user !== null && $this->hasPendingOvertimeApprovals($user->id),

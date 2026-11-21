@@ -20,7 +20,7 @@ class ParticipantKpiController extends Controller
      */
     public function index(PerformanceCycleParticipant $participant): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $summary = $this->kpiAssignmentService->getParticipantKpiSummary($participant);
 

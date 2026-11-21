@@ -39,6 +39,7 @@ export interface TenantContext {
     user_role: 'admin' | 'member' | 'employee' | null;
     can_manage_users?: boolean;
     can_manage_organization?: boolean;
+    can_manage_performance?: boolean;
     can_manage_employees?: boolean;
     has_pending_overtime_approvals?: boolean;
     can_view_audit_logs?: boolean;

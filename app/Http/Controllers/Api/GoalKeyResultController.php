@@ -25,7 +25,7 @@ class GoalKeyResultController extends Controller
      */
     public function index(Goal $goal): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $keyResults = $goal->keyResults()
             ->with('progressEntries')
@@ -40,7 +40,7 @@ class GoalKeyResultController extends Controller
      */
     public function store(StoreKeyResultRequest $request, Goal $goal): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -67,7 +67,7 @@ class GoalKeyResultController extends Controller
      */
     public function show(Goal $goal, GoalKeyResult $keyResult): GoalKeyResultResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $keyResult->load('progressEntries.recordedByUser');
 
@@ -79,7 +79,7 @@ class GoalKeyResultController extends Controller
      */
     public function update(UpdateKeyResultRequest $request, Goal $goal, GoalKeyResult $keyResult): GoalKeyResultResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $keyResult->update($request->validated());
 
@@ -97,7 +97,7 @@ class GoalKeyResultController extends Controller
      */
     public function destroy(Goal $goal, GoalKeyResult $keyResult): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $keyResult->progressEntries()->delete();
         $keyResult->delete();
@@ -115,7 +115,7 @@ class GoalKeyResultController extends Controller
      */
     public function recordProgress(Request $request, Goal $goal, GoalKeyResult $keyResult): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $request->validate([
             'value' => ['required', 'numeric'],

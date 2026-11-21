@@ -20,7 +20,7 @@ class GoalMilestoneController extends Controller
      */
     public function index(Goal $goal): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $milestones = $goal->milestones()
             ->with('completedByUser')
@@ -35,7 +35,7 @@ class GoalMilestoneController extends Controller
      */
     public function store(StoreMilestoneRequest $request, Goal $goal): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -58,7 +58,7 @@ class GoalMilestoneController extends Controller
      */
     public function show(Goal $goal, GoalMilestone $milestone): GoalMilestoneResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $milestone->load('completedByUser');
 
@@ -70,7 +70,7 @@ class GoalMilestoneController extends Controller
      */
     public function update(UpdateMilestoneRequest $request, Goal $goal, GoalMilestone $milestone): GoalMilestoneResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $milestone->update($request->validated());
 
@@ -82,7 +82,7 @@ class GoalMilestoneController extends Controller
      */
     public function destroy(Goal $goal, GoalMilestone $milestone): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $milestone->delete();
 
@@ -99,7 +99,7 @@ class GoalMilestoneController extends Controller
      */
     public function toggleComplete(Request $request, Goal $goal, GoalMilestone $milestone): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $milestone->toggleComplete($request->user());
 

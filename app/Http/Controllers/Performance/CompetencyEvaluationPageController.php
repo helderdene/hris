@@ -21,7 +21,7 @@ class CompetencyEvaluationPageController extends Controller
      */
     public function index(Request $request): Response
     {
-        $isHr = EmployeeRecordAccess::isHr($request->user());
+        $isHr = EmployeeRecordAccess::managesPerformance($request->user());
         $managed = fn ($participants) => $participants
             ->whereColumn('manager_id', '!=', 'employee_id')
             ->whereHas('manager', fn ($manager) => $manager->where('user_id', $request->user()->id));
@@ -161,7 +161,7 @@ class CompetencyEvaluationPageController extends Controller
                 'cycle_name' => $participant->performanceCycleInstance?->performanceCycle?->name,
                 'year' => $participant->performanceCycleInstance?->year,
             ],
-            'canRateSelf' => EmployeeRecordAccess::isHr($request->user()),
+            'canRateSelf' => EmployeeRecordAccess::managesPerformance($request->user()),
             'evaluationData' => $evaluationData,
             'proficiencyLevels' => ProficiencyLevelResource::collection($proficiencyLevels),
             'summary' => [

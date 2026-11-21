@@ -30,7 +30,7 @@ class PerformanceCycleInstanceController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = PerformanceCycleInstance::query()
             ->with('performanceCycle')
@@ -63,7 +63,7 @@ class PerformanceCycleInstanceController extends Controller
      */
     public function store(StorePerformanceCycleInstanceRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -79,7 +79,7 @@ class PerformanceCycleInstanceController extends Controller
      */
     public function generate(GeneratePerformanceCycleInstancesRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -116,7 +116,7 @@ class PerformanceCycleInstanceController extends Controller
      */
     public function show(PerformanceCycleInstance $performanceCycleInstance): PerformanceCycleInstanceResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         return new PerformanceCycleInstanceResource($performanceCycleInstance->load('performanceCycle'));
     }
@@ -128,7 +128,7 @@ class PerformanceCycleInstanceController extends Controller
         UpdatePerformanceCycleInstanceRequest $request,
         PerformanceCycleInstance $performanceCycleInstance
     ): PerformanceCycleInstanceResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         if (! $performanceCycleInstance->isEditable()) {
             abort(422, 'This instance cannot be edited in its current status.');
@@ -148,7 +148,7 @@ class PerformanceCycleInstanceController extends Controller
         UpdatePerformanceCycleInstanceStatusRequest $request,
         PerformanceCycleInstance $performanceCycleInstance
     ): PerformanceCycleInstanceResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $newStatus = PerformanceCycleInstanceStatus::from($request->validated('status'));
 
@@ -166,7 +166,7 @@ class PerformanceCycleInstanceController extends Controller
      */
     public function destroy(PerformanceCycleInstance $performanceCycleInstance): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         if (! $performanceCycleInstance->isDeletable()) {
             return response()->json([

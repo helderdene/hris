@@ -22,6 +22,14 @@ class EmployeeRecordAccess
     }
 
     /**
+     * Whether the user runs performance management: Admin and the HR roles.
+     */
+    public static function managesPerformance(?User $user): bool
+    {
+        return $user !== null && Gate::forUser($user)->allows('can-manage-performance');
+    }
+
+    /**
      * Whether the user may create a record for this employee: their own profile, or anyone's for HR.
      */
     public static function canFileFor(?User $user, mixed $employeeId): bool

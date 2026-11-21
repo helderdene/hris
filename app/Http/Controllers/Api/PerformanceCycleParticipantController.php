@@ -26,7 +26,7 @@ class PerformanceCycleParticipantController extends Controller
         Request $request,
         PerformanceCycleInstance $performanceCycleInstance
     ): AnonymousResourceCollection {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = $performanceCycleInstance->participants()
             ->with(['employee.position', 'employee.department', 'manager'])
@@ -62,7 +62,7 @@ class PerformanceCycleParticipantController extends Controller
         AssignPerformanceCycleParticipantsRequest $request,
         PerformanceCycleInstance $performanceCycleInstance
     ): JsonResponse {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         if (! $performanceCycleInstance->isEditable()) {
             return response()->json([
@@ -101,7 +101,7 @@ class PerformanceCycleParticipantController extends Controller
         PerformanceCycleInstance $performanceCycleInstance,
         PerformanceCycleParticipant $participant
     ): PerformanceCycleParticipantResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Validate that the participant belongs to this instance
         if ($participant->performance_cycle_instance_id !== $performanceCycleInstance->id) {
@@ -138,7 +138,7 @@ class PerformanceCycleParticipantController extends Controller
         PerformanceCycleInstance $performanceCycleInstance,
         PerformanceCycleParticipant $participant
     ): JsonResponse {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Validate that the participant belongs to this instance
         if ($participant->performance_cycle_instance_id !== $performanceCycleInstance->id) {

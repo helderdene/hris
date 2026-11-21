@@ -26,7 +26,7 @@ class GoalPageController extends Controller
      */
     public function index(Request $request): Response
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = Goal::query()
             ->with(['employee.department', 'employee.position', 'keyResults', 'milestones'])
@@ -133,7 +133,7 @@ class GoalPageController extends Controller
      */
     public function show(Goal $goal): Response
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal->load([
             'employee.department',

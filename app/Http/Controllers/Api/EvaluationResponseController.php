@@ -28,7 +28,7 @@ class EvaluationResponseController extends Controller
         $user = auth()->user();
         $employee = $user->employee;
 
-        $canManage = Gate::allows('can-manage-organization');
+        $canManage = Gate::allows('can-manage-performance');
         $isReviewer = $employee && $employee->id === $reviewer->reviewer_employee_id;
 
         if (! $canManage && ! $isReviewer) {

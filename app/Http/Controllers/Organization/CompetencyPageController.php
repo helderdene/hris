@@ -20,7 +20,7 @@ class CompetencyPageController extends Controller
      */
     public function index(): Response
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Get all competencies with position assignment counts
         $competencies = Competency::query()

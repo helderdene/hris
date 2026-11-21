@@ -77,3 +77,64 @@ it('keeps another employee\'s goals, KPIs and evaluations away from an ordinary 
     'competencies page' => ['GET', '/organization/competencies'],
     'competency matrix page' => ['GET', '/organization/competency-matrix'],
 ]);
+
+it('lets HR staff and HR consultants use the performance pages', function (TenantUserRole $role, string $path) {
+    $this->user->tenants()->updateExistingPivot($this->tenant->id, ['role' => $role->value]);
+
+    $path = str_replace(
+        ['{goal}', '{participant}', '{kpi}', '{competency}'],
+        [$this->goal->id, $this->participant->id, $this->kpi->id, $this->competency->id],
+        $path,
+    );
+
+    $this->actingAs($this->user)
+        ->getJson($this->base.$path)
+        ->assertSuccessful();
+})->with([TenantUserRole::HrStaff, TenantUserRole::HrConsultant])->with([
+    '/performance/goals',
+    '/performance/goals/{goal}',
+    '/performance/kpis',
+    '/performance/evaluations',
+    '/performance/evaluations/{participant}',
+    '/performance/competency-evaluations',
+    '/performance/competency-evaluations/participants/{participant}',
+    '/performance/development-plans',
+    '/performance/analytics',
+    '/organization/performance-cycles',
+    '/organization/competencies',
+    '/organization/competency-matrix',
+    '/api/performance/goals/{goal}',
+    '/api/performance/kpi-assignments/{kpi}',
+    '/api/performance/competency-evaluations/{competency}',
+    '/api/organization/participants/{participant}/summary',
+]);
+
+it('still keeps HR staff out of organization-only settings', function () {
+    $this->user->tenants()->updateExistingPivot($this->tenant->id, ['role' => TenantUserRole::HrStaff->value]);
+
+    $this->actingAs($this->user)
+        ->get("{$this->base}/organization/leave-balances")
+        ->assertForbidden();
+});
+
+it('lets HR staff and HR consultants act on performance records', function (TenantUserRole $role) {
+    $this->user->tenants()->updateExistingPivot($this->tenant->id, ['role' => $role->value]);
+    $plan = \App\Models\DevelopmentPlan::factory()->pendingApproval()->create();
+
+    $this->actingAs($this->user)
+        ->get("{$this->base}/performance/development-plans/{$plan->id}")
+        ->assertSuccessful()
+        ->assertInertia(fn ($page) => $page->where('tenant.can_manage_performance', true)
+            ->where('tenant.can_manage_organization', false));
+
+    $this->actingAs($this->user)
+        ->postJson("{$this->base}/api/performance/development-plans/{$plan->id}/approve")
+        ->assertSuccessful();
+
+    $this->actingAs($this->user)
+        ->postJson("{$this->base}/api/performance/competency-evaluations/{$this->competency->id}/manager-rating", ['manager_rating' => 4])
+        ->assertSuccessful();
+
+    expect($plan->fresh()->status)->toBe(\App\Enums\DevelopmentPlanStatus::Approved)
+        ->and($this->competency->fresh()->manager_rating)->toBe(4);
+})->with([TenantUserRole::HrStaff, TenantUserRole::HrConsultant]);

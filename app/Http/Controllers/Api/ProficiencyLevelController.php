@@ -17,7 +17,7 @@ class ProficiencyLevelController extends Controller
      */
     public function index(): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $levels = ProficiencyLevel::ordered();
 
@@ -29,7 +29,7 @@ class ProficiencyLevelController extends Controller
      */
     public function show(ProficiencyLevel $proficiencyLevel): ProficiencyLevelResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         return new ProficiencyLevelResource($proficiencyLevel);
     }

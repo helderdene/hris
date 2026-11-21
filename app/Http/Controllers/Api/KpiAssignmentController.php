@@ -30,7 +30,7 @@ class KpiAssignmentController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = KpiAssignment::query()
             ->with([
@@ -65,7 +65,7 @@ class KpiAssignmentController extends Controller
      */
     public function store(StoreKpiAssignmentRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -93,7 +93,7 @@ class KpiAssignmentController extends Controller
      */
     public function bulkAssign(BulkAssignKpiRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -123,7 +123,7 @@ class KpiAssignmentController extends Controller
      */
     public function show(KpiAssignment $kpiAssignment): KpiAssignmentResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $kpiAssignment->load([
             'kpiTemplate',
@@ -141,7 +141,7 @@ class KpiAssignmentController extends Controller
         UpdateKpiAssignmentRequest $request,
         KpiAssignment $kpiAssignment
     ): KpiAssignmentResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -165,7 +165,7 @@ class KpiAssignmentController extends Controller
      */
     public function destroy(KpiAssignment $kpiAssignment): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Delete associated progress entries first
         $kpiAssignment->progressEntries()->delete();
@@ -184,7 +184,7 @@ class KpiAssignmentController extends Controller
         RecordKpiProgressRequest $request,
         KpiAssignment $kpiAssignment
     ): JsonResponse {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -212,7 +212,7 @@ class KpiAssignmentController extends Controller
      */
     public function complete(KpiAssignment $kpiAssignment): KpiAssignmentResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $this->kpiAssignmentService->markCompleted($kpiAssignment);
 
@@ -230,7 +230,7 @@ class KpiAssignmentController extends Controller
      */
     public function progressHistory(KpiAssignment $kpiAssignment): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $entries = $this->kpiAssignmentService->getProgressHistory($kpiAssignment);
 

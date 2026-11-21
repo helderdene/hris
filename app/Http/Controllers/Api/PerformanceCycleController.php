@@ -21,7 +21,7 @@ class PerformanceCycleController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = PerformanceCycle::query()
             ->withCount('performanceCycleInstances')
@@ -46,7 +46,7 @@ class PerformanceCycleController extends Controller
      */
     public function store(StorePerformanceCycleRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -67,7 +67,7 @@ class PerformanceCycleController extends Controller
      */
     public function show(PerformanceCycle $performanceCycle): PerformanceCycleResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $performanceCycle->loadCount('performanceCycleInstances');
 
@@ -81,7 +81,7 @@ class PerformanceCycleController extends Controller
         UpdatePerformanceCycleRequest $request,
         PerformanceCycle $performanceCycle
     ): PerformanceCycleResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -104,7 +104,7 @@ class PerformanceCycleController extends Controller
      */
     public function destroy(PerformanceCycle $performanceCycle): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Check if there are non-draft instances
         $nonDraftInstances = $performanceCycle->performanceCycleInstances()

@@ -21,7 +21,7 @@ class PerformanceCyclePageController extends Controller
      */
     public function index(Request $request): Response
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Get all performance cycles with instance counts
         $cycles = PerformanceCycle::query()

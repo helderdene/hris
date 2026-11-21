@@ -22,7 +22,7 @@ class CompetencyController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = Competency::query()
             ->withCount('positionCompetencies')
@@ -55,7 +55,7 @@ class CompetencyController extends Controller
      */
     public function store(StoreCompetencyRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $competency = Competency::create($request->validated());
 
@@ -69,7 +69,7 @@ class CompetencyController extends Controller
      */
     public function show(Competency $competency): CompetencyResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $competency->loadCount('positionCompetencies');
 
@@ -83,7 +83,7 @@ class CompetencyController extends Controller
         UpdateCompetencyRequest $request,
         Competency $competency
     ): CompetencyResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $competency->update($request->validated());
 
@@ -99,7 +99,7 @@ class CompetencyController extends Controller
      */
     public function destroy(Competency $competency): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Check if there are position competency assignments
         $assignmentsCount = $competency->positionCompetencies()->count();

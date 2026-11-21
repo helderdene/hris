@@ -28,7 +28,7 @@ class EvaluationSummaryController extends Controller
         $user = auth()->user();
         $employee = $user->employee;
 
-        $canManage = Gate::allows('can-manage-organization');
+        $canManage = Gate::allows('can-manage-performance');
         $isParticipant = $employee && $employee->id === $participant->employee_id;
         $resultsVisible = $participant->evaluation_status === EvaluationStatus::Completed;
 
@@ -100,7 +100,7 @@ class EvaluationSummaryController extends Controller
         CalibrateEvaluationRequest $request,
         PerformanceCycleParticipant $participant
     ): JsonResponse {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Check if ready for calibration
         if (! in_array($participant->evaluation_status, [EvaluationStatus::Calibration, EvaluationStatus::Completed])) {
@@ -172,7 +172,7 @@ class EvaluationSummaryController extends Controller
     public function recalculate(
         PerformanceCycleParticipant $participant
     ): JsonResponse {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $summary = $this->evaluationService->generateSummary($participant);
 

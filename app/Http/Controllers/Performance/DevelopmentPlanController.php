@@ -28,7 +28,7 @@ class DevelopmentPlanController extends Controller
             ->withCount('items')
             ->orderBy('updated_at', 'desc');
 
-        $isHr = EmployeeRecordAccess::isHr($request->user());
+        $isHr = EmployeeRecordAccess::managesPerformance($request->user());
         $reviewerScope = fn ($plans) => $plans
             ->whereColumn('manager_id', '!=', 'employee_id')
             ->whereHas('manager', fn ($manager) => $manager->where('user_id', $request->user()->id));

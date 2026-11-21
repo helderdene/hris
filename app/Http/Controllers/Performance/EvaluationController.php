@@ -26,7 +26,7 @@ class EvaluationController extends Controller
      */
     public function index(Request $request): Response
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Get available instances for filtering
         $instances = PerformanceCycleInstance::query()
@@ -144,7 +144,7 @@ class EvaluationController extends Controller
      */
     public function show(PerformanceCycleParticipant $participant): Response
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $participant->load([
             'employee.position',

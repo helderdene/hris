@@ -25,7 +25,7 @@ class PositionCompetencyController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = PositionCompetency::query()
             ->with(['position', 'competency', 'proficiencyLevel'])
@@ -78,7 +78,7 @@ class PositionCompetencyController extends Controller
      */
     public function store(StorePositionCompetencyRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $positionCompetency = PositionCompetency::create($request->validated());
 
@@ -94,7 +94,7 @@ class PositionCompetencyController extends Controller
      */
     public function show(PositionCompetency $positionCompetency): PositionCompetencyResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $positionCompetency->load(['position', 'competency', 'proficiencyLevel']);
 
@@ -108,7 +108,7 @@ class PositionCompetencyController extends Controller
         UpdatePositionCompetencyRequest $request,
         PositionCompetency $positionCompetency
     ): PositionCompetencyResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $positionCompetency->update($request->validated());
 
@@ -122,7 +122,7 @@ class PositionCompetencyController extends Controller
      */
     public function destroy(PositionCompetency $positionCompetency): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Check for existing evaluations
         $evaluationsCount = $positionCompetency->evaluations()->count();
@@ -147,7 +147,7 @@ class PositionCompetencyController extends Controller
      */
     public function batchUpdate(BatchUpdatePositionCompetencyRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $validated = $request->validated();
         $positionId = $validated['position_id'];

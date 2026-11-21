@@ -18,7 +18,7 @@ class GoalCommentController extends Controller
      */
     public function index(Goal $goal): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $comments = $goal->comments()
             ->with('user')
@@ -33,7 +33,7 @@ class GoalCommentController extends Controller
      */
     public function store(Request $request, Goal $goal): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $request->validate([
             'comment' => ['required', 'string', 'max:5000'],
@@ -58,7 +58,7 @@ class GoalCommentController extends Controller
      */
     public function show(Goal $goal, GoalComment $comment): GoalCommentResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $comment->load('user');
 
@@ -70,7 +70,7 @@ class GoalCommentController extends Controller
      */
     public function update(Request $request, Goal $goal, GoalComment $comment): GoalCommentResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Only the author can edit their comment
         if ($comment->user_id !== $request->user()->id) {
@@ -97,7 +97,7 @@ class GoalCommentController extends Controller
      */
     public function destroy(Request $request, Goal $goal, GoalComment $comment): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Only the author can delete their comment
         if ($comment->user_id !== $request->user()->id) {

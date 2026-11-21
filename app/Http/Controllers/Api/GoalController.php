@@ -28,7 +28,7 @@ class GoalController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goals = $this->goalService->getGoals([
             'employee_id' => $request->input('employee_id'),
@@ -50,7 +50,7 @@ class GoalController extends Controller
      */
     public function store(StoreGoalRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal = $this->goalService->createGoal($request->validated());
 
@@ -66,7 +66,7 @@ class GoalController extends Controller
      */
     public function show(Goal $goal): GoalResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal->load([
             'employee.department',
@@ -88,7 +88,7 @@ class GoalController extends Controller
      */
     public function update(UpdateGoalRequest $request, Goal $goal): GoalResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal = $this->goalService->updateGoal($goal, $request->validated());
 
@@ -102,7 +102,7 @@ class GoalController extends Controller
      */
     public function destroy(Goal $goal): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal->keyResults()->delete();
         $goal->milestones()->delete();
@@ -120,7 +120,7 @@ class GoalController extends Controller
      */
     public function updateProgress(RecordProgressRequest $request, Goal $goal): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -155,7 +155,7 @@ class GoalController extends Controller
      */
     public function complete(Goal $goal): GoalResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal = $this->goalService->completeGoal($goal);
 
@@ -169,7 +169,7 @@ class GoalController extends Controller
      */
     public function submitForApproval(Goal $goal): GoalResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal = $this->goalService->submitForApproval($goal);
 
@@ -181,7 +181,7 @@ class GoalController extends Controller
      */
     public function approve(ApproveGoalRequest $request, Goal $goal): GoalResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal = $this->goalService->approveGoal(
             $goal,
@@ -199,7 +199,7 @@ class GoalController extends Controller
      */
     public function reject(RejectGoalRequest $request, Goal $goal): GoalResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $goal = $this->goalService->rejectGoal(
             $goal,

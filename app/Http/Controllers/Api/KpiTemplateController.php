@@ -21,7 +21,7 @@ class KpiTemplateController extends Controller
      */
     public function index(Request $request): AnonymousResourceCollection
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $query = KpiTemplate::query()
             ->withCount('kpiAssignments')
@@ -55,7 +55,7 @@ class KpiTemplateController extends Controller
      */
     public function store(StoreKpiTemplateRequest $request): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -71,7 +71,7 @@ class KpiTemplateController extends Controller
      */
     public function show(KpiTemplate $kpiTemplate): KpiTemplateResource
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $kpiTemplate->loadCount('kpiAssignments');
 
@@ -85,7 +85,7 @@ class KpiTemplateController extends Controller
         UpdateKpiTemplateRequest $request,
         KpiTemplate $kpiTemplate
     ): KpiTemplateResource {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         $data = $request->validated();
 
@@ -103,7 +103,7 @@ class KpiTemplateController extends Controller
      */
     public function destroy(KpiTemplate $kpiTemplate): JsonResponse
     {
-        Gate::authorize('can-manage-organization');
+        Gate::authorize('can-manage-performance');
 
         // Check if there are active assignments
         $activeAssignments = $kpiTemplate->kpiAssignments()

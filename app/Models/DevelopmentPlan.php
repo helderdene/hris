@@ -79,7 +79,7 @@ class DevelopmentPlan extends TenantModel
      */
     public function isReviewableBy(?User $user): bool
     {
-        if (EmployeeRecordAccess::isHr($user)) {
+        if (EmployeeRecordAccess::managesPerformance($user)) {
             return true;
         }
 

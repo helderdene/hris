@@ -42,6 +42,9 @@ enum Permission: string
     // Holidays module
     case HolidaysManage = 'holidays_manage';
 
+    // Performance module
+    case PerformanceManage = 'performance_manage';
+
     // Recruitment module
     case RecruitmentView = 'recruitment_view';
     case RecruitmentManage = 'recruitment_manage';
@@ -79,6 +82,7 @@ enum Permission: string
             self::OrganizationManage => 'organization.manage',
             self::HolidaysManage => 'holidays.manage',
             self::RecruitmentView => 'recruitment.view',
+            self::PerformanceManage => 'performance.manage',
             self::RecruitmentManage => 'recruitment.manage',
             self::OffersCreate => 'offers.create',
             self::OffersApprove => 'offers.approve',
@@ -109,6 +113,7 @@ enum Permission: string
             self::UsersManage => 'Manage Users',
             self::OrganizationManage => 'Manage Organization',
             self::HolidaysManage => 'Manage Holidays',
+            self::PerformanceManage => 'Manage Performance',
             self::RecruitmentView => 'View Recruitment',
             self::RecruitmentManage => 'Manage Recruitment',
             self::OffersCreate => 'Create Offers',
@@ -135,6 +140,7 @@ enum Permission: string
             self::UsersManage => 'users',
             self::OrganizationManage => 'organization',
             self::HolidaysManage => 'holidays',
+            self::PerformanceManage => 'performance',
             self::RecruitmentView, self::RecruitmentManage => 'recruitment',
             self::OffersCreate, self::OffersApprove => 'offers',
             self::OfferTemplatesManage => 'offer_templates',
