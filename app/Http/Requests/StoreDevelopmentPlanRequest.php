@@ -27,7 +27,6 @@ class StoreDevelopmentPlanRequest extends FormRequest
             'start_date' => ['nullable', 'date'],
             'target_completion_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'career_path_notes' => ['nullable', 'string'],
-            'manager_id' => ['nullable', 'integer', 'exists:employees,id'],
             'from_evaluation' => ['nullable', 'integer', 'exists:performance_cycle_participants,id'],
         ];
     }

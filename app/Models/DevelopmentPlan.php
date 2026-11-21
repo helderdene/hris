@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\DevelopmentPlanStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -71,6 +72,21 @@ class DevelopmentPlan extends TenantModel
     public function performanceCycleParticipant(): BelongsTo
     {
         return $this->belongsTo(PerformanceCycleParticipant::class);
+    }
+
+    /**
+     * HR, or the assigned manager when that is not the plan's own employee.
+     */
+    public function isReviewableBy(?User $user): bool
+    {
+        if (EmployeeRecordAccess::isHr($user)) {
+            return true;
+        }
+
+        return $user !== null
+            && $this->manager_id !== null
+            && $this->manager_id !== $this->employee_id
+            && $this->manager?->user_id === $user->id;
     }
 
     /**

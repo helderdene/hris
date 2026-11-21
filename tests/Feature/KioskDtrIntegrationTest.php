@@ -52,6 +52,8 @@ describe('Kiosk DTR Integration', function () {
     });
 
     it('kiosk and biometric logs coexist in DTR queries', function () {
+        $this->travelTo(now()->setTime(12, 0));
+
         $tenant = Tenant::factory()->create();
         app()->instance('tenant', $tenant);
 

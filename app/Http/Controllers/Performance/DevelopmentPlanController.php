@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Performance;
 
+use App\Authorization\EmployeeRecordAccess;
 use App\Enums\DevelopmentPlanStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ApproveDevelopmentPlanRequest;
@@ -27,6 +28,15 @@ class DevelopmentPlanController extends Controller
             ->withCount('items')
             ->orderBy('updated_at', 'desc');
 
+        $isHr = EmployeeRecordAccess::isHr($request->user());
+        $reviewerScope = fn ($plans) => $plans
+            ->whereColumn('manager_id', '!=', 'employee_id')
+            ->whereHas('manager', fn ($manager) => $manager->where('user_id', $request->user()->id));
+
+        if (! $isHr) {
+            $reviewerScope($query);
+        }
+
         // Apply status filter
         if ($request->filled('status')) {
             $query->byStatus($request->input('status'));
@@ -45,7 +55,9 @@ class DevelopmentPlanController extends Controller
         $plans = $query->paginate(20)->withQueryString();
 
         // Get pending count for notification badge
-        $pendingCount = DevelopmentPlan::pending()->count();
+        $pendingCount = DevelopmentPlan::pending()
+            ->when(! $isHr, $reviewerScope)
+            ->count();
 
         return Inertia::render('Performance/DevelopmentPlans/Index', [
             'plans' => DevelopmentPlanListResource::collection($plans),
@@ -64,6 +76,8 @@ class DevelopmentPlanController extends Controller
      */
     public function show(Request $request, DevelopmentPlan $developmentPlan): Response
     {
+        abort_unless($developmentPlan->isReviewableBy($request->user()), 403);
+
         $developmentPlan->load([
             'items.activities',
             'items.competency',
@@ -87,6 +101,8 @@ class DevelopmentPlanController extends Controller
      */
     public function approve(ApproveDevelopmentPlanRequest $request, DevelopmentPlan $developmentPlan): JsonResponse
     {
+        abort_unless($developmentPlan->isReviewableBy($request->user()), 403);
+
         if ($developmentPlan->status !== DevelopmentPlanStatus::PendingApproval) {
             abort(422, 'This plan is not pending approval.');
         }
@@ -104,6 +120,8 @@ class DevelopmentPlanController extends Controller
      */
     public function reject(ApproveDevelopmentPlanRequest $request, DevelopmentPlan $developmentPlan): JsonResponse
     {
+        abort_unless($developmentPlan->isReviewableBy($request->user()), 403);
+
         if ($developmentPlan->status !== DevelopmentPlanStatus::PendingApproval) {
             abort(422, 'This plan is not pending approval.');
         }
